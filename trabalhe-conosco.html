@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trabalhe conosco — 645 Turismo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,500&family=Montserrat:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: #000; color: #F2F5F3; font-family: Montserrat, system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  * { box-sizing: border-box; }
+  a { color: #53D9B2; text-decoration: none; }
+  a:hover { color: #FADA28; }
+  img { display: block; max-width: 100%; }
+  input, textarea, select, button { font-family: inherit; font-size: 16px; }
+  ::selection { background: #53D9B2; color: #000; }
+</style>
+</helmet>
+
+<div style="background:#000">
+
+  <header style="position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 24px;padding:14px clamp(18px,4vw,40px);background:rgba(0,0,0,0.72);backdrop-filter:blur(16px);border-bottom:1px solid rgba(242,245,243,0.1)">
+    <a href="index.html" style="display:block"><img src="assets/logo-branco.png" alt="645 Turismo" style="height:30px;width:auto" /></a>
+    <nav style="display:flex;flex-wrap:wrap;align-items:center;gap:10px clamp(16px,2.4vw,30px)">
+      <a href="index.html#roteiros" style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#F2F5F3" style-hover="color:#53D9B2">Roteiros</a>
+      <a href="index.html#corporativo" style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#F2F5F3" style-hover="color:#53D9B2">Empresas</a>
+      <a href="index.html#contato" style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#F2F5F3" style-hover="color:#53D9B2">Contato</a>
+      <a href="{{ instagramLink }}" target="_blank" rel="noopener" style="font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#F2F5F3" style-hover="color:#53D9B2">@645turismo</a>
+    </nav>
+  </header>
+
+  <section data-screen-label="Hero vagas" style="position:relative;min-height:min(64svh,560px);display:flex;align-items:flex-end;overflow:hidden">
+    <img src="assets/equipe-dupla.jpeg" alt="Equipe da 645 Turismo" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 25%" />
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.62) 0%,rgba(0,0,0,0.3) 40%,rgba(0,0,0,0.93) 100%);pointer-events:none"></div>
+    <div style="position:relative;width:100%;max-width:1320px;margin:0 auto;padding:100px clamp(18px,4vw,40px) clamp(46px,6vw,72px)">
+      <p style="margin:0 0 20px;font-size:11.5px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:#53D9B2">Trabalhe conosco</p>
+      <h1 style="margin:0;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(36px,7vw,86px);line-height:1.02;letter-spacing:-0.02em;color:#fff;max-width:18ch;text-wrap:balance">Faça parte da equipe que conduz cada viagem</h1>
+      <p style="margin:26px 0 0;max-width:52ch;font-size:clamp(15px,1.4vw,18px);line-height:1.65;color:rgba(242,245,243,0.82)">Guias, coordenadores e equipe de atendimento: quem trabalha com a gente está junto do viajante do embarque ao retorno.</p>
+    </div>
+  </section>
+
+  <section data-screen-label="Áreas" style="max-width:1320px;margin:0 auto;padding:clamp(64px,8vw,110px) clamp(18px,4vw,40px) 0">
+    <p style="margin:0 0 22px;font-size:11.5px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:#53D9B2">Áreas</p>
+    <h2 style="margin:0;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(28px,4.6vw,52px);line-height:1.06;letter-spacing:-0.02em;color:#fff;max-width:22ch;text-wrap:balance">Onde costumamos abrir oportunidades</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:1px;margin-top:36px;background:rgba(242,245,243,0.14);border:1px solid rgba(242,245,243,0.14)">
+      <sc-for list="{{ areas }}" as="a" hint-placeholder-count="4">
+        <div style="background:#000;padding:clamp(24px,3vw,32px) clamp(22px,2.4vw,28px);display:flex;flex-direction:column;gap:11px">
+          <span style="font-family:Newsreader,Georgia,serif;font-size:26px;color:#53D9B2">{{ a.n }}</span>
+          <h3 style="margin:0;font-size:17px;font-weight:700;line-height:1.3;color:#fff">{{ a.titulo }}</h3>
+          <p style="margin:0;font-size:14.5px;line-height:1.65;color:rgba(242,245,243,0.62)">{{ a.desc }}</p>
+        </div>
+      </sc-for>
+    </div>
+    <p style="margin:26px 0 0;max-width:60ch;font-size:14.5px;line-height:1.7;color:rgba(242,245,243,0.5)">Não encontrou sua área? Faça o cadastro de qualquer forma: mantemos os registros para as próximas operações.</p>
+  </section>
+
+  <section data-screen-label="Candidatura" style="max-width:1320px;margin:0 auto;padding:clamp(64px,8vw,110px) clamp(18px,4vw,40px) 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:clamp(36px,5vw,72px);align-items:start">
+    <div>
+      <p style="margin:0 0 22px;font-size:11.5px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:#53D9B2">Candidatura</p>
+      <h2 style="margin:0;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(28px,4.4vw,50px);line-height:1.06;letter-spacing:-0.02em;color:#fff;max-width:18ch;text-wrap:balance">Envie seus dados</h2>
+      <p style="margin:26px 0 0;max-width:46ch;font-size:16px;line-height:1.7;color:rgba(242,245,243,0.7)">Faça seu cadastro no formulário oficial. Se preferir enviar o currículo em anexo, fale com a gente pelo WhatsApp.</p>
+      <a href="{{ whatsappVaga }}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:14px;margin-top:34px;padding:20px 22px;border:1px solid rgba(83,217,178,0.35);border-radius:6px;background:rgba(83,217,178,0.07);color:#F2F5F3;max-width:420px" style-hover="border-color:#53D9B2;background:rgba(83,217,178,0.13)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#53D9B2" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2Zm5.8 14.1c-.24.68-1.4 1.3-1.94 1.35-.54.05-1.05.24-3.53-.72-2.99-1.16-4.86-4.28-5.01-4.48-.15-.2-1.2-1.6-1.2-3.05 0-1.45.76-2.16 1.03-2.46.27-.3.58-.37.78-.37h.56c.18 0 .42-.07.65.5.24.58.82 2.02.89 2.17.07.15.12.32.02.51-.1.2-.15.32-.3.5-.15.17-.31.39-.44.52-.15.15-.3.31-.13.61.17.3.76 1.25 1.62 2.02 1.11.99 2.05 1.3 2.34 1.45.29.15.46.13.63-.08.17-.2.73-.85.93-1.14.2-.29.39-.24.66-.15.27.1 1.71.81 2 .96.29.15.49.22.56.34.07.13.07.75-.17 1.43Z"/></svg>
+        <span>
+          <span style="display:block;font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:rgba(242,245,243,0.5)">Enviar currículo</span>
+          <span style="display:block;margin-top:4px;font-size:16.5px;font-weight:600">+55 11 91693-6176</span>
+        </span>
+      </a>
+      <img src="assets/guia.jpeg" alt="Guia de turismo da 645" style="width:100%;max-width:420px;height:clamp(240px,32vw,400px);object-fit:cover;object-position:center 20%;margin-top:26px" />
+    </div>
+
+    <div style="display:grid;gap:1px;background:rgba(242,245,243,0.14);border:1px solid rgba(242,245,243,0.14)">
+      <div style="background:#000;padding:clamp(28px,3.4vw,42px) clamp(24px,3vw,38px)">
+        <p style="margin:0 0 14px;font-size:10.5px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:rgba(242,245,243,0.5)">Cadastro de colaboradores</p>
+        <h3 style="margin:0;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(24px,3vw,34px);line-height:1.14;color:#fff;max-width:22ch">Preencha o formulário de cadastro</h3>
+        <p style="margin:18px 0 0;max-width:46ch;font-size:15.5px;line-height:1.7;color:rgba(242,245,243,0.65)">O cadastro de novos colaboradores é feito pelo nosso formulário oficial. Leva poucos minutos e fica registrado para as próximas operações.</p>
+        <a href="{{ formularioLink }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:10px;margin-top:28px;padding:16px 30px;border-radius:999px;background:#53D9B2;color:#000;font-size:12.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;min-height:44px" style-hover="background:#FADA28">Abrir formulário de cadastro</a>
+      </div>
+    </div>
+  </section>
+
+  <footer style="margin-top:clamp(72px,9vw,110px);border-top:1px solid rgba(242,245,243,0.12)">
+    <div style="max-width:1320px;margin:0 auto;padding:clamp(44px,6vw,66px) clamp(18px,4vw,40px) 30px;display:flex;flex-wrap:wrap;gap:26px 46px;align-items:flex-start;justify-content:space-between">
+      <a href="index.html" style="display:block"><img src="assets/logo-branco.png" alt="645 Turismo" style="height:32px;width:auto" /></a>
+      <div style="display:flex;flex-wrap:wrap;gap:14px 30px">
+        <a href="index.html" style="font-size:14px;color:rgba(242,245,243,0.75)" style-hover="color:#53D9B2">Home</a>
+        <a href="{{ whatsappLink }}" target="_blank" rel="noopener" style="font-size:14px;color:rgba(242,245,243,0.75)" style-hover="color:#53D9B2">WhatsApp</a>
+        <a href="{{ instagramLink }}" target="_blank" rel="noopener" style="font-size:14px;color:rgba(242,245,243,0.75)" style-hover="color:#53D9B2">@645turismo</a>
+        <span style="font-size:14px;color:rgba(242,245,243,0.75)">www.645turismo.com.br</span>
+      </div>
+    </div>
+    <div style="max-width:1320px;margin:0 auto;padding:20px clamp(18px,4vw,40px) 40px;border-top:1px solid rgba(242,245,243,0.08)">
+      <span style="font-size:11.5px;color:rgba(242,245,243,0.38)">645 Turismo — Ministério do Turismo — Cadastur 48.925.512/0001-95</span>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;whatsapp&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;5511916936176&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Contato&quot;},&quot;instagram&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;645turismo&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Contato&quot;},&quot;formularioUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://forms.gle/HffbAt8A4yj6vJNg7&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Contato&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const zap = (this.props.whatsapp ?? '5511916936176').replace(/\D/g, '');
+    return {
+      formularioLink: this.props.formularioUrl ?? 'https://forms.gle/HffbAt8A4yj6vJNg7',
+      whatsappLink: 'https://wa.me/' + zap,
+      whatsappVaga: 'https://wa.me/' + zap + '?text=' + encodeURIComponent('Olá! Gostaria de enviar meu currículo para a 645 Turismo.'),
+      instagramLink: 'https://instagram.com/' + (this.props.instagram ?? '645turismo'),
+      areas: [
+        { n: '01', titulo: 'Guia de turismo', desc: 'Condução de grupos em passeios e roteiros, com registro Cadastur.' },
+        { n: '02', titulo: 'Coordenação de grupos', desc: 'Acompanhamento da operação em campo, horários, embarques e imprevistos.' },
+        { n: '03', titulo: 'Atendimento e vendas', desc: 'Contato com viajantes, empresas e agências parceiras, do orçamento ao pós-viagem.' },
+        { n: '04', titulo: 'Operações e logística', desc: 'Transporte, hospedagem, ingressos e fornecedores de cada roteiro.' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

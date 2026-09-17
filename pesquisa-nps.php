@@ -1,14 +1,85 @@
+<?php
+session_start();
+require __DIR__ . '/nps-auth.php';
+
+if (isset($_GET['sair'])) {
+  $_SESSION = [];
+  session_destroy();
+  header('Location: pesquisa-nps.php');
+  exit;
+}
+
+$erro = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $usuario = trim($_POST['usuario'] ?? '');
+  $senha = $_POST['senha'] ?? '';
+  if (nps_verify($usuario, $senha, $NPS_USERS)) {
+    session_regenerate_id(true);
+    $_SESSION['nps_user'] = $usuario;
+    header('Location: pesquisa-nps.php');
+    exit;
+  } else {
+    $erro = 'Usuário ou senha inválidos.';
+  }
+}
+
+$autenticado = isset($_SESSION['nps_user']);
+
+if (!$autenticado) {
+?>
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Acesso restrito — 645 Turismo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #000; color: #F2F5F3; font-family: Montserrat, system-ui, sans-serif; -webkit-font-smoothing: antialiased; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  * { box-sizing: border-box; }
+  .card { width: 100%; max-width: 380px; border: 1px solid rgba(242,245,243,0.14); background: #05100C; padding: clamp(28px,4vw,40px); }
+  .eyebrow { margin: 0 0 14px; font-size: 11px; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase; color: #53D9B2; }
+  h1 { margin: 0 0 26px; font-family: Newsreader, Georgia, serif; font-weight: 400; font-size: 28px; color: #fff; }
+  label { display: block; margin-bottom: 16px; }
+  label span { display: block; margin-bottom: 8px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(242,245,243,0.5); }
+  input { width: 100%; padding: 13px 14px; border: 1px solid rgba(242,245,243,0.2); background: #000; color: #F2F5F3; outline: none; font-size: 15px; font-family: inherit; }
+  input:focus { border-color: #53D9B2; }
+  button { width: 100%; margin-top: 8px; padding: 15px; border: none; border-radius: 999px; background: #53D9B2; color: #000; font-size: 12.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; min-height: 44px; font-family: inherit; }
+  button:hover { background: #FADA28; }
+  .erro { margin: 0 0 18px; padding: 12px 14px; border: 1px solid rgba(232,103,79,0.4); background: rgba(232,103,79,0.08); color: #E8674F; font-size: 13px; }
+</style>
+</head>
+<body>
+  <form class="card" method="post" autocomplete="off">
+    <p class="eyebrow">Painel interno</p>
+    <h1>Acesso restrito</h1>
+    <?php if ($erro): ?><p class="erro"><?= htmlspecialchars($erro, ENT_QUOTES, 'UTF-8') ?></p><?php endif; ?>
+    <label><span>Usuário</span><input type="text" name="usuario" autocomplete="off" required autofocus></label>
+    <label><span>Senha</span><input type="password" name="senha" autocomplete="off" required></label>
+    <button type="submit">Entrar</button>
+  </form>
+</body>
+</html>
+<?php
+  exit;
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
 <script src="./support.js"></script>
 </head>
 <body>
 <x-dc>
 <helmet>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
 <title>Pesquisa de satisfação — Trem da República</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +99,10 @@
 
   <header style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 24px;padding:18px clamp(18px,4vw,40px);border-bottom:1px solid rgba(242,245,243,0.12)">
     <img src="assets/logo-branco.png" alt="645 Turismo" style="height:28px;width:auto" />
-    <span style="font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:rgba(242,245,243,0.45)">Painel interno · não listado no site</span>
+    <div style="display:flex;align-items:center;gap:20px">
+      <span style="font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:rgba(242,245,243,0.45)">Painel interno · não listado no site</span>
+      <a href="pesquisa-nps.php?sair=1" style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;border-bottom:1px solid rgba(83,217,178,0.5);padding-bottom:3px">Sair</a>
+    </div>
   </header>
 
   <section data-screen-label="Cabeçalho" style="max-width:1320px;margin:0 auto;padding:clamp(36px,5vw,60px) clamp(18px,4vw,40px) 0">
@@ -37,7 +111,6 @@
     <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;margin-top:24px">
       <span style="font-size:13px;color:rgba(242,245,243,0.55)">{{ statusTexto }}</span>
       <button type="button" onClick="{{ recarregar }}" style="padding:11px 20px;border-radius:999px;border:1px solid rgba(242,245,243,0.3);background:transparent;color:#F2F5F3;font-size:11.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;min-height:40px" style-hover="border-color:#53D9B2;color:#53D9B2">Recarregar dados</button>
-      <a href="{{ planilhaLink }}" target="_blank" rel="noopener" style="font-size:11.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;border-bottom:1px solid rgba(83,217,178,0.6);padding-bottom:4px">Abrir planilha</a>
     </div>
   </section>
 
@@ -389,7 +462,6 @@ class Component extends DCLogic {
 
     return {
       statusTexto,
-      planilhaLink: 'https://docs.google.com/spreadsheets/d/' + this.planilhaId + '/edit?gid=' + this.gid,
       mostrarAviso: status === 'erro' || status === 'vazio',
       recarregar: () => this.carregar(),
       colarCsv: (e) => { const v = e.target.value; if (v && v.trim().length > 20) this.processarCsv(v, 'colado'); },

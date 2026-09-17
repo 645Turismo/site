@@ -1,11 +1,11 @@
 # Site 645 Turismo
 
-Site estático. Não precisa de build nem servidor: são arquivos HTML + a pasta `assets`.
+Site estático (HTML + `assets`), com uma página que precisa de PHP (`pesquisa-nps.php`). Funciona em qualquer hospedagem com PHP; no GitHub Pages, essa única página não roda (Pages não executa PHP).
 
 ## Páginas
 - `index.html` — home
 - `trabalhe-conosco.html` — trabalhe conosco (cadastro pelo Google Forms)
-- `pesquisa-nps.html` — painel interno de NPS do Trem da República (sem link no menu)
+- `pesquisa-nps.php` — painel interno de NPS do Trem da República. Não listado em nenhum menu, bloqueado por `robots.txt` e protegido por login (usuário/senha cadastrados em `nps-auth.php`, com senha em hash — nunca em texto puro).
 
 ## Publicar no GitHub Pages
 1. Crie um repositório no GitHub (ex.: `645turismo-site`).

@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /pesquisa-nps.php
+Disallow: /nps-auth.php

@@ -220,6 +220,9 @@
     </div>
 
     <form onSubmit="{{ onSubmit }}" style="display:grid;gap:1px;background:rgba(242,245,243,0.14);border:1px solid rgba(242,245,243,0.14)">
+      <input type="hidden" name="access_key" value="f1065237-020a-414b-8dd2-2b65c480680a" />
+      <input type="hidden" name="subject" value="Novo contato pelo site — 645 Turismo" />
+      <input type="checkbox" name="botcheck" style="display:none" tabIndex="-1" autoComplete="off" />
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1px;background:rgba(242,245,243,0.14)">
         <label style="display:block;background:#000;padding:20px 22px">
           <span style="display:block;margin-bottom:9px;font-size:10.5px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:rgba(242,245,243,0.5)">Nome</span>
@@ -251,7 +254,7 @@
       </label>
       <div style="background:#000;padding:22px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px">
         <p style="margin:0;font-size:12.5px;line-height:1.5;color:rgba(242,245,243,0.45);max-width:30ch">{{ formNota }}</p>
-        <button type="submit" style="padding:16px 30px;border:none;border-radius:999px;background:#53D9B2;color:#000;font-size:12.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;min-height:44px" style-hover="background:#FADA28">{{ botaoLabel }}</button>
+        <button type="submit" disabled="{{ bloqueado }}" style="{{ botaoStyle }}" style-hover="background:#FADA28">{{ botaoLabel }}</button>
       </div>
     </form>
   </section>
@@ -286,7 +289,29 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;whatsapp&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;5511916936176&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Contato&quot;},&quot;instagram&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;645turismo&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Contato&quot;}}">
 class Component extends DCLogic {
-  state = { enviado: false, segmento: 'pessoa' };
+  state = { enviado: false, enviando: false, erro: false, segmento: 'pessoa' };
+
+  enviarContato(e) {
+    e.preventDefault();
+    if (this.state.enviando) return;
+    const form = e.target;
+    if (form.botcheck && form.botcheck.checked) return;
+    this.setState({ enviando: true, erro: false });
+    fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+      body: new FormData(form)
+    })
+      .then((r) => r.json())
+      .then((res) => {
+        if (res && res.success) {
+          this.setState({ enviado: true, enviando: false });
+        } else {
+          this.setState({ erro: true, enviando: false });
+        }
+      })
+      .catch(() => this.setState({ erro: true, enviando: false }));
+  }
 
   tabStyle(ativo) {
     return 'padding:15px 26px;border-radius:999px;font-size:12.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;min-height:44px;text-align:left;'
@@ -335,11 +360,16 @@ class Component extends DCLogic {
       btnEmpresa: this.tabStyle(!pessoa),
       selecionarPessoa: () => this.setState({ segmento: 'pessoa' }),
       selecionarEmpresa: () => this.setState({ segmento: 'empresa' }),
-      botaoLabel: this.state.enviado ? 'Recebido' : 'Enviar',
+      bloqueado: this.state.enviando || this.state.enviado,
+      botaoLabel: this.state.enviado ? 'Recebido' : (this.state.enviando ? 'Enviando…' : 'Enviar'),
+      botaoStyle: 'padding:16px 30px;border:none;border-radius:999px;background:#53D9B2;color:#000;font-size:12.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;min-height:44px;'
+        + (this.state.enviando || this.state.enviado ? 'opacity:0.6;cursor:not-allowed;' : ''),
       formNota: this.state.enviado
         ? 'Recebemos seu contato. Nosso time retornará em breve.'
+        : this.state.erro
+        ? 'Não foi possível enviar agora. Tente novamente ou fale pelo WhatsApp.'
         : 'Seus dados são usados apenas para responder este contato.',
-      onSubmit: (e) => { e.preventDefault(); this.setState({ enviado: true }); }
+      onSubmit: (e) => this.enviarContato(e)
     };
   }
 }

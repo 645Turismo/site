@@ -175,7 +175,7 @@
   </section>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;planilhaId&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;17sGbKetf5N_1XRjqg6Ai_3_hsGt_qYtKpkCU9lAPq58&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Dados&quot;},&quot;gid&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;951152274&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Dados&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;planilhaId&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;10_QFiQnAMqfrchpYoWjtFfqxIC2Qys4p9X5SeLGgIng&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Dados&quot;},&quot;gid&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;951152274&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Dados&quot;}}">
 class Component extends DCLogic {
   state = { linhas: [], status: 'carregando', ano: 'todos', mes: 'todos', data: 'todas', perfil: 'todos', limite: 3 };
 
@@ -183,7 +183,7 @@ class Component extends DCLogic {
 
   componentDidMount() { this.carregar(); }
 
-  get planilhaId() { return this.props.planilhaId ?? '17sGbKetf5N_1XRjqg6Ai_3_hsGt_qYtKpkCU9lAPq58'; }
+  get planilhaId() { return this.props.planilhaId ?? '10_QFiQnAMqfrchpYoWjtFfqxIC2Qys4p9X5SeLGgIng'; }
   get gid() { return this.props.gid ?? '951152274'; }
 
   carregar() {

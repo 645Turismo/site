@@ -1,3 +1,5 @@
 User-agent: *
 Disallow: /pesquisa-nps.php
 Disallow: /nps-auth.php
+
+Sitemap: https://645turismo.com.br/sitemap.xml

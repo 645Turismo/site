@@ -1,0 +1,13 @@
+RewriteEngine On
+
+# Força HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Força domínio sem www
+RewriteCond %{HTTP_HOST} ^www\.645turismo\.com\.br$ [NC]
+RewriteRule ^(.*)$ https://645turismo.com.br/$1 [L,R=301]
+
+<IfModule mod_headers.c>
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>

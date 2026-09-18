@@ -5,7 +5,7 @@ require __DIR__ . '/nps-auth.php';
 if (isset($_GET['sair'])) {
   $_SESSION = [];
   session_destroy();
-  header('Location: pesquisa-nps.php');
+  header('Location: /pesquisa-nps');
   exit;
 }
 
@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if (nps_verify($usuario, $senha, $NPS_USERS)) {
     session_regenerate_id(true);
     $_SESSION['nps_user'] = $usuario;
-    header('Location: pesquisa-nps.php');
+    header('Location: /pesquisa-nps');
     exit;
   } else {
     $erro = 'Usuário ou senha inválidos.';
@@ -101,7 +101,7 @@ if (!$autenticado) {
     <img src="assets/logo-branco.png" alt="645 Turismo" style="height:28px;width:auto" />
     <div style="display:flex;align-items:center;gap:20px">
       <span style="font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:rgba(242,245,243,0.45)">Painel interno · não listado no site</span>
-      <a href="pesquisa-nps.php?sair=1" style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;border-bottom:1px solid rgba(83,217,178,0.5);padding-bottom:3px">Sair</a>
+      <a href="/pesquisa-nps?sair=1" style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;border-bottom:1px solid rgba(83,217,178,0.5);padding-bottom:3px">Sair</a>
     </div>
   </header>
 

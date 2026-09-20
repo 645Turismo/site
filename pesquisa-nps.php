@@ -74,6 +74,7 @@ if (!$autenticado) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <script src="./support.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 <x-dc>
@@ -92,6 +93,11 @@ if (!$autenticado) {
   img { display: block; max-width: 100%; }
   input, textarea, select, button { font-family: inherit; font-size: 15px; }
   ::selection { background: #53D9B2; color: #000; }
+  @media print {
+    [data-print-hide] { display: none !important; }
+    body, #dc-root, .sc-host, div, section, article, header, footer { background: #fff !important; color: #111 !important; border-color: #ddd !important; }
+    p, span, h1, h2, h3, a { color: #111 !important; }
+  }
 </style>
 </helmet>
 
@@ -101,18 +107,24 @@ if (!$autenticado) {
     <img src="assets/logo-branco.png" alt="645 Turismo" style="height:28px;width:auto" />
     <div style="display:flex;align-items:center;gap:20px">
       <span style="font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:rgba(242,245,243,0.45)">Painel interno · não listado no site</span>
-      <a href="/pesquisa-nps?sair=1" style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;border-bottom:1px solid rgba(83,217,178,0.5);padding-bottom:3px">Sair</a>
+      <a href="/pesquisa-nps?sair=1" data-print-hide="true" style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;border-bottom:1px solid rgba(83,217,178,0.5);padding-bottom:3px">Sair</a>
     </div>
   </header>
 
   <section data-screen-label="Cabeçalho" style="max-width:1320px;margin:0 auto;padding:clamp(36px,5vw,60px) clamp(18px,4vw,40px) 0">
     <p style="margin:0 0 18px;font-size:11.5px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:#53D9B2">Pesquisa de satisfação</p>
     <h1 style="margin:0;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(32px,5.5vw,64px);line-height:1.03;letter-spacing:-0.02em;color:#fff;max-width:20ch;text-wrap:balance">Trem da República — NPS por data</h1>
-    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;margin-top:24px">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;margin-top:24px" data-print-hide="true">
       <span style="font-size:13px;color:rgba(242,245,243,0.55)">{{ statusTexto }}</span>
       <button type="button" onClick="{{ recarregar }}" style="padding:11px 20px;border-radius:999px;border:1px solid rgba(242,245,243,0.3);background:transparent;color:#F2F5F3;font-size:11.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;min-height:40px" style-hover="border-color:#53D9B2;color:#53D9B2">Recarregar dados</button>
     </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:30px" data-print-hide="true">
+      <button type="button" onClick="{{ abrirPainel }}" style="{{ abaBtnStyle.painel }}">Painel</button>
+      <button type="button" onClick="{{ abrirMetodologia }}" style="{{ abaBtnStyle.metodologia }}">Metodologia e perguntas</button>
+    </div>
   </section>
+
+  <sc-if value="{{ abaPainel }}" hint-placeholder-val="{{ true }}">
 
   <sc-if value="{{ mostrarAviso }}" hint-placeholder-val="{{ false }}">
     <section style="max-width:1320px;margin:0 auto;padding:28px clamp(18px,4vw,40px) 0">
@@ -126,6 +138,14 @@ if (!$autenticado) {
 
   <section data-screen-label="Filtros" style="max-width:1320px;margin:0 auto;padding:clamp(30px,4vw,44px) clamp(18px,4vw,40px) 0">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:1px;background:rgba(242,245,243,0.14);border:1px solid rgba(242,245,243,0.14)">
+      <label style="display:block;background:#05100C;padding:18px 20px">
+        <span style="display:block;margin-bottom:9px;font-size:10.5px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:#53D9B2">Segmento</span>
+        <select onChange="{{ mudarSegmento }}" value="{{ segmentoAtual }}" style="width:100%;border:none;background:#05100C;color:#F2F5F3;outline:none;padding:0">
+          <sc-for list="{{ opcoesSegmento }}" as="o" hint-placeholder-count="4">
+            <option value="{{ o.valor }}">{{ o.rotulo }}</option>
+          </sc-for>
+        </select>
+      </label>
       <label style="display:block;background:#000;padding:18px 20px">
         <span style="display:block;margin-bottom:9px;font-size:10.5px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:rgba(242,245,243,0.5)">Ano</span>
         <select onChange="{{ mudarAno }}" value="{{ anoAtual }}" style="width:100%;border:none;background:#000;color:#F2F5F3;outline:none;padding:0">
@@ -162,6 +182,14 @@ if (!$autenticado) {
       <div style="background:#000;padding:18px 20px;display:flex;align-items:flex-end">
         <button type="button" onClick="{{ limparFiltros }}" style="padding:12px 22px;border-radius:999px;border:1px solid rgba(242,245,243,0.3);background:transparent;color:#F2F5F3;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;min-height:42px" style-hover="border-color:#53D9B2;color:#53D9B2">Limpar filtros</button>
       </div>
+    </div>
+    <sc-if value="{{ avisoSegmento }}" hint-placeholder-val="{{ false }}">
+      <p style="margin:16px 0 0;font-size:13px;line-height:1.6;color:#FADA28">{{ avisoSegmento }}</p>
+    </sc-if>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:22px" data-print-hide="true">
+      <button type="button" onClick="{{ exportarXlsx }}" style="display:inline-flex;align-items:center;gap:9px;padding:13px 22px;border-radius:999px;border:1px solid rgba(83,217,178,0.5);background:rgba(83,217,178,0.08);color:#53D9B2;font-size:11.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;min-height:44px" style-hover="background:#53D9B2;color:#000">Exportar XLSX</button>
+      <button type="button" onClick="{{ exportarPdf }}" style="display:inline-flex;align-items:center;gap:9px;padding:13px 22px;border-radius:999px;border:1px solid rgba(242,245,243,0.3);background:transparent;color:#F2F5F3;font-size:11.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;min-height:44px" style-hover="border-color:#53D9B2;color:#53D9B2">Exportar PDF</button>
+      <span style="font-size:12px;color:rgba(242,245,243,0.42);align-self:center">{{ contadorExport }}</span>
     </div>
   </section>
 
@@ -207,7 +235,7 @@ if (!$autenticado) {
     </div>
     <div style="display:grid;gap:1px;background:rgba(242,245,243,0.14);border:1px solid rgba(242,245,243,0.14);border-top:none">
       <sc-for list="{{ porData }}" as="d" hint-placeholder-count="5">
-        <div style="background:#000;padding:15px clamp(18px,2vw,24px);display:grid;grid-template-columns:minmax(92px,130px) minmax(0,1fr) 64px 62px;gap:14px;align-items:center">
+        <div style="background:#000;padding:15px clamp(14px,2vw,24px);display:grid;grid-template-columns:minmax(min(70px,22vw),130px) minmax(30px,1fr) minmax(30px,64px) minmax(34px,62px);gap:clamp(8px,2vw,14px);align-items:center">
           <span style="font-size:13px;font-weight:600;color:rgba(242,245,243,0.82)">{{ d.rotulo }}</span>
           <span style="display:block;position:relative;height:10px;background:rgba(242,245,243,0.08)">
             <span style="{{ d.barraStyle }}"></span>
@@ -237,7 +265,7 @@ if (!$autenticado) {
         </article>
       </sc-for>
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:26px">
+    <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:26px" data-print-hide="true">
       <sc-if value="{{ temMais }}" hint-placeholder-val="{{ true }}">
         <button type="button" onClick="{{ verMais }}" style="padding:15px 28px;border-radius:999px;background:#53D9B2;border:none;color:#000;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;min-height:44px" style-hover="background:#FADA28">Ver mais 3 avaliações</button>
       </sc-if>
@@ -246,13 +274,162 @@ if (!$autenticado) {
       </sc-if>
     </div>
   </section>
+  </sc-if>
+
+  <sc-if value="{{ abaMetodologia }}" hint-placeholder-val="{{ false }}">
+    <section data-screen-label="Metodologia" style="max-width:1000px;margin:0 auto;padding:clamp(36px,5vw,60px) clamp(18px,4vw,40px) clamp(60px,8vw,100px);display:grid;gap:clamp(40px,5vw,60px)">
+
+      <div>
+        <p style="margin:0 0 16px;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#53D9B2">Como calculamos</p>
+        <h2 style="margin:0 0 18px;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(24px,3.4vw,36px);line-height:1.15;color:#fff">Método de cálculo do NPS</h2>
+        <p style="margin:0 0 14px;max-width:74ch;font-size:15px;line-height:1.75;color:rgba(242,245,243,0.72)">Cada resposta de 0 a 10 é classificada em <b style="color:#53D9B2">promotor</b> (nota 9 ou 10), <b style="color:#FADA28">neutro</b> (nota 7 ou 8) ou <b style="color:#E8674F">detrator</b> (nota 0 a 6). O NPS é a diferença entre o percentual de promotores e o percentual de detratores, sempre calculado sobre o total de respostas do período filtrado (não sobre respostas filtradas por perfil):</p>
+        <div style="margin:20px 0;padding:20px 24px;border:1px solid rgba(83,217,178,0.3);background:rgba(83,217,178,0.06);font-family:ui-monospace,Menlo,monospace;font-size:14px;color:#53D9B2">NPS = % Promotores − % Detratores</div>
+        <p style="margin:0;max-width:74ch;font-size:15px;line-height:1.75;color:rgba(242,245,243,0.72)">O resultado varia de -100 a 100 e é classificado em quatro zonas: <b>75 a 100</b> — zona de excelência; <b>50 a 74</b> — zona de qualidade; <b>0 a 49</b> — zona de aperfeiçoamento; <b>-100 a -1</b> — zona crítica. A "Nota média" exibida no painel é a média aritmética simples das notas de 0 a 10 do período e perfil filtrados (métrica auxiliar, não faz parte do cálculo do NPS).</p>
+      </div>
+
+      <div>
+        <p style="margin:0 0 16px;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#53D9B2">Filtros</p>
+        <h2 style="margin:0 0 18px;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(24px,3.4vw,36px);line-height:1.15;color:#fff">O que cada filtro faz</h2>
+        <div style="display:grid;gap:1px;background:rgba(242,245,243,0.14);border:1px solid rgba(242,245,243,0.14)">
+          <div style="background:#000;padding:20px 22px">
+            <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#fff">Segmento</p>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:rgba(242,245,243,0.65)">Escolhe qual pergunta de recomendação (0 a 10) alimenta o NPS e os indicadores: Geral, Guiamento e Transporte, Restaurante ou Trem da República. Cada opção usa a coluna correspondente identificada na planilha — veja abaixo qual coluna foi associada a cada uma.</p>
+          </div>
+          <div style="background:#000;padding:20px 22px">
+            <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#fff">Ano, Mês e Data específica</p>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:rgba(242,245,243,0.65)">Restringem o período das respostas consideradas, com base na data de cada resposta. São independentes do segmento escolhido.</p>
+          </div>
+          <div style="background:#000;padding:20px 22px">
+            <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#fff">Tipo de NPS</p>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:rgba(242,245,243,0.65)">Mostra apenas promotores, neutros ou detratores nas Avaliações listadas abaixo. O NPS e a Distribuição continuam calculados sobre o total do período — esse filtro não altera o valor do NPS, apenas a lista de comentários exibida.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p style="margin:0 0 16px;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#53D9B2">Fonte dos dados</p>
+        <h2 style="margin:0 0 18px;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(24px,3.4vw,36px);line-height:1.15;color:#fff">Perguntas completas da planilha</h2>
+        <p style="margin:0 0 20px;max-width:74ch;font-size:14.5px;line-height:1.7;color:rgba(242,245,243,0.6)">Texto exato dos cabeçalhos identificados automaticamente na planilha conectada. Se um segmento aparecer como "não identificado", a pesquisa ainda não tem uma pergunta própria para esse assunto — o filtro desse segmento fica sem dados até que a coluna exista.</p>
+        <div style="display:grid;gap:1px;background:rgba(242,245,243,0.14);border:1px solid rgba(242,245,243,0.14)">
+          <sc-for list="{{ perguntas }}" as="p" hint-placeholder-count="4">
+            <div style="background:#000;padding:20px 22px">
+              <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#53D9B2">{{ p.rotulo }}</p>
+              <p style="{{ p.textoStyle }}">{{ p.texto }}</p>
+            </div>
+          </sc-for>
+          <div style="background:#000;padding:20px 22px">
+            <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(242,245,243,0.5)">Data da resposta</p>
+            <p style="{{ colunaDataStyle }}">{{ colunaDataTexto }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p style="margin:0 0 16px;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#53D9B2">Exportação</p>
+        <h2 style="margin:0 0 18px;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(24px,3.4vw,36px);line-height:1.15;color:#fff">Como exportar os dados filtrados</h2>
+        <p style="margin:0;max-width:74ch;font-size:15px;line-height:1.75;color:rgba(242,245,243,0.72)">No painel, os botões "Exportar XLSX" e "Exportar PDF" exportam exatamente as respostas visíveis com os filtros atuais (segmento, ano, mês, data e tipo de NPS). O XLSX traz uma linha por resposta (data, nota, perfil e comentário); o PDF usa a função de impressão do navegador — escolha "Salvar como PDF" na janela de impressão.</p>
+      </div>
+
+    </section>
+  </sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;planilhaId&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;10_QFiQnAMqfrchpYoWjtFfqxIC2Qys4p9X5SeLGgIng&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Dados&quot;},&quot;gid&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;951152274&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Dados&quot;}}">
 class Component extends DCLogic {
-  state = { linhas: [], status: 'carregando', ano: 'todos', mes: 'todos', data: 'todas', perfil: 'todos', limite: 3 };
+  state = { linhas: [], cab: [], colunasNota: {}, colunasTexto: {}, iData: -1, status: 'carregando', aba: 'painel', segmento: 'geral', ano: 'todos', mes: 'todos', data: 'todas', perfil: 'todos', limite: 3 };
 
   perfilDe(nota) { return nota >= 9 ? 'promotor' : (nota <= 6 ? 'detrator' : 'neutro'); }
+
+  segmentosDef() {
+    return [
+      { chave: 'geral', rotulo: 'Geral', reNota: /geral|de forma geral|no geral|ag[eê]ncia|645/i, reTexto: /coment|sugest|cr[ií]tic|elogi|observa|deixe|escreva|opini/i },
+      { chave: 'guiamento', rotulo: 'Guiamento e Transporte', reNota: /guiamento|guia|transporte|[oô]nibus|motorista|condutor/i, reTexto: /guiamento|guia|transporte|[oô]nibus|motorista|condutor/i },
+      { chave: 'restaurante', rotulo: 'Restaurante', reNota: /restaurante|almo[çc]o|refei[çc][ãa]o|comida|gastronom/i, reTexto: /restaurante|almo[çc]o|refei[çc][ãa]o|comida|gastronom/i },
+      { chave: 'trem', rotulo: 'Trem da República', reNota: /trem|locomotiva|vag[ãa]o|ferrovi/i, reTexto: /trem|locomotiva|vag[ãa]o|ferrovi/i }
+    ];
+  }
+
+  rotuloSegmento(chave) {
+    const d = this.segmentosDef().find(d => d.chave === chave);
+    return d ? d.rotulo : chave;
+  }
+
+  tabBtnStyle(ativo) {
+    return 'padding:13px 22px;border-radius:999px;font-size:11.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;min-height:44px;'
+      + (ativo ? 'border:1px solid #53D9B2;background:#53D9B2;color:#000;' : 'border:1px solid rgba(242,245,243,0.28);background:transparent;color:#F2F5F3;');
+  }
+
+  detectarColunasNota(cab, corpo) {
+    const notaValida = (i) => {
+      let ok = 0, total = 0;
+      corpo.forEach(l => {
+        const s = String(l[i] || '').trim();
+        if (!s) return;
+        total++;
+        const n = Number(s.replace(',', '.'));
+        if (!isNaN(n) && n >= 0 && n <= 10) ok++;
+      });
+      return total > 0 && ok / total > 0.7;
+    };
+    const candidatos = [];
+    for (let i = 0; i < cab.length; i++) if (notaValida(i)) candidatos.push(i);
+
+    const defs = this.segmentosDef();
+    const usados = new Set();
+    const colunasNota = {};
+    defs.filter(d => d.chave !== 'geral').forEach(d => {
+      const i = candidatos.find(i => !usados.has(i) && d.reNota.test(cab[i]));
+      if (i !== undefined) { colunasNota[d.chave] = i; usados.add(i); }
+    });
+    let iGeral = candidatos.find(i => !usados.has(i) && /geral|de forma geral|no geral|ag[eê]ncia|645/i.test(cab[i]));
+    if (iGeral === undefined) iGeral = candidatos.find(i => !usados.has(i) && /nps|recomend/i.test(cab[i]));
+    if (iGeral === undefined) iGeral = candidatos.find(i => !usados.has(i) && /nota|avalia|satisfa|classific/i.test(cab[i]));
+    if (iGeral === undefined) iGeral = candidatos.find(i => !usados.has(i));
+    if (iGeral !== undefined) { colunasNota.geral = iGeral; usados.add(iGeral); }
+
+    return colunasNota;
+  }
+
+  detectarColunasTexto(cab, corpo, colunasNota, iData) {
+    const textoValido = (i) => {
+      const media = corpo.reduce((s, l) => s + String(l[i] || '').length, 0) / Math.max(corpo.length, 1);
+      const numericos = corpo.filter(l => String(l[i] || '').trim() !== '' && !isNaN(Number(String(l[i]).replace(',', '.')))).length;
+      const datas = corpo.filter(l => String(l[i] || '').trim() !== '' && this.parseData(l[i])).length;
+      return media > 12 && numericos < corpo.length * 0.3 && datas < corpo.length * 0.3;
+    };
+    const usadosNota = new Set(Object.values(colunasNota));
+    if (iData >= 0) usadosNota.add(iData);
+    const usados = new Set();
+    const colunasTexto = {};
+    this.segmentosDef().filter(d => d.chave !== 'geral').forEach(d => {
+      for (let i = 0; i < cab.length; i++) {
+        if (usadosNota.has(i) || usados.has(i)) continue;
+        if (d.reTexto.test(cab[i]) && textoValido(i)) { colunasTexto[d.chave] = i; usados.add(i); break; }
+      }
+    });
+    let iGeral = -1;
+    for (let i = 0; i < cab.length; i++) {
+      if (usadosNota.has(i) || usados.has(i)) continue;
+      if (/coment|sugest|cr[ií]tic|elogi|observa|deixe|escreva|opni|opini/i.test(cab[i]) && textoValido(i)) { iGeral = i; break; }
+    }
+    if (iGeral < 0) {
+      for (let i = 0; i < cab.length; i++) {
+        if (usadosNota.has(i) || usados.has(i)) continue;
+        if (/melhor|experi|relat/i.test(cab[i]) && textoValido(i)) { iGeral = i; break; }
+      }
+    }
+    if (iGeral < 0) {
+      let melhor = -1, maior = 12;
+      cab.forEach((h, i) => {
+        if (usadosNota.has(i) || usados.has(i)) return;
+        const media = corpo.reduce((s, l) => s + String(l[i] || '').length, 0) / Math.max(corpo.length, 1);
+        if (media > maior) { maior = media; melhor = i; }
+      });
+      iGeral = melhor;
+    }
+    if (iGeral >= 0) colunasTexto.geral = iGeral;
+    return colunasTexto;
+  }
 
   componentDidMount() { this.carregar(); }
 
@@ -314,27 +491,13 @@ class Component extends DCLogic {
     const cab = bruto[0].map(h => String(h).trim());
     const corpo = bruto.slice(1);
 
-    const notaValida = (i) => {
-      let ok = 0, total = 0;
-      corpo.forEach(l => {
-        const s = String(l[i] || '').trim();
-        if (!s) return;
-        total++;
-        const n = Number(s.replace(',', '.'));
-        if (!isNaN(n) && n >= 0 && n <= 10) ok++;
-      });
-      return total > 0 && ok / total > 0.7;
-    };
+    const colunasNota = this.detectarColunasNota(cab, corpo);
+    if (Object.keys(colunasNota).length === 0) { this.setState({ status: 'vazio', cab, colunasNota: {}, colunasTexto: {} }); return; }
+
     const acha = (re, filtro) => {
       for (let i = 0; i < cab.length; i++) if (re.test(cab[i]) && (!filtro || filtro(i))) return i;
       return -1;
     };
-
-    let iNota = acha(/nps|recomend/i, notaValida);
-    if (iNota < 0) iNota = acha(/nota|avalia|satisfa|classific/i, notaValida);
-    if (iNota < 0) for (let i = 0; i < cab.length; i++) { if (notaValida(i)) { iNota = i; break; } }
-    if (iNota < 0) { this.setState({ status: 'vazio' }); return; }
-
     const dataValida = (i) => {
       let ok = 0, total = 0;
       corpo.forEach(l => {
@@ -350,33 +513,28 @@ class Component extends DCLogic {
     if (iData < 0) iData = acha(/carimbo|timestamp|data/i, dataValida);
     if (iData < 0) iData = 0;
 
-    const textoValido = (i) => {
-      const media = corpo.reduce((s, l) => s + String(l[i] || '').length, 0) / Math.max(corpo.length, 1);
-      const numericos = corpo.filter(l => String(l[i] || '').trim() !== '' && !isNaN(Number(String(l[i]).replace(',', '.')))).length;
-      return media > 12 && numericos < corpo.length * 0.3;
-    };
-    let iTexto = acha(/coment|sugest|cr[ií]tic|elogi|observa|deixe|escreva|opni|opini/i, textoValido);
-    if (iTexto < 0) iTexto = acha(/melhor|experi|relat/i, textoValido);
-    if (iTexto < 0) {
-      let melhor = -1, maior = 12;
-      cab.forEach((h, i) => {
-        if (i === iNota || i === iData) return;
-        const media = corpo.reduce((s, l) => s + String(l[i] || '').length, 0) / Math.max(corpo.length, 1);
-        if (media > maior) { maior = media; melhor = i; }
-      });
-      iTexto = melhor;
-    }
+    const colunasTexto = this.detectarColunasTexto(cab, corpo, colunasNota, iData);
 
     const linhas = corpo.map(l => {
-      const n = Number(String(l[iNota] || '').replace(',', '.'));
-      return {
-        data: this.parseData(l[iData]),
-        nota: isNaN(n) ? null : n,
-        texto: iTexto >= 0 ? String(l[iTexto] || '').trim() : ''
-      };
-    }).filter(r => r.nota !== null);
+      const notas = {};
+      Object.keys(colunasNota).forEach(k => {
+        const raw = String(l[colunasNota[k]] || '').trim();
+        if (!raw) return;
+        const n = Number(raw.replace(',', '.'));
+        if (!isNaN(n) && n >= 0 && n <= 10) notas[k] = n;
+      });
+      const textos = {};
+      Object.keys(colunasTexto).forEach(k => {
+        textos[k] = String(l[colunasTexto[k]] || '').trim();
+      });
+      return { data: this.parseData(l[iData]), notas, textos };
+    }).filter(r => Object.keys(r.notas).length > 0);
 
-    this.setState({ linhas, status: linhas.length ? (origem === 'planilha' ? 'ok' : 'colado') : 'vazio', limite: 3 });
+    this.setState({
+      linhas, cab, colunasNota, colunasTexto, iData,
+      status: linhas.length ? (origem === 'planilha' ? 'ok' : 'colado') : 'vazio',
+      limite: 3
+    });
   }
 
   fmt(d) {
@@ -392,22 +550,26 @@ class Component extends DCLogic {
   }
 
   renderVals() {
-    const { linhas, status, ano, mes, data, perfil, limite } = this.state;
+    const { linhas, cab, colunasNota, colunasTexto, iData, status, aba, segmento, ano, mes, data, perfil, limite } = this.state;
     const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-    let f = linhas;
+    const comSeg = linhas
+      .filter(l => l.notas[segmento] !== undefined)
+      .map(l => ({ data: l.data, nota: l.notas[segmento], texto: l.textos[segmento] || l.textos.geral || '' }));
+
+    let f = comSeg;
     if (ano !== 'todos') f = f.filter(l => l.data && String(l.data.getFullYear()) === ano);
     if (mes !== 'todos') f = f.filter(l => l.data && String(l.data.getMonth()) === mes);
     if (data !== 'todas') f = f.filter(l => l.data && this.fmt(l.data) === data);
     const base = f;
     if (perfil !== 'todos') f = f.filter(l => this.perfilDe(l.nota) === perfil);
 
-    const anos = [...new Set(linhas.filter(l => l.data).map(l => l.data.getFullYear()))].sort((a, b) => b - a);
+    const anos = [...new Set(comSeg.filter(l => l.data).map(l => l.data.getFullYear()))].sort((a, b) => b - a);
     const mesesDisp = [...new Set(
-      linhas.filter(l => l.data && (ano === 'todos' || String(l.data.getFullYear()) === ano)).map(l => l.data.getMonth())
+      comSeg.filter(l => l.data && (ano === 'todos' || String(l.data.getFullYear()) === ano)).map(l => l.data.getMonth())
     )].sort((a, b) => a - b);
     const datasDisp = [...new Set(
-      linhas.filter(l => l.data
+      comSeg.filter(l => l.data
         && (ano === 'todos' || String(l.data.getFullYear()) === ano)
         && (mes === 'todos' || String(l.data.getMonth()) === mes)
       ).sort((a, b) => b.data - a.data).map(l => this.fmt(l.data))
@@ -460,11 +622,66 @@ class Component extends DCLogic {
       : status === 'colado' ? linhas.length + ' respostas carregadas do CSV colado.'
       : linhas.length + ' respostas lidas da planilha.';
 
+    const dadosCarregados = status === 'ok' || status === 'colado';
+    const segmentoSemColuna = dadosCarregados && colunasNota[segmento] === undefined;
+
+    const perguntas = this.segmentosDef().map(d => {
+      const idx = colunasNota[d.chave];
+      const encontrada = idx !== undefined && cab[idx] !== undefined;
+      return {
+        rotulo: d.rotulo,
+        texto: encontrada ? cab[idx] : 'Não identificada nesta planilha.',
+        textoStyle: 'margin:0;font-size:14.5px;line-height:1.6;color:' + (encontrada ? 'rgba(242,245,243,0.85)' : 'rgba(242,245,243,0.4)') + (encontrada ? '' : ';font-style:italic')
+      };
+    });
+    const colunaDataEncontrada = iData >= 0 && cab[iData] !== undefined && dadosCarregados;
+    const colunaDataTexto = colunaDataEncontrada ? cab[iData] : 'Não identificada nesta planilha.';
+    const colunaDataStyle = 'margin:0;font-size:14.5px;line-height:1.6;color:' + (colunaDataEncontrada ? 'rgba(242,245,243,0.85)' : 'rgba(242,245,243,0.4)') + (colunaDataEncontrada ? '' : ';font-style:italic');
+
+    const abaPainel = aba !== 'metodologia';
+    const abaMetodologia = aba === 'metodologia';
+
+    const exportarXlsx = () => {
+      if (!window.XLSX) { alert('A biblioteca de exportação ainda está carregando. Tente novamente em alguns segundos.'); return; }
+      const linhasExport = f.map(l => ({
+        Data: this.fmt(l.data),
+        Segmento: this.rotuloSegmento(segmento),
+        Nota: l.nota,
+        Perfil: this.perfilDe(l.nota) === 'promotor' ? 'Promotor' : (this.perfilDe(l.nota) === 'detrator' ? 'Detrator' : 'Neutro'),
+        Comentario: l.texto || ''
+      }));
+      const ws = window.XLSX.utils.json_to_sheet(linhasExport);
+      const wb = window.XLSX.utils.book_new();
+      window.XLSX.utils.book_append_sheet(wb, ws, 'NPS');
+      window.XLSX.writeFile(wb, 'nps-' + segmento + '-' + Date.now() + '.xlsx');
+    };
+    const exportarPdf = () => window.print();
+
     return {
       statusTexto,
       mostrarAviso: status === 'erro' || status === 'vazio',
+      avisoSegmento: segmentoSemColuna ? 'Não encontramos uma pergunta de NPS para "' + this.rotuloSegmento(segmento) + '" nesta planilha. Veja a aba "Metodologia e perguntas" para conferir as colunas identificadas.' : '',
       recarregar: () => this.carregar(),
       colarCsv: (e) => { const v = e.target.value; if (v && v.trim().length > 20) this.processarCsv(v, 'colado'); },
+
+      aba,
+      abaPainel,
+      abaMetodologia,
+      abrirPainel: () => this.setState({ aba: 'painel' }),
+      abrirMetodologia: () => this.setState({ aba: 'metodologia' }),
+      abaBtnStyle: { painel: this.tabBtnStyle(abaPainel), metodologia: this.tabBtnStyle(abaMetodologia) },
+
+      opcoesSegmento: this.segmentosDef().map(d => ({ valor: d.chave, rotulo: d.rotulo })),
+      segmentoAtual: segmento,
+      mudarSegmento: (e) => this.setState({ segmento: e.target.value, limite: 3 }),
+
+      perguntas,
+      colunaDataTexto,
+      colunaDataStyle,
+
+      exportarXlsx,
+      exportarPdf,
+      contadorExport: f.length + (f.length === 1 ? ' resposta no filtro atual' : ' respostas no filtro atual'),
 
       opcoesAno: [{ valor: 'todos', rotulo: 'Todos os anos' }].concat(anos.map(a => ({ valor: String(a), rotulo: String(a) }))),
       opcoesMes: [{ valor: 'todos', rotulo: 'Todos os meses' }].concat(mesesDisp.map(m => ({ valor: String(m), rotulo: meses[m] }))),

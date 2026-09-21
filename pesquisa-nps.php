@@ -109,12 +109,10 @@ if (!$autenticado) {
   <section data-screen-label="Cabeçalho" style="max-width:1320px;margin:0 auto;padding:clamp(36px,5vw,60px) clamp(18px,4vw,40px) 0">
     <p style="margin:0 0 18px;font-size:11.5px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:#53D9B2">Pesquisa de satisfação</p>
     <h1 style="margin:0;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(32px,5.5vw,64px);line-height:1.03;letter-spacing:-0.02em;color:#fff;max-width:20ch;text-wrap:balance">Trem da República — NPS por data</h1>
-    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;margin-top:24px">
-      <button type="button" onClick="{{ recarregar }}" style="padding:11px 20px;border-radius:999px;border:1px solid rgba(242,245,243,0.3);background:transparent;color:#F2F5F3;font-size:11.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;min-height:40px" style-hover="border-color:#53D9B2;color:#53D9B2">Recarregar dados</button>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:30px">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:30px">
       <button type="button" onClick="{{ abrirPainel }}" style="{{ abaBtnStyle.painel }}">Painel</button>
       <button type="button" onClick="{{ abrirMetodologia }}" style="{{ abaBtnStyle.metodologia }}">Metodologia e perguntas</button>
+      <button type="button" onClick="{{ recarregar }}" title="{{ atualizadoTitle }}" style="{{ abaBtnStyle.atualizar }}">Atualizar painel</button>
     </div>
   </section>
 
@@ -329,7 +327,7 @@ if (!$autenticado) {
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;planilhaId&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;10_QFiQnAMqfrchpYoWjtFfqxIC2Qys4p9X5SeLGgIng&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Dados&quot;},&quot;gid&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;951152274&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Dados&quot;}}">
 class Component extends DCLogic {
-  state = { linhas: [], cab: [], colunasNota: {}, colunasTexto: {}, iData: -1, status: 'carregando', aba: 'painel', segmento: 'geral', ano: 'todos', mes: 'todos', data: 'todas', perfil: 'todos', limite: 3 };
+  state = { linhas: [], cab: [], colunasNota: {}, colunasTexto: {}, iData: -1, status: 'carregando', aba: 'painel', segmento: 'geral', ano: 'todos', mes: 'todos', data: 'todas', perfil: 'todos', limite: 3, ultimaAtualizacao: null };
 
   perfilDe(nota) { return nota >= 9 ? 'promotor' : (nota <= 6 ? 'detrator' : 'neutro'); }
 
@@ -349,6 +347,19 @@ class Component extends DCLogic {
 
   normalizarTrem(txt) {
     return typeof txt === 'string' ? txt.replace(/trem\s+republicano/gi, 'Trem da República') : txt;
+  }
+
+  tempoDesde(ts) {
+    if (!ts) return 'ainda não atualizado';
+    const seg = Math.max(0, Math.round((Date.now() - ts) / 1000));
+    if (seg < 10) return 'agora mesmo';
+    if (seg < 60) return 'há ' + seg + ' segundos';
+    const min = Math.round(seg / 60);
+    if (min < 60) return 'há ' + min + (min === 1 ? ' minuto' : ' minutos');
+    const hor = Math.round(min / 60);
+    if (hor < 24) return 'há ' + hor + (hor === 1 ? ' hora' : ' horas');
+    const dia = Math.round(hor / 24);
+    return 'há ' + dia + (dia === 1 ? ' dia' : ' dias');
   }
 
   tabBtnStyle(ativo) {
@@ -428,13 +439,20 @@ class Component extends DCLogic {
     return colunasTexto;
   }
 
-  componentDidMount() { this.carregar(); }
+  componentDidMount() {
+    this.carregar();
+    this._relogio = setInterval(() => this.forceUpdate(), 30000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this._relogio);
+  }
 
   get planilhaId() { return this.props.planilhaId ?? '10_QFiQnAMqfrchpYoWjtFfqxIC2Qys4p9X5SeLGgIng'; }
   get gid() { return this.props.gid ?? '951152274'; }
 
   carregar() {
-    this.setState({ status: 'carregando' });
+    this.setState({ status: 'carregando', ultimaAtualizacao: Date.now() });
     const urls = [
       'https://docs.google.com/spreadsheets/d/' + this.planilhaId + '/gviz/tq?tqx=out:csv&gid=' + this.gid,
       'https://docs.google.com/spreadsheets/d/' + this.planilhaId + '/export?format=csv&gid=' + this.gid
@@ -547,7 +565,7 @@ class Component extends DCLogic {
   }
 
   renderVals() {
-    const { linhas, cab, colunasNota, colunasTexto, iData, status, aba, segmento, ano, mes, data, perfil, limite } = this.state;
+    const { linhas, cab, colunasNota, colunasTexto, iData, status, aba, segmento, ano, mes, data, perfil, limite, ultimaAtualizacao } = this.state;
     const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
     const comSeg = linhas
@@ -657,7 +675,8 @@ class Component extends DCLogic {
       abaMetodologia,
       abrirPainel: () => this.setState({ aba: 'painel' }),
       abrirMetodologia: () => this.setState({ aba: 'metodologia' }),
-      abaBtnStyle: { painel: this.tabBtnStyle(abaPainel), metodologia: this.tabBtnStyle(abaMetodologia) },
+      abaBtnStyle: { painel: this.tabBtnStyle(abaPainel), metodologia: this.tabBtnStyle(abaMetodologia), atualizar: this.tabBtnStyle(false) },
+      atualizadoTitle: status === 'carregando' ? 'Atualizando…' : 'Atualizado ' + this.tempoDesde(ultimaAtualizacao),
 
       opcoesSegmento: this.segmentosDef().map(d => ({ valor: d.chave, rotulo: d.rotulo })),
       segmentoAtual: segmento,

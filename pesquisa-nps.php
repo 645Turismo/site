@@ -112,7 +112,7 @@ if (!$autenticado) {
     <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:30px">
       <button type="button" onClick="{{ abrirPainel }}" style="{{ abaBtnStyle.painel }}">Painel</button>
       <button type="button" onClick="{{ abrirMetodologia }}" style="{{ abaBtnStyle.metodologia }}">Metodologia e perguntas</button>
-      <button type="button" onClick="{{ recarregar }}" title="{{ atualizadoTitle }}" style="{{ abaBtnStyle.atualizar }}">Atualizar painel</button>
+      <button type="button" onClick="{{ recarregar }}" disabled="{{ atualizando }}" title="{{ atualizadoTitle }}" style="{{ abaBtnStyle.atualizar }}">{{ atualizarLabel }}</button>
     </div>
   </section>
 
@@ -675,7 +675,13 @@ class Component extends DCLogic {
       abaMetodologia,
       abrirPainel: () => this.setState({ aba: 'painel' }),
       abrirMetodologia: () => this.setState({ aba: 'metodologia' }),
-      abaBtnStyle: { painel: this.tabBtnStyle(abaPainel), metodologia: this.tabBtnStyle(abaMetodologia), atualizar: this.tabBtnStyle(false) },
+      abaBtnStyle: {
+        painel: this.tabBtnStyle(abaPainel),
+        metodologia: this.tabBtnStyle(abaMetodologia),
+        atualizar: this.tabBtnStyle(false) + (status === 'carregando' ? 'opacity:0.55;cursor:not-allowed;' : '')
+      },
+      atualizando: status === 'carregando',
+      atualizarLabel: status === 'carregando' ? 'Atualizando…' : 'Atualizar painel',
       atualizadoTitle: status === 'carregando' ? 'Atualizando…' : 'Atualizado ' + this.tempoDesde(ultimaAtualizacao),
 
       opcoesSegmento: this.segmentosDef().map(d => ({ valor: d.chave, rotulo: d.rotulo })),

@@ -3,9 +3,9 @@
 // Senhas nunca ficam em texto puro aqui: armazenamos apenas o hash PBKDF2 (sal + chave derivada).
 $NPS_USERS = [
   'TR_ADM' => [
-    'salt' => '1e75ed06a9aa856be4c0f2afa2077f43',
+    'salt' => '09de3ae5fb338810e5410166919d425c',
     'iterations' => 100000,
-    'key' => '738c7de3895c7ffbc8c16e54544847526dc26a67418fc9e0957b404b130dc71c',
+    'key' => '624ea9d9c521ff435d780708fd7c6e06553a1af4f4fa2b30c415472ac486254c',
   ],
   '645_ADM' => [
     'salt' => '495fd9bdc385daee0e083a867b06b605',

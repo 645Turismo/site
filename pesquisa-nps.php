@@ -93,11 +93,6 @@ if (!$autenticado) {
   img { display: block; max-width: 100%; }
   input, textarea, select, button { font-family: inherit; font-size: 15px; }
   ::selection { background: #53D9B2; color: #000; }
-  @media print {
-    [data-print-hide] { display: none !important; }
-    body, #dc-root, .sc-host, div, section, article, header, footer { background: #fff !important; color: #111 !important; border-color: #ddd !important; }
-    p, span, h1, h2, h3, a { color: #111 !important; }
-  }
 </style>
 </helmet>
 
@@ -107,18 +102,17 @@ if (!$autenticado) {
     <img src="assets/logo-branco.png" alt="645 Turismo" style="height:28px;width:auto" />
     <div style="display:flex;align-items:center;gap:20px">
       <span style="font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:rgba(242,245,243,0.45)">Painel interno · não listado no site</span>
-      <a href="/pesquisa-nps?sair=1" data-print-hide="true" style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;border-bottom:1px solid rgba(83,217,178,0.5);padding-bottom:3px">Sair</a>
+      <a href="/pesquisa-nps?sair=1" style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;border-bottom:1px solid rgba(83,217,178,0.5);padding-bottom:3px">Sair</a>
     </div>
   </header>
 
   <section data-screen-label="Cabeçalho" style="max-width:1320px;margin:0 auto;padding:clamp(36px,5vw,60px) clamp(18px,4vw,40px) 0">
     <p style="margin:0 0 18px;font-size:11.5px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:#53D9B2">Pesquisa de satisfação</p>
     <h1 style="margin:0;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(32px,5.5vw,64px);line-height:1.03;letter-spacing:-0.02em;color:#fff;max-width:20ch;text-wrap:balance">Trem da República — NPS por data</h1>
-    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;margin-top:24px" data-print-hide="true">
-      <span style="font-size:13px;color:rgba(242,245,243,0.55)">{{ statusTexto }}</span>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;margin-top:24px">
       <button type="button" onClick="{{ recarregar }}" style="padding:11px 20px;border-radius:999px;border:1px solid rgba(242,245,243,0.3);background:transparent;color:#F2F5F3;font-size:11.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;min-height:40px" style-hover="border-color:#53D9B2;color:#53D9B2">Recarregar dados</button>
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:30px" data-print-hide="true">
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:30px">
       <button type="button" onClick="{{ abrirPainel }}" style="{{ abaBtnStyle.painel }}">Painel</button>
       <button type="button" onClick="{{ abrirMetodologia }}" style="{{ abaBtnStyle.metodologia }}">Metodologia e perguntas</button>
     </div>
@@ -186,9 +180,8 @@ if (!$autenticado) {
     <sc-if value="{{ avisoSegmento }}" hint-placeholder-val="{{ false }}">
       <p style="margin:16px 0 0;font-size:13px;line-height:1.6;color:#FADA28">{{ avisoSegmento }}</p>
     </sc-if>
-    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:22px" data-print-hide="true">
+    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:22px">
       <button type="button" onClick="{{ exportarXlsx }}" style="display:inline-flex;align-items:center;gap:9px;padding:13px 22px;border-radius:999px;border:1px solid rgba(83,217,178,0.5);background:rgba(83,217,178,0.08);color:#53D9B2;font-size:11.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;min-height:44px" style-hover="background:#53D9B2;color:#000">Exportar XLSX</button>
-      <button type="button" onClick="{{ exportarPdf }}" style="display:inline-flex;align-items:center;gap:9px;padding:13px 22px;border-radius:999px;border:1px solid rgba(242,245,243,0.3);background:transparent;color:#F2F5F3;font-size:11.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;min-height:44px" style-hover="border-color:#53D9B2;color:#53D9B2">Exportar PDF</button>
       <span style="font-size:12px;color:rgba(242,245,243,0.42);align-self:center">{{ contadorExport }}</span>
     </div>
   </section>
@@ -265,7 +258,7 @@ if (!$autenticado) {
         </article>
       </sc-for>
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:26px" data-print-hide="true">
+    <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:26px">
       <sc-if value="{{ temMais }}" hint-placeholder-val="{{ true }}">
         <button type="button" onClick="{{ verMais }}" style="padding:15px 28px;border-radius:999px;background:#53D9B2;border:none;color:#000;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;min-height:44px" style-hover="background:#FADA28">Ver mais 3 avaliações</button>
       </sc-if>
@@ -327,7 +320,7 @@ if (!$autenticado) {
       <div>
         <p style="margin:0 0 16px;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#53D9B2">Exportação</p>
         <h2 style="margin:0 0 18px;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(24px,3.4vw,36px);line-height:1.15;color:#fff">Como exportar os dados filtrados</h2>
-        <p style="margin:0;max-width:74ch;font-size:15px;line-height:1.75;color:rgba(242,245,243,0.72)">No painel, os botões "Exportar XLSX" e "Exportar PDF" exportam exatamente as respostas visíveis com os filtros atuais (segmento, ano, mês, data e tipo de NPS). O XLSX traz uma linha por resposta (data, nota, perfil e comentário); o PDF usa a função de impressão do navegador — escolha "Salvar como PDF" na janela de impressão.</p>
+        <p style="margin:0;max-width:74ch;font-size:15px;line-height:1.75;color:rgba(242,245,243,0.72)">No painel, o botão "Exportar XLSX" exporta exatamente as respostas visíveis com os filtros atuais (segmento, ano, mês, data e tipo de NPS), com uma linha por resposta (data, nota, perfil e comentário).</p>
       </div>
 
     </section>
@@ -352,6 +345,10 @@ class Component extends DCLogic {
   rotuloSegmento(chave) {
     const d = this.segmentosDef().find(d => d.chave === chave);
     return d ? d.rotulo : chave;
+  }
+
+  normalizarTrem(txt) {
+    return typeof txt === 'string' ? txt.replace(/trem\s+republicano/gi, 'Trem da República') : txt;
   }
 
   tabBtnStyle(ativo) {
@@ -605,7 +602,7 @@ class Component extends DCLogic {
       return {
         data: this.fmt(l.data),
         nota: l.nota,
-        texto: l.texto,
+        texto: this.normalizarTrem(l.texto),
         perfil: promotor ? 'Promotor' : (detrator ? 'Detrator' : 'Neutro'),
         perfilStyle: 'font-size:11px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:' + cor,
         notaStyle: 'display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:30px;border-radius:999px;font-size:14px;font-weight:700;background:' + cor + ';color:#000'
@@ -616,12 +613,6 @@ class Component extends DCLogic {
       ? data
       : (mes !== 'todos' ? meses[Number(mes)] + (ano !== 'todos' ? ' de ' + ano : '') : (ano !== 'todos' ? 'Ano ' + ano : 'Todo o período'));
 
-    const statusTexto = status === 'carregando' ? 'Carregando dados da planilha…'
-      : status === 'erro' ? 'Não foi possível ler a planilha automaticamente.'
-      : status === 'vazio' ? 'A planilha foi lida, mas não encontrei uma coluna de nota de 0 a 10.'
-      : status === 'colado' ? linhas.length + ' respostas carregadas do CSV colado.'
-      : linhas.length + ' respostas lidas da planilha.';
-
     const dadosCarregados = status === 'ok' || status === 'colado';
     const segmentoSemColuna = dadosCarregados && colunasNota[segmento] === undefined;
 
@@ -630,12 +621,12 @@ class Component extends DCLogic {
       const encontrada = idx !== undefined && cab[idx] !== undefined;
       return {
         rotulo: d.rotulo,
-        texto: encontrada ? cab[idx] : 'Não identificada nesta planilha.',
+        texto: encontrada ? this.normalizarTrem(cab[idx]) : 'Não identificada nesta planilha.',
         textoStyle: 'margin:0;font-size:14.5px;line-height:1.6;color:' + (encontrada ? 'rgba(242,245,243,0.85)' : 'rgba(242,245,243,0.4)') + (encontrada ? '' : ';font-style:italic')
       };
     });
     const colunaDataEncontrada = iData >= 0 && cab[iData] !== undefined && dadosCarregados;
-    const colunaDataTexto = colunaDataEncontrada ? cab[iData] : 'Não identificada nesta planilha.';
+    const colunaDataTexto = colunaDataEncontrada ? this.normalizarTrem(cab[iData]) : 'Não identificada nesta planilha.';
     const colunaDataStyle = 'margin:0;font-size:14.5px;line-height:1.6;color:' + (colunaDataEncontrada ? 'rgba(242,245,243,0.85)' : 'rgba(242,245,243,0.4)') + (colunaDataEncontrada ? '' : ';font-style:italic');
 
     const abaPainel = aba !== 'metodologia';
@@ -648,17 +639,14 @@ class Component extends DCLogic {
         Segmento: this.rotuloSegmento(segmento),
         Nota: l.nota,
         Perfil: this.perfilDe(l.nota) === 'promotor' ? 'Promotor' : (this.perfilDe(l.nota) === 'detrator' ? 'Detrator' : 'Neutro'),
-        Comentario: l.texto || ''
+        Comentario: this.normalizarTrem(l.texto) || ''
       }));
       const ws = window.XLSX.utils.json_to_sheet(linhasExport);
       const wb = window.XLSX.utils.book_new();
       window.XLSX.utils.book_append_sheet(wb, ws, 'NPS');
       window.XLSX.writeFile(wb, 'nps-' + segmento + '-' + Date.now() + '.xlsx');
     };
-    const exportarPdf = () => window.print();
-
     return {
-      statusTexto,
       mostrarAviso: status === 'erro' || status === 'vazio',
       avisoSegmento: segmentoSemColuna ? 'Não encontramos uma pergunta de NPS para "' + this.rotuloSegmento(segmento) + '" nesta planilha. Veja a aba "Metodologia e perguntas" para conferir as colunas identificadas.' : '',
       recarregar: () => this.carregar(),
@@ -680,7 +668,6 @@ class Component extends DCLogic {
       colunaDataStyle,
 
       exportarXlsx,
-      exportarPdf,
       contadorExport: f.length + (f.length === 1 ? ' resposta no filtro atual' : ' respostas no filtro atual'),
 
       opcoesAno: [{ valor: 'todos', rotulo: 'Todos os anos' }].concat(anos.map(a => ({ valor: String(a), rotulo: String(a) }))),

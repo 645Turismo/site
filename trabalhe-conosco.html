@@ -19,18 +19,52 @@
   var here = currentLang();
   var saved = null;
   try { saved = localStorage.getItem('site_lang'); } catch (e) {}
-  if (!saved) {
-    var nav = ((navigator.language || navigator.userLanguage || '') + '').toLowerCase();
-    var wanted = nav.indexOf('en') === 0 ? 'en' : (nav.indexOf('es') === 0 ? 'es' : 'pt');
-    try { localStorage.setItem('site_lang', here === 'pt' ? wanted : here); } catch (e) {}
-    if (here === 'pt' && wanted !== 'pt') {
-      location.replace(pathWithLang(wanted));
+
+  function attachClickTracking() {
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('[data-lang-link]');
+      if (a) { try { localStorage.setItem('site_lang', a.getAttribute('data-lang-link')); } catch (err) {} }
+    });
+  }
+
+  if (saved) { attachClickTracking(); return; }
+
+  function finish(wanted, restore) {
+    var finalLang = (here === 'pt') ? (wanted || 'pt') : here;
+    try { localStorage.setItem('site_lang', finalLang); } catch (e) {}
+    if (here === 'pt' && finalLang !== 'pt') {
+      location.replace(pathWithLang(finalLang));
       return;
     }
+    if (restore) document.documentElement.style.visibility = '';
+    attachClickTracking();
   }
-  document.addEventListener('click', function (e) {
-    var a = e.target.closest && e.target.closest('[data-lang-link]');
-    if (a) { try { localStorage.setItem('site_lang', a.getAttribute('data-lang-link')); } catch (err) {} }
+
+  var navLang = ((navigator.language || navigator.userLanguage || '') + '').toLowerCase();
+  var browserWanted = navLang.indexOf('en') === 0 ? 'en' : (navLang.indexOf('es') === 0 ? 'es' : null);
+
+  if (here !== 'pt' || browserWanted || typeof fetch !== 'function') {
+    finish(browserWanted, false);
+    return;
+  }
+
+  document.documentElement.style.visibility = 'hidden';
+  var settled = false;
+  var timer = setTimeout(function () { if (!settled) { settled = true; finish(null, true); } }, 1200);
+  fetch('https://ipapi.co/json/').then(function (r) { return r.json(); }).then(function (data) {
+    if (settled) return;
+    settled = true;
+    clearTimeout(timer);
+    var cc = ((data && data.country_code) || '').toUpperCase();
+    var ES_COUNTRIES = ['AR','MX','CO','CL','PE','VE','EC','GT','CU','BO','DO','HN','PY','SV','NI','CR','PA','UY','ES','GQ'];
+    var EN_COUNTRIES = ['US','GB','CA','AU','NZ','IE'];
+    var geoWanted = ES_COUNTRIES.indexOf(cc) >= 0 ? 'es' : (EN_COUNTRIES.indexOf(cc) >= 0 ? 'en' : null);
+    finish(geoWanted, true);
+  }).catch(function () {
+    if (settled) return;
+    settled = true;
+    clearTimeout(timer);
+    finish(null, true);
   });
 })();
 </script>

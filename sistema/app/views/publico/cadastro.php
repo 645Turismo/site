@@ -1,0 +1,56 @@
+<?php
+$comCpf = empty($g['id']);
+$textos = [
+  1 => 'Comece pelos seus dados. Leva uns 10 minutos para concluir as 5 etapas, e dá para voltar.',
+  2 => 'Conte o que você faz: funções, idiomas, regiões e Cadastur. É assim que os convites chegam até você.',
+  3 => 'Envie os documentos. Pelo celular dá para fotografar na hora.',
+  4 => 'Dados para a nota fiscal e para receber os pagamentos.',
+  5 => 'Crie sua senha de acesso. Você vai entrar com o CPF e essa senha.',
+];
+?>
+<div class="cadastro">
+  <p class="sobretitulo">Cadastro de guia · etapa <?= $etapa ?> de <?= count(ETAPAS_CADASTRO) ?></p>
+  <h1 class="cadastro-titulo"><?= e(ETAPAS_CADASTRO[$etapa]) ?></h1>
+  <p class="pub-lead"><?= e($textos[$etapa]) ?></p>
+
+  <ol class="etapas" aria-label="Etapas do cadastro">
+    <?php foreach (ETAPAS_CADASTRO as $n => $rotulo): ?>
+      <li class="<?= $n === $etapa ? 'atual' : ($n < $liberada ? 'feita' : '') ?>">
+        <?php if ($n <= $liberada && $n !== $etapa): ?><a href="/cadastro/<?= $n ?>"><span><?= $n < $liberada ? '✓' : $n ?></span><em><?= e($rotulo) ?></em></a>
+        <?php else: ?><span><span><?= $n ?></span><em><?= e($rotulo) ?></em></span><?php endif; ?>
+      </li>
+    <?php endforeach; ?>
+  </ol>
+
+  <form method="post" action="/cadastro/<?= $etapa ?>" class="form form-secoes" enctype="multipart/form-data" novalidate>
+    <?= csrf_campo() ?>
+    <?php
+    if ($etapa === 1) {
+      require RAIZ . '/app/views/guia_form/pessoais.php';
+    } elseif ($etapa === 2) {
+      require RAIZ . '/app/views/guia_form/atuacao.php';
+    } elseif ($etapa === 3) {
+      require RAIZ . '/app/views/guia_form/documentos.php';
+    } elseif ($etapa === 4) {
+      require RAIZ . '/app/views/guia_form/recebimento.php';
+    } else { ?>
+      <fieldset>
+        <legend><span>01</span> Senha de acesso</legend>
+        <p class="texto-2">Seu código de guia será <strong class="amarelo mono"><?= e($g['codigo'] ?? '') ?></strong>.</p>
+        <div class="grade-campos">
+          <label class="campo"><span>Senha *</span>
+            <span class="senha"><input type="password" name="senha" autocomplete="new-password" minlength="8" required>
+            <button type="button" class="senha-alternar" data-alternar-senha aria-label="Mostrar senha"><?= icone('olho') ?></button></span></label>
+          <label class="campo"><span>Confirmar senha *</span><input type="password" name="confirmacao" autocomplete="new-password" minlength="8" required></label>
+        </div>
+        <p class="texto-2">Pelo menos 8 caracteres, com letras e números.</p>
+        <label class="opcao espaco-topo"><input type="checkbox" name="termos" value="1">
+          <span>Li e aceito os <a href="/termos" target="_blank">termos de uso</a> e a <a href="/privacidade" target="_blank">política de privacidade</a>, e autorizo a 645 Turismo a usar meus dados para credenciamento, escala e pagamento.</span></label>
+      </fieldset>
+    <?php } ?>
+    <div class="form-rodape cadastro-rodape">
+      <?php if ($etapa > 1): ?><a href="/cadastro/<?= $etapa - 1 ?>" class="btn btn-texto">Voltar</a><?php endif; ?>
+      <button type="submit" class="btn btn-primario"><?= $etapa < 5 ? 'Salvar e continuar' : 'Concluir cadastro' ?></button>
+    </div>
+  </form>
+</div>

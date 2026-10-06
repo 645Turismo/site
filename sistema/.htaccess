@@ -1,0 +1,37 @@
+Options -Indexes
+DirectoryIndex index.php
+
+# O sistema não pode aparecer em buscadores. O cabeçalho vale para TODAS as respostas
+# (páginas, imagens, PDFs). Não bloqueie no robots.txt: o robô precisa ler este noindex.
+<IfModule mod_headers.c>
+  Header always set X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
+  Header always set Strict-Transport-Security "max-age=31536000"
+  Header always set X-Content-Type-Options "nosniff"
+</IfModule>
+
+RewriteEngine On
+
+# Na Locaweb o subdomínio é a pasta public_html/sistema, que também responderia como 645turismo.com.br/sistema/.
+# Qualquer acesso pelo domínio principal (ou www) vai para o endereço oficial do sistema.
+RewriteCond %{HTTP_HOST} ^(www\.)?645turismo\.com\.br$ [NC]
+RewriteRule ^(.*)$ https://sistema.645turismo.com.br/ [L,R=301]
+
+# Força HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Validação de certificado SSL continua acessível
+RewriteRule ^\.well-known/ - [L]
+
+# Bloqueia código, dados, arquivos ocultos e configuração
+RewriteRule ^(app|database|storage|bin|docs)(/|$) - [F,L]
+RewriteRule (^|/)\. - [F,L]
+RewriteRule ^(config\.(local|example)\.php|README\.md)$ - [F,L]
+
+# Arquivos estáticos passam direto
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^(assets/|robots\.txt$) - [L]
+
+# Todo o resto vai para o front controller
+RewriteRule ^ index.php [L,QSA]

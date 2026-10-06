@@ -1,0 +1,3 @@
+# Liberado de propósito: o bloqueio impediria os buscadores de ler o noindex enviado em todas as páginas.
+User-agent: *
+Allow: /

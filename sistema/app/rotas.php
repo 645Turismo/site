@@ -15,6 +15,7 @@ require RAIZ . '/app/controllers/guia_disponibilidade.php';
 require RAIZ . '/app/controllers/guia_recebimentos.php';
 require RAIZ . '/app/controllers/guia_ajuda.php';
 require RAIZ . '/app/controllers/admin_guias.php';
+require RAIZ . '/app/controllers/admin_pre_cadastro.php';
 require RAIZ . '/app/controllers/admin_financeiro.php';
 require RAIZ . '/app/controllers/admin_atendimento.php';
 
@@ -26,6 +27,8 @@ return [
   ['POST', '/esqueci-senha', 'pub_esqueci_senha_enviar'],
   ['GET', '/redefinir-senha', 'pub_redefinir_senha'],
   ['POST', '/redefinir-senha', 'pub_redefinir_senha_salvar'],
+  ['GET', '/primeiro-acesso', 'pub_primeiro_acesso'],
+  ['POST', '/primeiro-acesso', 'pub_primeiro_acesso_salvar'],
   ['GET', '/cadastro', 'pub_cadastro'],
   ['GET', '/cadastro/{etapa}', 'pub_cadastro_etapa'],
   ['POST', '/cadastro/{etapa}', 'pub_cadastro_salvar'],
@@ -116,6 +119,12 @@ return [
   ['POST', '/admin/funcoes/{id}/status', 'adm_funcao_status'],
 
   ['GET', '/admin/guias', 'adm_guias'],
+  ['GET', '/admin/guias/pre-cadastro', 'adm_pre_cadastro'],
+  ['POST', '/admin/guias/pre-cadastro', 'adm_pre_cadastro_ler'],
+  ['POST', '/admin/guias/pre-cadastro/confirmar', 'adm_pre_cadastro_confirmar'],
+  ['POST', '/admin/guias/pre-cadastro/cancelar', 'adm_pre_cadastro_cancelar'],
+  ['GET', '/admin/guias/pre-cadastro/modelo.csv', 'adm_pre_cadastro_modelo'],
+  ['POST', '/admin/guias/{id}/reenviar-acesso', 'adm_guia_reenviar_acesso'],
   ['GET', '/admin/guias/{id}', 'adm_guia'],
   ['POST', '/admin/guias/{id}/status', 'adm_guia_status'],
   ['POST', '/admin/guias/{id}/notas', 'adm_guia_notas'],

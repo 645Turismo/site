@@ -36,12 +36,12 @@ function planilha_do_texto(string $texto): array {
 }
 
 /** Procura o cabeçalho nas primeiras linhas. Retorna [índice da linha, [coluna => campo]] ou null. */
-function planilha_achar_cabecalho(array $linhas): ?array {
+function planilha_achar_cabecalho(array $linhas, array $colunas = COLUNAS_PLANILHA): ?array {
   foreach (array_slice($linhas, 0, 25, true) as $idx => [, $celulas]) {
     $mapa = [];
     foreach ($celulas as $col => $valor) {
       $chave = texto_chave((string) $valor);
-      foreach (COLUNAS_PLANILHA as $campo => $nomes) {
+      foreach ($colunas as $campo => $nomes) {
         if ($chave !== '' && in_array($chave, $nomes, true) && !in_array($campo, $mapa, true)) {
           $mapa[$col] = $campo;
           break;

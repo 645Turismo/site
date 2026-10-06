@@ -4,6 +4,7 @@
     <h1>Guias</h1>
     <p>Triagem de novos cadastros e banco de guias.</p>
   </div>
+  <a href="/admin/guias/pre-cadastro" class="btn btn-primario">Pré-cadastrar em massa</a>
 </div>
 
 <nav class="filtros" aria-label="Situação">

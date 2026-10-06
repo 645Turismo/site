@@ -1,8 +1,16 @@
 <?php
 // Cadastro público de novos guias, em 5 etapas, e consulta de status.
 // O rascunho fica ligado à sessão do navegador; ao concluir, o guia entra direto na Área do Guia (cadastro em análise).
+// O guia pré-cadastrado pelo ADM usa o mesmo fluxo, já logado, para completar as informações pendentes.
 
 function cadastro_rascunho(): ?array {
+  $logado = guia_atual();
+  if ($logado && $logado['status'] === 'pre_cadastro') {
+    if ((int) $logado['trocar_senha']) {
+      redirecionar('/primeiro-acesso');
+    }
+    return um('SELECT * FROM guias WHERE id = ?', [$logado['id']]);
+  }
   $id = $_SESSION['cadastro_guia_id'] ?? null;
   $g = $id ? um("SELECT * FROM guias WHERE id = ? AND status = 'rascunho'", [$id]) : null;
   if (!$g) {
@@ -12,7 +20,7 @@ function cadastro_rascunho(): ?array {
 }
 
 function pub_cadastro(): void {
-  if (guia_atual()) {
+  if (guia_atual() && guia_atual()['status'] !== 'pre_cadastro') {
     redirecionar('/guia/perfil');
   }
   $g = cadastro_rascunho();
@@ -65,7 +73,7 @@ function pub_cadastro_salvar(int $etapa): void {
         cadastro_descartar_rascunho((int) $existente['id']); // rascunho abandonado em outro aparelho
       }
     }
-    if (!$g && !upload_enviado('foto')) {
+    if (empty($g['foto_path']) && !upload_enviado('foto')) {
       $erros[] = 'Envie uma foto de rosto.';
     }
     if ($erros) {
@@ -107,7 +115,9 @@ function pub_cadastro_salvar(int $etapa): void {
     atualizar('guias', $d + ['atualizado_em' => agora()], 'id = ?', [$g['id']]);
     guia_salvar_bancarios((int) $g['id'], $b);
   } else {
-    $erro = erro_senha((string) ($_POST['senha'] ?? ''), (string) ($_POST['confirmacao'] ?? ''));
+    // O pré-cadastrado já criou a senha no primeiro acesso.
+    $preCadastro = $g['status'] === 'pre_cadastro';
+    $erro = $preCadastro ? null : erro_senha((string) ($_POST['senha'] ?? ''), (string) ($_POST['confirmacao'] ?? ''));
     if (!$erro && empty($_POST['termos'])) {
       $erro = 'Para concluir, aceite os termos de uso e a política de privacidade.';
     }
@@ -117,7 +127,7 @@ function pub_cadastro_salvar(int $etapa): void {
     if ($erro) {
       $volta([$erro]);
     }
-    cadastro_concluir($g, (string) $_POST['senha']);
+    cadastro_concluir($g, $preCadastro ? null : (string) $_POST['senha']);
   }
 
   $proxima = $etapa + 1;
@@ -128,10 +138,9 @@ function pub_cadastro_salvar(int $etapa): void {
   redirecionar('/cadastro/' . $proxima);
 }
 
-function cadastro_concluir(array $g, string $senha): never {
-  atualizar('guias', [
-    'senha_hash' => hash_senha($senha), 'termos_aceitos_em' => agora(), 'status' => 'em_analise',
-    'cadastro_etapa' => 5, 'atualizado_em' => agora(),
+function cadastro_concluir(array $g, ?string $senha): never {
+  atualizar('guias', ($senha !== null ? ['senha_hash' => hash_senha($senha)] : []) + [
+    'termos_aceitos_em' => agora(), 'status' => 'em_analise', 'cadastro_etapa' => 5, 'atualizado_em' => agora(),
   ], 'id = ?', [$g['id']]);
   auditar('cadastro_concluido', 'guia', (int) $g['id'], null, 'guia', (int) $g['id']);
   enviar_email((string) $g['email'], 'Recebemos seu cadastro',

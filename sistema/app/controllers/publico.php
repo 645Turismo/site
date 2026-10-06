@@ -74,7 +74,8 @@ function pub_redefinir_senha_salvar(): void {
     flash('erro', $erro);
     redirecionar('/redefinir-senha?token=' . urlencode($token));
   }
-  atualizar('guias', ['senha_hash' => hash_senha($_POST['senha']), 'atualizado_em' => agora()], 'id = ?', [$reset['usuario_id']]);
+  atualizar('guias', ['senha_hash' => hash_senha($_POST['senha']), 'trocar_senha' => 0, 'senha_temporaria_expira' => null,
+    'atualizado_em' => agora()], 'id = ?', [$reset['usuario_id']]);
   consumir_token_reset((int) $reset['id']);
   auditar('reset_senha_concluido', 'guia', (int) $reset['usuario_id'], null, 'guia', (int) $reset['usuario_id']);
   flash('sucesso', 'Senha alterada. Entre com seu CPF e a nova senha.');
@@ -92,4 +93,46 @@ function pub_privacidade(): void {
 function primeiro_nome(array $pessoa): string {
   $nome = trim((string) ($pessoa['nome_social'] ?: $pessoa['nome']));
   return explode(' ', $nome)[0];
+}
+
+// ---------- Primeiro acesso (senha temporária) ----------
+
+function pub_guia_com_senha_temporaria(): array {
+  $g = guia_atual();
+  if (!$g) {
+    redirecionar('/');
+  }
+  if (!(int) $g['trocar_senha']) {
+    redirecionar($g['status'] === 'pre_cadastro' ? '/cadastro' : '/guia/hoje');
+  }
+  return $g;
+}
+
+function pub_primeiro_acesso(): void {
+  $g = pub_guia_com_senha_temporaria();
+  exibir('publico/primeiro-acesso', ['titulo' => 'Primeiro acesso', 'nome' => primeiro_nome($g),
+    'completar' => $g['status'] === 'pre_cadastro'], 'publico');
+}
+
+function pub_primeiro_acesso_salvar(): void {
+  $g = pub_guia_com_senha_temporaria();
+  $senha = (string) ($_POST['senha'] ?? '');
+  $erro = erro_senha($senha, (string) ($_POST['confirmacao'] ?? ''));
+  if (!$erro && password_verify($senha, (string) $g['senha_hash'])) {
+    $erro = 'A nova senha precisa ser diferente da senha temporária.';
+  }
+  if ($erro) {
+    flash('erro', $erro);
+    redirecionar('/primeiro-acesso');
+  }
+  atualizar('guias', ['senha_hash' => hash_senha($senha), 'trocar_senha' => 0, 'senha_temporaria_expira' => null,
+    'atualizado_em' => agora()], 'id = ?', [$g['id']]);
+  session_regenerate_id(true);
+  auditar('senha_temporaria_trocada', 'guia', (int) $g['id'], null, 'guia', (int) $g['id']);
+  if ($g['status'] === 'pre_cadastro') {
+    flash('sucesso', 'Senha criada. Agora complete seu cadastro: são poucos passos.');
+    redirecionar('/cadastro');
+  }
+  flash('sucesso', 'Senha criada.');
+  redirecionar('/guia/hoje');
 }

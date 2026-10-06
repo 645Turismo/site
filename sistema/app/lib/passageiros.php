@@ -268,6 +268,7 @@ function passageiros_estado(array $viagem, array $diaria, bool $podeMarcar): arr
   return [
     'diaria' => ['id' => (int) $diaria['id'], 'data' => formatar_data($diaria['data'])],
     'veiculo' => veiculo_layout($viagem),
+    'origens' => viagem_origens((int) $viagem['id']),
     'passageiros' => $lista,
     'totais' => $totais,
     'pode_marcar' => $podeMarcar,

@@ -1,5 +1,6 @@
 <?php
 $comCpf = empty($g['id']);
+$preCadastro = ($g['status'] ?? '') === 'pre_cadastro';
 $textos = [
   1 => 'Comece pelos seus dados. Leva uns 10 minutos para concluir as 5 etapas, e dá para voltar.',
   2 => 'Conte o que você faz: funções, idiomas, regiões e Cadastur. É assim que os convites chegam até você.',
@@ -7,6 +8,11 @@ $textos = [
   4 => 'Dados para a nota fiscal e para receber os pagamentos.',
   5 => 'Crie sua senha de acesso. Você vai entrar com o CPF e essa senha.',
 ];
+if ($preCadastro) {
+  $textos[1] = 'A equipe da 645 já começou seu cadastro. Confira os dados e complete o que falta: são 5 etapas rápidas.';
+  $textos[5] = 'Último passo: aceite os termos para enviar o cadastro para a equipe conferir.';
+}
+
 ?>
 <div class="cadastro">
   <p class="sobretitulo">Cadastro de guia · etapa <?= $etapa ?> de <?= count(ETAPAS_CADASTRO) ?></p>
@@ -35,8 +41,9 @@ $textos = [
       require RAIZ . '/app/views/guia_form/recebimento.php';
     } else { ?>
       <fieldset>
-        <legend><span>01</span> Senha de acesso</legend>
-        <p class="texto-2">Seu código de guia será <strong class="amarelo mono"><?= e($g['codigo'] ?? '') ?></strong>.</p>
+        <legend><span>01</span> <?= $preCadastro ? 'Termos' : 'Senha de acesso' ?></legend>
+        <p class="texto-2">Seu código de guia <?= $preCadastro ? 'é' : 'será' ?> <strong class="amarelo mono"><?= e($g['codigo'] ?? '') ?></strong>.</p>
+        <?php if (!$preCadastro): ?>
         <div class="grade-campos">
           <label class="campo"><span>Senha *</span>
             <span class="senha"><input type="password" name="senha" autocomplete="new-password" minlength="8" required>
@@ -44,6 +51,7 @@ $textos = [
           <label class="campo"><span>Confirmar senha *</span><input type="password" name="confirmacao" autocomplete="new-password" minlength="8" required></label>
         </div>
         <p class="texto-2">Pelo menos 8 caracteres, com letras e números.</p>
+        <?php endif; ?>
         <label class="opcao espaco-topo"><input type="checkbox" name="termos" value="1">
           <span>Li e aceito os <a href="/termos" target="_blank">termos de uso</a> e a <a href="/privacidade" target="_blank">política de privacidade</a>, e autorizo a 645 Turismo a usar meus dados para credenciamento, escala e pagamento.</span></label>
       </fieldset>

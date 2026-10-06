@@ -58,6 +58,9 @@ function autenticar_guia(string $cpf, string $senha): ?string {
   if (in_array($p['status'], ['inativo', 'bloqueado'], true) || $p['anonimizado_em']) {
     return 'Seu acesso está suspenso. Fale com a equipe da 645 Turismo.';
   }
+  if ((int) $p['trocar_senha'] && $p['senha_temporaria_expira'] && $p['senha_temporaria_expira'] < agora()) {
+    return 'Sua senha temporária expirou. Use "Esqueci a senha" ou peça um novo acesso à equipe.';
+  }
   limpar_tentativas($chaves);
   if (password_needs_rehash($p['senha_hash'], PASSWORD_DEFAULT)) {
     atualizar('guias', ['senha_hash' => hash_senha($senha)], 'id = ?', [$p['id']]);
@@ -88,6 +91,13 @@ function exigir_guia(): array {
   if (!$p) {
     flash('aviso', 'Entre com seu CPF e senha para continuar.');
     redirecionar('/');
+  }
+  // Senha temporária: troca obrigatória antes de qualquer tela. Pré-cadastro: completa o cadastro primeiro.
+  if ((int) $p['trocar_senha']) {
+    redirecionar('/primeiro-acesso');
+  }
+  if ($p['status'] === 'pre_cadastro') {
+    redirecionar('/cadastro');
   }
   return $p;
 }

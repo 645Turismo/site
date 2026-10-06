@@ -38,6 +38,7 @@ const STATUS_ESCALA = [
 const ESCALAS_ASSUMIDAS = ['confirmado', 'em_campo', 'realizada', 'aguardando_nf', 'nf_em_conferencia', 'a_pagar', 'paga'];
 
 const STATUS_CADASTRO = [
+  'pre_cadastro' => ['Pré-cadastro (aguardando o guia)', 'aviso'],
   'rascunho' => ['Cadastro incompleto', 'aviso'],
   'em_analise' => ['Cadastro em análise', 'aviso'],
   'pendente' => ['Cadastro com pendência', 'erro'],

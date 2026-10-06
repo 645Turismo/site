@@ -330,3 +330,8 @@
 .importar-confirmar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 22px 0 30px; }
 .tabela-previa { font-size: 13px; }
 .tabela-previa td, .tabela-previa th { padding: 8px 8px; }
+
+/* Embarque em destaque nos dados do passageiro (mapa do carro) */
+.info-embarque { display: flex; flex-direction: column; gap: 2px; margin: 6px 0 12px; padding: 8px 12px; border-left: 3px solid var(--menta); background: rgba(83, 217, 178, 0.08); }
+.info-embarque strong { font-size: 16px; color: #fff; }
+.info-embarque.ed-guia { border-left-color: var(--amarelo); }

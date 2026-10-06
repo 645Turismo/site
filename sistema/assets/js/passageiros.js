@@ -389,6 +389,20 @@
     return b;
   }
 
+  // Local de embarque em destaque, com o horário de saída cadastrado para aquele ponto.
+  function linhaEmbarque(p) {
+    var local = p.campos.embarque.v;
+    var linha = el('p', 'info-embarque' + (p.campos.embarque.g ? ' ed-guia' : ''));
+    linha.appendChild(el('span', 'rotulo', 'Embarque'));
+    if (!local) {
+      linha.appendChild(el('strong', 'texto-3', 'Não informado'));
+      return linha;
+    }
+    var origem = (dados.origens || []).filter(function (o) { return normalizar(o.local) === normalizar(local); })[0];
+    linha.appendChild(el('strong', null, local + (origem && origem.horario ? ' · ' + origem.horario.slice(0, 5) : '')));
+    return linha;
+  }
+
   function renderizarInfo(ocupantes, relacionadas, bloqueada) {
     var info = $('[data-info]');
     info.textContent = '';
@@ -414,9 +428,10 @@
       var bloco = el('div', 'info-passageiro');
       var nome = el('h3', p.campos.nome.g || p.incluido_guia ? 'ed-guia' : null, p.campos.nome.v);
       bloco.appendChild(nome);
+      bloco.appendChild(linhaEmbarque(p));
       var dl = el('dl', 'ficha ficha-compacta');
       [['Documento', (p.campos.tipo_documento.v ? p.campos.tipo_documento.v + ' ' : '') + p.campos.documento.v],
-       ['Tipo', p.campos.tipo_pax.v], ['Nascimento', p.campos.nascimento.v], ['Embarque', p.campos.embarque.v], ['Venda', p.campos.venda.v],
+       ['Tipo', p.campos.tipo_pax.v], ['Nascimento', p.campos.nascimento.v], ['Venda', p.campos.venda.v],
        ['Observação', p.campos.observacao.v]].forEach(function (par) {
         if (!par[1] || !String(par[1]).trim()) return;
         dl.appendChild(el('dt', null, par[0]));

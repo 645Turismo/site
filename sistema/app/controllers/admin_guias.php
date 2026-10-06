@@ -6,6 +6,7 @@ const ABAS_GUIAS = [
   'pendentes' => ['Com pendência', ['pendente']],
   'aprovados' => ['Aprovados', ['aprovado']],
   'inativos' => ['Inativos e reprovados', ['inativo', 'bloqueado', 'reprovado']],
+  'pre' => ['Pré-cadastro', ['pre_cadastro']],
   'rascunhos' => ['Cadastro incompleto', ['rascunho']],
   'todos' => ['Todos', []],
 ];

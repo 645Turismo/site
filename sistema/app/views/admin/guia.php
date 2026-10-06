@@ -164,8 +164,18 @@ $statusDoc = ['enviado' => ['Para conferir', 'aviso'], 'aprovado' => ['Aprovado'
       </form>
     </section>
 
+    <?php if ($g['status'] === 'pre_cadastro'): ?>
+      <p class="texto-2"><?= (int) $g['trocar_senha'] ? 'Ainda não fez o primeiro acesso' . ($g['senha_temporaria_expira'] ? ' (senha temporária vale até ' . e(formatar_data_hora($g['senha_temporaria_expira'])) . ')' : '') . '.' : 'Já criou a senha; falta completar o cadastro.' ?></p>
+    <?php endif; ?>
+    <?php if (in_array($g['status'], ['pre_cadastro', 'em_analise', 'pendente', 'aprovado'], true) && $g['email']): ?>
+      <form method="post" action="/admin/guias/<?= (int) $g['id'] ?>/reenviar-acesso" class="inline-form" data-confirmar="Gerar uma nova senha temporária e enviar para <?= e($g['email']) ?>? A senha atual deixa de valer.">
+        <?= csrf_campo() ?><button type="submit" class="btn btn-texto btn-p">Reenviar acesso (senha temporária)</button>
+      </form>
+    <?php endif; ?>
+    <?php if ($g['status'] !== 'pre_cadastro'): ?>
     <form method="post" action="/admin/guias/<?= (int) $g['id'] ?>/senha" class="inline-form" data-confirmar="Enviar ao guia um link para criar nova senha?">
       <?= csrf_campo() ?><button type="submit" class="btn btn-texto btn-p">Enviar link de nova senha</button>
     </form>
+    <?php endif; ?>
   </aside>
 </div>

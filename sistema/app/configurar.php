@@ -107,7 +107,9 @@ function configurar_executar(string $arquivoConfig): void {
       $db['usuario'], $db['senha'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 10]
     );
   } catch (PDOException $e) {
-    configurar_pagina('Não foi possível conectar ao banco com esses dados. Confira a senha e tente de novo.', $dados);
+    // A mensagem do MySQL (ex.: [1045] Access denied, [2002] host inacessível) nunca contém a senha.
+    $motivo = preg_replace('/\s+/', ' ', $e->getMessage());
+    configurar_pagina('Não foi possível conectar ao banco. Motivo informado pelo servidor: ' . $motivo, $dados);
   }
 
   $config = [

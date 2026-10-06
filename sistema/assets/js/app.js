@@ -224,4 +224,13 @@
     document.querySelectorAll('[data-tour-abrir]').forEach(function (b) { b.addEventListener('click', abrir); });
     if (tour.dataset.auto === '1') abrir();
   }
+
+  // Caixa que esconde um bloco quando marcada (ex.: "Não emito nota fiscal" esconde os dados da empresa).
+  document.querySelectorAll('[data-alterna]').forEach(function (caixa) {
+    var alvo = document.querySelector(caixa.dataset.alterna);
+    if (!alvo) return;
+    var aplicar = function () { alvo.hidden = caixa.checked; };
+    caixa.addEventListener('change', aplicar);
+    aplicar();
+  });
 })();

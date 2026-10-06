@@ -106,6 +106,7 @@
 .campo textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
 .campo input[type="date"], .campo input[type="time"] { color-scheme: dark; }
 .opcao { display: flex; align-items: flex-start; gap: 10px; font-size: 14.5px; cursor: pointer; }
+.opcao-destaque { margin: 4px 0 14px; padding: 12px 14px; border: 1px solid var(--linha-forte); background: var(--painel); }
 .opcao input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--menta); flex-shrink: 0; }
 .opcoes-linha { display: flex; flex-wrap: wrap; gap: 10px 22px; padding-top: 4px; }
 .form-rodape { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 12px; padding-top: 18px; }
@@ -138,9 +139,15 @@
 /* ---------- Lista de passageiros ---------- */
 .lp-topo { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
 .lp-topo .filtros { margin: 0; }
-.lp-contadores { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--linha); }
+.lp-contadores { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); grid-auto-flow: column; border: 1px solid var(--linha); }
 .lp-contadores > div { padding: 12px 16px; border-right: 1px solid var(--linha); }
 .lp-contadores > div:last-child { border-right: none; }
+/* No celular, 4 contadores viram 2 x 2. */
+@media (max-width: 700px) {
+  .lp-contadores:has(> div:nth-child(4)) { grid-auto-flow: row; grid-template-columns: 1fr 1fr; }
+  .lp-contadores:has(> div:nth-child(4)) > div:nth-child(2n) { border-right: none; }
+  .lp-contadores:has(> div:nth-child(4)) > div:nth-child(-n+2) { border-bottom: 1px solid var(--linha); }
+}
 .lp-contadores strong { display: block; font-family: var(--serif); font-weight: 400; font-size: 34px; line-height: 1.1; color: var(--menta); }
 .lp-contadores strong b { font-weight: 400; }
 .lp-contadores small { font-size: 18px; color: var(--texto-3); }
@@ -224,6 +231,13 @@
 .marca.feita { background: var(--menta); border-color: var(--menta); color: var(--preto); }
 .marca.feita:hover { background: var(--amarelo); border-color: var(--amarelo); color: var(--preto); }
 .marca-hora { font-size: 12px; }
+.marca.marca-noshow { min-height: 30px; margin-top: 6px; border-color: rgba(232, 103, 79, 0.5); color: var(--erro); font-size: 10px; }
+.marca.marca-noshow:hover:not(:disabled) { border-color: var(--erro); color: var(--erro); }
+.marca.marca-noshow.feita { margin-top: 0; min-height: 40px; background: var(--erro); border-color: var(--erro); color: var(--preto); }
+.info-acoes .marca.marca-noshow { margin-top: 0; min-height: 40px; }
+.lp-tabela tr.com-noshow td.col-nome { color: var(--erro); text-decoration: line-through; }
+.tag-pax { display: inline-block; margin-top: 4px; padding: 1px 8px; border: 1px solid var(--amarelo); border-radius: 999px; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; color: var(--amarelo); text-decoration: none; }
+.lp-tabela td.col-nome .tag-pax { display: table; }
 .marca-por { font-size: 9.5px; font-weight: 600; letter-spacing: 0.02em; text-transform: none; opacity: 0.75; }
 
 /* Mapa do carro */
@@ -246,6 +260,8 @@
 .poltrona.checkin { background: var(--menta); border-color: var(--menta); color: var(--preto); }
 .poltrona.editada::after { content: ""; position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; background: var(--amarelo); }
 .poltrona.bloqueada { background: repeating-linear-gradient(45deg, var(--painel-2), var(--painel-2) 5px, var(--preto) 5px, var(--preto) 10px); color: var(--texto-3); border-style: dashed; }
+.poltrona.noshow { background: rgba(232, 103, 79, 0.16); border-color: var(--erro); color: var(--erro); text-decoration: line-through; }
+.poltrona.com-colo::before { content: "+"; position: absolute; bottom: 2px; right: 5px; font-size: 11px; color: var(--amarelo); }
 .poltrona.conflito { border: 2px solid var(--erro); }
 .poltrona.selecionada { outline: 3px solid #fff; outline-offset: 2px; }
 .poltrona.reserva { background: var(--amarelo); border-color: var(--amarelo); color: var(--preto); animation: piscar 0.9s ease-in-out infinite; }
@@ -269,6 +285,7 @@
 .leg-reserva { background: var(--amarelo); border-color: var(--amarelo); animation: piscar 0.9s ease-in-out infinite; }
 .leg-bloqueada { background: repeating-linear-gradient(45deg, var(--painel-2), var(--painel-2) 3px, var(--preto) 3px, var(--preto) 6px); border-style: dashed; }
 .leg-conflito { border: 2px solid var(--erro); }
+.leg-noshow { background: rgba(232, 103, 79, 0.16); border-color: var(--erro); }
 .sem-poltrona { margin: 6px 0 0; padding-left: 18px; color: var(--texto-2); font-size: 14px; }
 
 /* Diálogo de edição de passageiro */

@@ -2,6 +2,8 @@
 // Recebimentos do guia: por viagem/tour, do relatório entregue até o pagamento, com envio da nota fiscal.
 
 // Ordem do ciclo financeiro (a viagem fica no estágio mais atrasado entre suas diárias).
+// Diárias aceitas e ainda não trabalhadas (confirmado/em campo) aparecem como valor previsto.
+const ESCALAS_PREVISTAS = ['confirmado', 'em_campo'];
 const ETAPAS_FINANCEIRO = ['realizada', 'aguardando_nf', 'nf_em_conferencia', 'a_pagar', 'paga'];
 
 /** Diárias do guia agrupadas por viagem, com status financeiro, NF, prazos e pagamentos. */
@@ -15,16 +17,19 @@ function guia_recebimentos_por_viagem(int $guiaId, ?string $ano = null): array {
   }
   $linhas = todos("SELECT s.*, d.data, v.id AS viagem_id, v.codigo, v.nome, v.prazo_nf_dias_uteis, v.prazo_pagamento_dias, v.instrucoes_nf
       FROM escalas s JOIN diarias d ON d.id = s.diaria_id JOIN viagens v ON v.id = d.viagem_id
-      WHERE s.guia_id = ? AND s.status IN ('realizada','aguardando_nf','nf_em_conferencia','a_pagar','paga','falta')$filtroAno
+      WHERE s.guia_id = ? AND s.status IN ('confirmado','em_campo','realizada','aguardando_nf','nf_em_conferencia','a_pagar','paga','falta')$filtroAno
       ORDER BY d.data DESC", $params);
   $viagens = [];
   foreach ($linhas as $l) {
     $id = (int) $l['viagem_id'];
     $viagens[$id] ??= ['id' => $id, 'codigo' => $l['codigo'], 'nome' => $l['nome'], 'instrucoes_nf' => $l['instrucoes_nf'],
       'prazo_nf_dias_uteis' => (int) $l['prazo_nf_dias_uteis'], 'prazo_pagamento_dias' => (int) $l['prazo_pagamento_dias'],
-      'diarias' => [], 'total' => 0.0, 'ultima' => $l['data'], 'etapa' => 'paga'];
+      'diarias' => [], 'total' => 0.0, 'previsto' => 0.0, 'ultima' => $l['data'], 'etapa' => 'paga', 'so_previstas' => true];
     $viagens[$id]['diarias'][] = $l;
-    if ($l['status'] !== 'falta') {
+    if (in_array($l['status'], ESCALAS_PREVISTAS, true)) {
+      $viagens[$id]['previsto'] += (float) $l['valor'];
+    } elseif ($l['status'] !== 'falta') {
+      $viagens[$id]['so_previstas'] = false;
       $viagens[$id]['total'] += (float) $l['valor'];
       $pos = array_search($l['status'], ETAPAS_FINANCEIRO, true);
       if ($pos !== false && $pos < array_search($viagens[$id]['etapa'], ETAPAS_FINANCEIRO, true)) {
@@ -36,6 +41,8 @@ function guia_recebimentos_por_viagem(int $guiaId, ?string $ano = null): array {
   foreach ($viagens as &$v) {
     if (!array_filter($v['diarias'], fn($d) => $d['status'] !== 'falta')) {
       $v['etapa'] = 'falta';
+    } elseif ($v['so_previstas']) {
+      $v['etapa'] = 'agendada';
     }
     $v['nf'] = um("SELECT * FROM envios WHERE viagem_id = ? AND guia_id = ? AND tipo = 'nf' ORDER BY id DESC LIMIT 1", [$v['id'], $guiaId]);
     $v['prazo_nf'] = somar_dias_uteis($v['ultima'], $v['prazo_nf_dias_uteis']);
@@ -54,16 +61,20 @@ function guia_recebimentos(): void {
   $resumo = [
     'recebido' => (float) valor('SELECT COALESCE(SUM(valor), 0) FROM pagamentos WHERE guia_id = ? AND pago_em BETWEEN ? AND ?', [$g['id'], "$ano-01-01", "$ano-12-31"]),
     'a_receber' => (float) valor("SELECT COALESCE(SUM(valor), 0) FROM escalas WHERE guia_id = ? AND status IN ('realizada','aguardando_nf','nf_em_conferencia','a_pagar')", [$g['id']]),
-    'diarias' => count(array_merge(...array_map(fn($v) => array_filter($v['diarias'], fn($d) => $d['status'] !== 'falta'), $viagens ?: [['diarias' => []]]))),
+    'previsto' => array_sum(array_column($viagens, 'previsto')),
+    'diarias' => count(array_merge(...array_map(fn($v) => array_filter($v['diarias'], fn($d) => !in_array($d['status'], ['falta', 'confirmado', 'em_campo'], true)), $viagens ?: [['diarias' => []]]))),
     'nf_pendentes' => count(array_filter($viagens, fn($v) => $v['etapa'] === 'aguardando_nf')),
   ];
-  $anos = array_column(todos('SELECT DISTINCT substr(d.data, 1, 4) AS ano FROM escalas s JOIN diarias d ON d.id = s.diaria_id WHERE s.guia_id = ? ORDER BY ano DESC', [$g['id']]), 'ano');
+  // Anos com trabalho do guia, mais o atual e o anterior (o filtro aparece sempre).
+  $anos = array_column(todos('SELECT DISTINCT substr(d.data, 1, 4) AS ano FROM escalas s JOIN diarias d ON d.id = s.diaria_id WHERE s.guia_id = ?', [$g['id']]), 'ano');
+  $anos = array_unique(array_merge($anos, [date('Y'), (string) ((int) date('Y') - 1), $ano]));
+  rsort($anos);
   exibir('guia/recebimentos', [
     'titulo' => 'Recebimentos',
     'menu' => 'recebimentos',
     'p' => $g,
     'ano' => $ano,
-    'anos' => $anos ?: [date('Y')],
+    'anos' => array_values($anos),
     'viagens' => $viagens,
     'resumo' => $resumo,
     'empresa' => [

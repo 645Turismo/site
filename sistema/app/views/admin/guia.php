@@ -117,8 +117,12 @@ $statusDoc = ['enviado' => ['Para conferir', 'aviso'], 'aprovado' => ['Aprovado'
     <section class="bloco" aria-labelledby="t-receb">
       <div class="bloco-titulo"><h2 id="t-receb">Recebimento</h2></div>
       <dl class="ficha ficha-compacta">
-        <dt>CNPJ</dt><dd><?= e(formatar_cnpj($g['cnpj'])) ?: '—' ?></dd>
-        <dt>Razão social</dt><dd><?= e($g['razao_social'] ?: '—') ?></dd>
+        <?php if (isset($g['emite_nf']) && !(int) $g['emite_nf']): ?>
+          <dt>Nota fiscal</dt><dd>Não emite (recebe sem NF)</dd>
+        <?php else: ?>
+          <dt>CNPJ</dt><dd><?= e(formatar_cnpj($g['cnpj'])) ?: '—' ?></dd>
+          <dt>Razão social</dt><dd><?= e($g['razao_social'] ?: '—') ?></dd>
+        <?php endif; ?>
         <dt>PIX</dt><dd><?= $b ? e((TIPOS_PIX[$b['pix_tipo']] ?? '') . ': ' . $b['pix_chave']) : '—' ?></dd>
         <dt>Banco</dt><dd><?= $b ? e(implode(' · ', array_filter([$b['banco_nome'], $b['agencia'] ? 'ag. ' . $b['agencia'] : null, $b['conta'] ? 'cc ' . $b['conta'] : null]))) : '—' ?></dd>
       </dl>

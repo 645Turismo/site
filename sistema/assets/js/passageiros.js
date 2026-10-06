@@ -16,7 +16,10 @@
   var admin = raiz.dataset.admin === '1';
   var INTERVALO = 8000;
   var CHAVE_FILA = 'fila-passageiros-' + base + '-' + diaria;
+  // Colunas da tabela (na ordem da planilha). O tipo de passageiro aparece junto ao nome.
   var CAMPOS = ['tipo_documento', 'documento', 'nascimento', 'venda', 'embarque', 'poltrona', 'telefone', 'observacao'];
+  var CAMPOS_FORM = ['nome'].concat(CAMPOS, ['tipo_pax']);
+  var NOMES_MARCA = { checkin: 'Check-in', checkout: 'Check-out', noshow: 'No-show' };
 
   var dados = null;
   var fila = lerFila();
@@ -112,6 +115,7 @@
         if (m.tipo === 'checkin') p.checkout = null;
       } else if (!p[m.tipo]) {
         p[m.tipo] = { hora: m.hora, por: 'você (enviando)' };
+        if (m.tipo === 'checkin') p.noshow = null;
       }
     });
   }
@@ -129,7 +133,10 @@
       avisar('O check-in só pode ser feito no dia do trabalho.');
       return;
     }
-    if (desfazer && !window.confirm('Desfazer o ' + (tipo === 'checkin' ? 'check-in' : 'check-out') + ' de ' + p.campos.nome.v + '?')) {
+    if (desfazer && !window.confirm('Desfazer o ' + NOMES_MARCA[tipo] + ' de ' + p.campos.nome.v + '?')) {
+      return;
+    }
+    if (tipo === 'noshow' && !desfazer && !window.confirm('Registrar que ' + p.campos.nome.v + ' não compareceu (no-show)?')) {
       return;
     }
     fila.push({ id: p.id, tipo: tipo, desfazer: desfazer ? 1 : 0, hora: horaAgora() });
@@ -172,7 +179,8 @@
   function passaFiltro(p) {
     var filtro = $('[data-filtro]').value;
     var busca = normalizar($('[data-busca]').value);
-    if (filtro === 'sem-checkin' && p.checkin) return false;
+    if (filtro === 'sem-checkin' && (p.checkin || p.noshow)) return false;
+    if (filtro === 'noshow' && !p.noshow) return false;
     if (filtro === 'checkin' && !p.checkin) return false;
     if (filtro === 'checkout' && !p.checkout) return false;
     if (filtro === 'ajustados' && !p.incluido_guia && !Object.keys(p.campos).some(function (c) { return p.campos[c].g; })) return false;
@@ -206,11 +214,13 @@
     if (feito) {
       b.appendChild(el('span', 'marca-hora', '✓ ' + feito.hora));
       if (feito.por) b.appendChild(el('span', 'marca-por', feito.por));
-      b.setAttribute('aria-label', (tipo === 'checkin' ? 'Check-in' : 'Check-out') + ' feito às ' + feito.hora + '. Toque para desfazer.');
+      b.setAttribute('aria-label', NOMES_MARCA[tipo] + ' registrado às ' + feito.hora + '. Toque para desfazer.');
+      if (tipo === 'noshow') b.insertBefore(el('span', 'marca-hora', 'No-show'), b.firstChild);
     } else {
-      b.textContent = tipo === 'checkin' ? 'Check-in' : 'Check-out';
+      b.textContent = NOMES_MARCA[tipo];
       b.disabled = !dados.pode_marcar || (tipo === 'checkout' && !p.checkin);
     }
+    if (tipo === 'noshow') b.classList.add('marca-noshow');
     b.addEventListener('click', function () { marcar(p, tipo, !!feito); });
     return b;
   }
@@ -228,10 +238,22 @@
       return;
     }
     visiveis.forEach(function (p) {
-      var tr = el('tr', (p.checkin ? 'com-checkin' : '') + (p.incluido_guia ? ' incluido-guia' : ''));
+      var tr = el('tr', (p.checkin ? 'com-checkin' : '') + (p.noshow ? ' com-noshow' : '') + (p.incluido_guia ? ' incluido-guia' : ''));
       tr.appendChild(el('td', 'col-n', String(p.n)));
-      tr.appendChild(celula(p, 'nome'));
-      var ci = el('td', 'col-marca'); ci.appendChild(botaoMarca(p, 'checkin')); tr.appendChild(ci);
+      var tdNome = celula(p, 'nome');
+      if (p.campos.tipo_pax.bruto === 'crianca' || p.campos.tipo_pax.bruto === 'colo') {
+        tdNome.appendChild(el('span', 'tag-pax' + (p.campos.tipo_pax.g ? ' ed-guia' : ''), p.campos.tipo_pax.v));
+      }
+      tr.appendChild(tdNome);
+      var ci = el('td', 'col-marca');
+      // Quem não compareceu mostra o no-show no lugar do check-in (tocar desfaz).
+      if (p.noshow) {
+        ci.appendChild(botaoMarca(p, 'noshow'));
+      } else {
+        ci.appendChild(botaoMarca(p, 'checkin'));
+        if (!p.checkin && dados.pode_marcar) ci.appendChild(botaoMarca(p, 'noshow'));
+      }
+      tr.appendChild(ci);
       var co = el('td', 'col-marca'); co.appendChild(botaoMarca(p, 'checkout')); tr.appendChild(co);
       CAMPOS.forEach(function (c) { tr.appendChild(celula(p, c)); });
       var acoes = el('td', 'col-acoes');
@@ -346,7 +368,10 @@
     if (bloqueadas[k]) b.classList.add('bloqueada');
     if (ocupantes.length) b.classList.add('ocupada');
     if (ocupantes.length && ocupantes[0].checkin) b.classList.add('checkin');
-    if (ocupantes.length > 1 || (ocupantes.length && bloqueadas[k])) b.classList.add('conflito');
+    if (ocupantes.length && ocupantes.every(function (p) { return p.noshow; })) b.classList.add('noshow');
+    var adultos = ocupantes.filter(function (p) { return p.campos.tipo_pax.bruto !== 'colo'; });
+    if (adultos.length > 1 || (ocupantes.length && bloqueadas[k])) b.classList.add('conflito');
+    if (ocupantes.length > adultos.length) b.classList.add('com-colo');
     if (ocupantes.some(foiAjustado)) b.classList.add('editada');
     if (selecionada === k) b.classList.add('selecionada');
     if (relacionadas[k]) b.classList.add('reserva');
@@ -381,8 +406,9 @@
     if (bloqueada) {
       info.appendChild(el('p', 'alerta-mini erro', 'Atenção: esta poltrona está bloqueada, mas há passageiro nela na lista.'));
     }
-    if (ocupantes.length > 1) {
-      info.appendChild(el('p', 'alerta-mini erro', 'Atenção: ' + ocupantes.length + ' passageiros com esta poltrona na lista.'));
+    var naoColo = ocupantes.filter(function (p) { return p.campos.tipo_pax.bruto !== 'colo'; });
+    if (naoColo.length > 1) {
+      info.appendChild(el('p', 'alerta-mini erro', 'Atenção: ' + naoColo.length + ' passageiros com esta poltrona na lista.'));
     }
     ocupantes.forEach(function (p) {
       var bloco = el('div', 'info-passageiro');
@@ -390,7 +416,7 @@
       bloco.appendChild(nome);
       var dl = el('dl', 'ficha ficha-compacta');
       [['Documento', (p.campos.tipo_documento.v ? p.campos.tipo_documento.v + ' ' : '') + p.campos.documento.v],
-       ['Nascimento', p.campos.nascimento.v], ['Embarque', p.campos.embarque.v], ['Venda', p.campos.venda.v],
+       ['Tipo', p.campos.tipo_pax.v], ['Nascimento', p.campos.nascimento.v], ['Embarque', p.campos.embarque.v], ['Venda', p.campos.venda.v],
        ['Observação', p.campos.observacao.v]].forEach(function (par) {
         if (!par[1] || !String(par[1]).trim()) return;
         dl.appendChild(el('dt', null, par[0]));
@@ -428,8 +454,13 @@
       } else {
         acoes.appendChild(el('span', 'texto-2', 'Sem telefone cadastrado'));
       }
-      acoes.appendChild(botaoMarca(p, 'checkin'));
-      acoes.appendChild(botaoMarca(p, 'checkout'));
+      if (p.noshow) {
+        acoes.appendChild(botaoMarca(p, 'noshow'));
+      } else {
+        acoes.appendChild(botaoMarca(p, 'checkin'));
+        acoes.appendChild(botaoMarca(p, 'checkout'));
+        if (!p.checkin && dados.pode_marcar) acoes.appendChild(botaoMarca(p, 'noshow'));
+      }
       var ed = el('button', 'btn btn-texto btn-p', 'Editar');
       ed.type = 'button';
       ed.addEventListener('click', function () { abrirDialogo(p); });
@@ -460,10 +491,17 @@
       ? (p && (p.incluido_guia || Object.keys(p.campos).some(function (c) { return p.campos[c].g; })) ? 'Os campos com ajuste do guia mostram o valor original abaixo.' : '')
       : 'Sua alteração aparece destacada na lista e a coordenação recebe um e-mail.';
     $('[data-dlg-erro]', dialogo).hidden = true;
-    ['nome'].concat(CAMPOS).forEach(function (c) {
+    CAMPOS_FORM.forEach(function (c) {
       var campo = form.elements[c];
       var dado = p ? p.campos[c] : null;
-      campo.value = dado ? (c === 'nascimento' || c === 'telefone' ? dado.v : dado.bruto) : '';
+      var valor = dado ? (c === 'nascimento' || c === 'telefone' ? dado.v : dado.bruto) : '';
+      // Valor antigo que não está na lista (ex.: embarque de antes da regra): aparece para ser trocado.
+      if (campo.tagName === 'SELECT' && valor && !Array.prototype.some.call(campo.options, function (o) { return o.value === valor; })) {
+        var op = el('option', null, valor + ' (não cadastrado)');
+        op.value = valor;
+        campo.appendChild(op);
+      }
+      campo.value = valor;
       var orig = form.querySelector('[data-original="' + c + '"]');
       orig.hidden = !(admin && dado && dado.g);
       orig.textContent = dado && dado.g ? 'Original: ' + (dado.o || '(vazio)') : '';
@@ -490,7 +528,7 @@
   form.addEventListener('submit', function (ev) {
     ev.preventDefault();
     var campos = {};
-    ['nome'].concat(CAMPOS).forEach(function (c) { campos[c] = form.elements[c].value; });
+    CAMPOS_FORM.forEach(function (c) { campos[c] = form.elements[c].value; });
     var url = editando ? base + '/' + editando.id + '/editar' : urlIncluir;
     var salvar = $('[data-salvar]', dialogo);
     salvar.disabled = true;

@@ -219,14 +219,15 @@ function guia_viagem_relatorio(int $id): void {
       'enviado_por_tipo' => 'guia', 'enviado_por_id' => $g['id'], 'status' => 'enviado', 'enviado_em' => agora(),
     ]);
   }
-  // Com o relatório entregue, as diárias realizadas seguem para a etapa de nota fiscal.
+  // Com o relatório entregue, as diárias realizadas seguem para a nota fiscal; quem não emite nota vai direto para pagamento.
+  $emiteNf = (int) ($g['emite_nf'] ?? 1) === 1;
   foreach ($assumidas as $s) {
     if (in_array($s['status'], ['confirmado', 'em_campo', 'realizada'], true) && $s['data'] <= hoje()) {
-      atualizar('escalas', ['status' => 'aguardando_nf', 'atualizado_em' => agora()], 'id = ?', [$s['id']]);
+      atualizar('escalas', ['status' => $emiteNf ? 'aguardando_nf' : 'a_pagar', 'atualizado_em' => agora()], 'id = ?', [$s['id']]);
     }
   }
   auditar('relatorio_enviado', 'viagem', $id);
-  flash('sucesso', 'Relatório enviado. Obrigado! O próximo passo é a nota fiscal.');
+  flash('sucesso', $emiteNf ? 'Relatório enviado. Obrigado! O próximo passo é a nota fiscal.' : 'Relatório enviado. Obrigado! O pagamento segue para programação.');
   redirecionar("/guia/viagens/$id");
 }
 
@@ -312,6 +313,9 @@ function guia_passageiro_editar(int $id, int $passageiroId): void {
   $p = um("SELECT * FROM passageiros WHERE id = ? AND viagem_id = ? AND status = 'ativo'", [$passageiroId, $id])
     ?? resposta_json(['erro' => 'Passageiro não encontrado.'], 404);
   [$dados, $erro] = passageiro_ler_form();
+  if (!$erro) {
+    [$dados, $erro] = passageiro_aplicar_regras($v, $dados, passageiros_ocupacao($id, $passageiroId));
+  }
   if ($erro) {
     resposta_json(['erro' => $erro], 422);
   }
@@ -328,6 +332,9 @@ function guia_passageiro_incluir(int $id): void {
   $g = exigir_guia();
   [$v] = guia_dias_da_lista($g, $id);
   [$dados, $erro] = passageiro_ler_form();
+  if (!$erro) {
+    [$dados, $erro] = passageiro_aplicar_regras($v, $dados, passageiros_ocupacao($id));
+  }
   if ($erro) {
     resposta_json(['erro' => $erro], 422);
   }

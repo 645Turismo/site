@@ -14,6 +14,7 @@ const COLUNAS_PLANILHA = [
   'observacao' => ['observacao', 'observacoes', 'obs'],
   'poltrona' => ['poltrona', 'assento', 'lugar'],
   'telefone' => ['telefone', 'celular', 'whatsapp', 'fone', 'contato'],
+  'tipo_pax' => ['tipo de passageiro', 'tipo do passageiro', 'tipo passageiro', 'tipo pax', 'tipo de pax', 'pax', 'categoria', 'faixa etaria'],
 ];
 
 function texto_chave(string $s): string {
@@ -115,6 +116,9 @@ function planilha_interpretar(array $linhas): array {
       if ($erro && $campo === 'nascimento') {
         $avisos[] = 'data de nascimento ilegível ("' . $valor . '")';
         $normalizado = null;
+      } elseif ($erro && $campo === 'tipo_pax') {
+        $avisos[] = 'tipo de passageiro não reconhecido ("' . $valor . '")';
+        $normalizado = null;
       } elseif ($erro) {
         $resultado['ignoradas'][] = [$numero, $erro];
         continue 2;
@@ -145,6 +149,42 @@ function importacao_marcar_repetidos(int $viagemId, array $passageiros): array {
     $chave = passageiro_chave($p['dados']);
     $p['repetido'] = isset($existentes[$chave]);
     $existentes[$chave] = true;
+  }
+  unset($p);
+  return $passageiros;
+}
+
+/**
+ * Aplica as regras da viagem aos passageiros novos da planilha, na ordem do arquivo:
+ * embarque fora dos locais da viagem vai para a observação e poltrona bloqueada, inexistente ou já ocupada
+ * fica em branco (o ADM escolhe outra depois). Cada caso vira um aviso na prévia.
+ */
+function importacao_aplicar_regras(array $viagem, array $passageiros): array {
+  $ocupacao = passageiros_ocupacao((int) $viagem['id']);
+  foreach ($passageiros as &$p) {
+    $p['avisos'] = array_values(array_filter($p['avisos'], fn($a) => !str_starts_with($a, 'embarque') && !str_starts_with($a, 'poltrona')));
+    if ($p['repetido']) {
+      continue;
+    }
+    $d = $p['dados'];
+    [$semPoltrona, $erro] = passageiro_aplicar_regras($viagem, ['poltrona' => null] + $d, []);
+    if ($erro) {
+      $p['avisos'][] = 'embarque "' . $d['embarque'] . '" não cadastrado na viagem (foi para a observação)';
+      $d['observacao'] = trim(($d['observacao'] ?? '') . ' Embarque na planilha: ' . $d['embarque']);
+      $d['observacao'] = mb_substr($d['observacao'], 0, CAMPOS_PASSAGEIRO['observacao'][1]);
+      $d['embarque'] = null;
+    } else {
+      $d['embarque'] = $semPoltrona['embarque'];
+    }
+    [, $erro] = passageiro_aplicar_regras($viagem, ['embarque' => null] + $d, $ocupacao);
+    if ($erro) {
+      $p['avisos'][] = 'poltrona ' . $d['poltrona'] . ' não pode ser usada (' . rtrim(preg_replace('/^A poltrona \S+ /', '', $erro), '.') . '), entra sem poltrona';
+      $d['poltrona'] = null;
+    }
+    if ($d['poltrona'] !== null) {
+      $ocupacao[$d['poltrona']][] = ['id' => 0, 'nome' => $d['nome'], 'colo' => ($d['tipo_pax'] ?? null) === 'colo'];
+    }
+    $p['dados'] = $d;
   }
   unset($p);
   return $passageiros;

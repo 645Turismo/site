@@ -1,5 +1,6 @@
 <?php
 $etapas = [
+  'agendada' => ['Agendada', 'neutro', 'Valor previsto. Depois da viagem, envie o relatório para liberar o pagamento.'],
   'realizada' => ['Aguardando relatório', 'aviso', 'Envie o relatório da viagem para liberar a nota fiscal.'],
   'aguardando_nf' => ['Envie a nota fiscal', 'aviso', ''],
   'nf_em_conferencia' => ['NF em conferência', 'info', 'A equipe está conferindo sua nota fiscal.'],
@@ -12,18 +13,17 @@ $etapas = [
   <div>
     <p class="sobretitulo">Seus valores</p>
     <h1>Recebimentos</h1>
-    <p>Do relatório entregue até o pagamento, viagem por viagem.</p>
+    <p>Do convite aceito até o pagamento, viagem por viagem.</p>
   </div>
-  <?php if (count($anos) > 1): ?>
-    <nav class="filtros" aria-label="Ano">
-      <?php foreach ($anos as $a): ?><a href="?ano=<?= e($a) ?>" class="<?= $a === $ano ? 'ativo' : '' ?>"><?= e($a) ?></a><?php endforeach; ?>
-    </nav>
-  <?php endif; ?>
+  <nav class="filtros" aria-label="Filtrar por ano">
+    <?php foreach ($anos as $a): ?><a href="?ano=<?= e($a) ?>" class="<?= (string) $a === (string) $ano ? 'ativo' : '' ?>"<?= (string) $a === (string) $ano ? ' aria-current="page"' : '' ?>><?= e($a) ?></a><?php endforeach; ?>
+  </nav>
 </div>
 
 <div class="lp-contadores resumo-financeiro">
   <div><span class="rotulo">Recebido em <?= e($ano) ?></span><strong><b><?= e(formatar_moeda($resumo['recebido'])) ?></b></strong></div>
   <div><span class="rotulo">A receber</span><strong class="amarelo"><b><?= e(formatar_moeda($resumo['a_receber'])) ?></b></strong></div>
+  <div><span class="rotulo">Previsto em <?= e($ano) ?></span><strong><b><?= e(formatar_moeda($resumo['previsto'])) ?></b></strong></div>
   <div><span class="rotulo">Diárias em <?= e($ano) ?></span><strong><b><?= (int) $resumo['diarias'] ?></b></strong></div>
 </div>
 
@@ -32,7 +32,7 @@ $etapas = [
 <?php endif; ?>
 
 <?php if (!$viagens): ?>
-  <p class="vazio espaco-topo">Nenhuma diária realizada em <?= e($ano) ?>. Os valores aparecem aqui depois do relatório de cada viagem.</p>
+  <p class="vazio espaco-topo">Nenhum trabalho em <?= e($ano) ?>. O valor aparece aqui assim que você aceita um convite.</p>
 <?php else: ?>
   <ul class="lista-financeiro">
     <?php foreach ($viagens as $v): [$rotulo, $cor, $dica] = $etapas[$v['etapa']] ?? [$v['etapa'], 'neutro', '']; ?>
@@ -44,7 +44,8 @@ $etapas = [
             <small class="texto-2"><?= count($v['diarias']) ?> diária(s) · último dia <?= e(formatar_data($v['ultima'])) ?></small>
           </div>
           <div class="financeiro-valor">
-            <strong><?= e(formatar_moeda($v['total'])) ?></strong>
+            <strong><?= e(formatar_moeda($v['total'] + $v['previsto'])) ?></strong>
+            <?php if ($v['previsto'] > 0 && $v['total'] > 0): ?><small class="texto-2"><?= e(formatar_moeda($v['previsto'])) ?> previsto</small><?php endif; ?>
             <span class="selo selo-<?= e($cor) ?>"><?= e($rotulo) ?></span>
           </div>
         </div>

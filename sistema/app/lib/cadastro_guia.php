@@ -215,7 +215,10 @@ function guia_documentos_faltando(int $guiaId): array {
 
 /** Retorna [dados da tabela guias (CNPJ), dados bancários, erros]. */
 function guia_ler_recebimento(): array {
+  // Quem não emite nota fiscal pula a parte da empresa e recebe sem a etapa de NF.
+  $emiteNf = entrada('nao_emite_nf') !== '1';
   $d = [
+    'emite_nf' => $emiteNf ? 1 : 0,
     'cnpj' => so_digitos(entrada('cnpj')) ?: null,
     'razao_social' => mb_substr(entrada('razao_social'), 0, 200) ?: null,
     'nome_fantasia' => mb_substr(entrada('nome_fantasia'), 0, 200) ?: null,
@@ -232,11 +235,15 @@ function guia_ler_recebimento(): array {
     'pix_chave' => mb_substr(entrada('pix_chave'), 0, 140) ?: null,
   ];
   $erros = [];
-  if (!$d['cnpj'] || !cnpj_valido($d['cnpj'])) {
-    $erros[] = 'Informe um CNPJ válido (MEI ou empresa). Ele é necessário para a nota fiscal.';
-  }
-  if (!$d['razao_social']) {
-    $erros[] = 'Informe a razão social do CNPJ.';
+  if (!$emiteNf) {
+    $d['cnpj'] = $d['razao_social'] = $d['nome_fantasia'] = null;
+  } else {
+    if (!$d['cnpj'] || !cnpj_valido($d['cnpj'])) {
+      $erros[] = 'Informe um CNPJ válido (MEI ou empresa) ou marque "Não emito nota fiscal".';
+    }
+    if (!$d['razao_social']) {
+      $erros[] = 'Informe a razão social do CNPJ.';
+    }
   }
   if (!$b['pix_tipo'] || !$b['pix_chave']) {
     $erros[] = 'Informe a chave PIX para receber os pagamentos.';

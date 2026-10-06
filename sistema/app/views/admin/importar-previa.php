@@ -39,8 +39,10 @@ $campos = CAMPOS_PASSAGEIRO;
 <?php endif; ?>
 <?php if ($comAviso): ?>
   <div class="alerta alerta-aviso"><?= icone('alerta') ?>
-    <span><strong>Datas não reconhecidas</strong> (o passageiro entra sem a data):
-      linhas <?= e(implode(', ', array_column(array_slice($comAviso, 0, 20), 'linha'))) ?>.</span>
+    <span><strong>Ajustes antes de importar</strong> (o passageiro entra mesmo assim):
+      <?php foreach (array_slice($comAviso, 0, 30) as $p): ?>
+        <br>Linha <?= (int) $p['linha'] ?> · <?= e($p['dados']['nome']) ?>: <?= e(implode('; ', $p['avisos'])) ?>
+      <?php endforeach; ?><?= count($comAviso) > 30 ? '<br>…' : '' ?></span>
   </div>
 <?php endif; ?>
 

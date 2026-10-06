@@ -33,6 +33,7 @@ $urlIncluir = $admin ? $base : $base . '/incluir';
     <div class="lp-contadores" aria-live="polite">
       <div><span class="rotulo">Check-in</span><strong><b data-tot="checkin">–</b><small>/<span data-tot="total">–</span></small></strong></div>
       <div><span class="rotulo">Check-out</span><strong><b data-tot="checkout">–</b></strong></div>
+      <div><span class="rotulo">No-show</span><strong class="vermelho"><b data-tot="noshow">–</b></strong></div>
       <div><span class="rotulo">Ajustes do guia</span><strong class="amarelo"><b data-tot="ajustados">–</b></strong></div>
     </div>
     <p class="lp-status" data-status><span class="ponto"></span> Carregando lista…</p>
@@ -51,6 +52,7 @@ $urlIncluir = $admin ? $base : $base . '/incluir';
         <option value="sem-checkin">Faltam check-in</option>
         <option value="checkin">Com check-in</option>
         <option value="checkout">Com check-out</option>
+        <option value="noshow">No-show</option>
         <option value="ajustados">Ajustados pelo guia</option>
       </select>
       <button type="button" class="btn btn-contorno btn-p" data-incluir-abrir>+ Incluir passageiro</button>
@@ -96,6 +98,7 @@ $urlIncluir = $admin ? $base : $base . '/incluir';
       <li><span class="leg leg-livre"></span>Livre</li>
       <li><span class="leg leg-ocupada"></span>Reservada</li>
       <li><span class="leg leg-checkin"></span>Check-in feito</li>
+      <li><span class="leg leg-noshow"></span>No-show</li>
       <li><span class="leg leg-reserva"></span>Mesma reserva (pisca)</li>
       <li><span class="leg leg-bloqueada"></span>Bloqueada</li>
       <li><span class="leg leg-conflito"></span>Poltrona duplicada</li>
@@ -119,16 +122,22 @@ $urlIncluir = $admin ? $base : $base . '/incluir';
               <input type="text" name="nascimento" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10">
             <?php elseif ($campo === 'telefone'): ?>
               <input type="tel" name="telefone" maxlength="20">
+            <?php elseif ($campo === 'tipo_pax'): ?>
+              <select name="tipo_pax"><option value="">Não informado</option>
+                <?php foreach (TIPOS_PAX as $k => $rot): ?><option value="<?= e($k) ?>"><?= e($rot) ?></option><?php endforeach; ?>
+              </select>
+            <?php elseif ($campo === 'embarque' && !empty($origens)): ?>
+              <select name="embarque"><option value="">Não informado</option>
+                <?php foreach ($origens as $o): ?><option value="<?= e($o['local']) ?>"><?= e($o['local'] . ($o['horario'] ? ' · ' . substr($o['horario'], 0, 5) : '')) ?></option><?php endforeach; ?>
+              </select>
             <?php else: ?>
-              <input type="text" name="<?= e($campo) ?>" maxlength="<?= (int) $max ?>"<?= $campo === 'embarque' ? ' list="origens-viagem"' : '' ?>>
+              <input type="text" name="<?= e($campo) ?>" maxlength="<?= (int) $max ?>"<?= $campo === 'poltrona' ? ' inputmode="numeric"' : '' ?>>
             <?php endif; ?>
             <small class="original" data-original="<?= e($campo) ?>" hidden></small>
           </label>
         <?php endforeach; ?>
       </div>
-      <datalist id="origens-viagem">
-        <?php foreach ($origens ?? [] as $o): ?><option value="<?= e($o['local']) ?>"><?php endforeach; ?>
-      </datalist>
+      <p class="texto-2">Embarque: só os locais cadastrados na viagem. Poltrona: só uma pessoa por poltrona, exceto criança de colo.</p>
       <datalist id="tipos-documento">
         <?php foreach (TIPOS_DOCUMENTO as $t): ?><option value="<?= e($t) ?>"><?php endforeach; ?>
       </datalist>

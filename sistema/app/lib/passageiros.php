@@ -19,7 +19,11 @@ const CAMPOS_PASSAGEIRO = [
   'observacao' => ['Observação', 500],
   'poltrona' => ['Poltrona', 10],
   'telefone' => ['Telefone', 20],
+  'tipo_pax' => ['Tipo de passageiro', 10],
 ];
+
+// Só a criança de colo pode dividir a poltrona com outro passageiro.
+const TIPOS_PAX = ['adulto' => 'Adulto', 'crianca' => 'Criança', 'colo' => 'Criança de colo'];
 
 // Veículos disponíveis no cadastro da viagem/tour. [rótulo, lugares padrão (null = informado pelo ADM)]
 // Mapa: fileiras de 4 (2 + corredor + 2), numeração da janela esquerda para a janela direita.
@@ -91,6 +95,9 @@ function passageiro_normalizar(string $campo, $valor): array {
     $d = so_digitos($valor);
     return [$d === '' ? null : substr($d, 0, 13), null];
   }
+  if ($campo === 'tipo_pax') {
+    return passageiro_ler_tipo_pax($valor);
+  }
   if ($campo === 'poltrona') {
     // "07" e "7" são a mesma poltrona no mapa do carro.
     $valor = strtoupper(preg_replace('/\s+/', '', $valor));
@@ -101,6 +108,88 @@ function passageiro_normalizar(string $campo, $valor): array {
     return [null, 'Informe o nome completo.'];
   }
   return [$valor === '' ? null : $valor, null];
+}
+
+/** Aceita a chave (colo) ou o texto da planilha ("Criança de colo", "INF", "CHD", "ADT"...). */
+function passageiro_ler_tipo_pax(string $valor): array {
+  $t = texto_chave($valor);
+  if ($t === '') {
+    return [null, null];
+  }
+  if (isset(TIPOS_PAX[$t])) {
+    return [$t, null];
+  }
+  if (preg_match('/colo|^inf|bebe|lap/', $t)) {
+    return ['colo', null];
+  }
+  if (preg_match('/crian|^chd|^child|infantil|menor/', $t)) {
+    return ['crianca', null];
+  }
+  if (preg_match('/adult|^adt|idos|senior|^pax$/', $t)) {
+    return ['adulto', null];
+  }
+  return [null, 'Tipo de passageiro inválido: use Adulto, Criança ou Criança de colo.'];
+}
+
+/**
+ * Poltronas já ocupadas na viagem, com os valores em vigor (ajuste do guia, se houver).
+ * Retorna [poltrona => [['id' =>, 'nome' =>, 'colo' => bool], ...]].
+ */
+function passageiros_ocupacao(int $viagemId, ?int $ignorarId = null): array {
+  $mapa = [];
+  foreach (todos("SELECT id, nome, poltrona, tipo_pax, ajustes_guia FROM passageiros WHERE viagem_id = ? AND status = 'ativo'", [$viagemId]) as $p) {
+    if ((int) $p['id'] === $ignorarId) {
+      continue;
+    }
+    $aj = json_decode((string) $p['ajustes_guia'], true) ?: [];
+    $poltrona = array_key_exists('poltrona', $aj) ? $aj['poltrona'] : $p['poltrona'];
+    if ($poltrona === null || $poltrona === '') {
+      continue;
+    }
+    $tipo = array_key_exists('tipo_pax', $aj) ? $aj['tipo_pax'] : $p['tipo_pax'];
+    $mapa[(string) $poltrona][] = ['id' => (int) $p['id'], 'nome' => $aj['nome'] ?? $p['nome'], 'colo' => $tipo === 'colo'];
+  }
+  return $mapa;
+}
+
+/**
+ * Regras da viagem para um passageiro: embarque só nos locais cadastrados na viagem e poltrona existente,
+ * não bloqueada e livre (só criança de colo divide poltrona). Retorna [dados normalizados, erro|null].
+ */
+function passageiro_aplicar_regras(array $viagem, array $dados, array $ocupacao): array {
+  if (($dados['embarque'] ?? null) !== null) {
+    $origens = array_column(viagem_origens((int) $viagem['id']), 'local');
+    if ($origens) {
+      $achado = null;
+      foreach ($origens as $o) {
+        if (texto_chave($o) === texto_chave($dados['embarque'])) {
+          $achado = $o;
+        }
+      }
+      if ($achado === null) {
+        return [$dados, 'Embarque "' . $dados['embarque'] . '" não está cadastrado nesta viagem. Use: ' . implode(', ', $origens) . '.'];
+      }
+      $dados['embarque'] = $achado;
+    }
+  }
+  $poltrona = $dados['poltrona'] ?? null;
+  $layout = veiculo_layout($viagem);
+  if ($poltrona !== null && $layout) {
+    if (!ctype_digit($poltrona) || (int) $poltrona < 1 || (int) $poltrona > $layout['lugares']) {
+      return [$dados, 'A poltrona ' . $poltrona . ' não existe neste veículo (1 a ' . $layout['lugares'] . ').'];
+    }
+    if (in_array((int) $poltrona, $layout['bloqueadas'], true)) {
+      return [$dados, 'A poltrona ' . $poltrona . ' está bloqueada nesta viagem.'];
+    }
+  }
+  if ($poltrona !== null && ($dados['tipo_pax'] ?? null) !== 'colo') {
+    foreach ($ocupacao[$poltrona] ?? [] as $o) {
+      if (!$o['colo']) {
+        return [$dados, 'A poltrona ' . $poltrona . ' já está com ' . $o['nome'] . '. Só criança de colo pode dividir poltrona.'];
+      }
+    }
+  }
+  return [$dados, null];
 }
 
 /** Lê os campos do formulário. Retorna [dados, erro|null]. */
@@ -120,19 +209,23 @@ function passageiro_exibir(string $campo, ?string $valor): string {
   if ($campo === 'nascimento') {
     return formatar_data($valor);
   }
+  if ($campo === 'tipo_pax') {
+    return TIPOS_PAX[$valor] ?? (string) $valor;
+  }
   return $campo === 'telefone' ? formatar_celular($valor) : (string) $valor;
 }
 
 /** Estado completo da lista num dia de trabalho, no formato consumido pelo JavaScript. */
 function passageiros_estado(array $viagem, array $diaria, bool $podeMarcar): array {
-  $linhas = todos("SELECT p.*, r.checkin_em, r.checkin_por_tipo, r.checkin_por_id, r.checkout_em, r.checkout_por_tipo, r.checkout_por_id
+  $linhas = todos("SELECT p.*, r.checkin_em, r.checkin_por_tipo, r.checkin_por_id, r.checkout_em, r.checkout_por_tipo, r.checkout_por_id,
+        r.noshow_em, r.noshow_por_tipo, r.noshow_por_id
       FROM passageiros p LEFT JOIN passageiro_registros r ON r.passageiro_id = p.id AND r.diaria_id = ?
       WHERE p.viagem_id = ? AND p.status = 'ativo'
       ORDER BY p.ordem, p.id", [$diaria['id'], $viagem['id']]);
 
   $nomes = passageiros_nomes_autores($linhas);
   $lista = [];
-  $totais = ['total' => 0, 'checkin' => 0, 'checkout' => 0, 'ajustados' => 0];
+  $totais = ['total' => 0, 'checkin' => 0, 'checkout' => 0, 'noshow' => 0, 'ajustados' => 0];
   foreach ($linhas as $i => $l) {
     $ajustes = json_decode((string) $l['ajustes_guia'], true) ?: [];
     $campos = [];
@@ -154,10 +247,12 @@ function passageiros_estado(array $viagem, array $diaria, bool $podeMarcar): arr
     };
     $checkin = $marca('checkin');
     $checkout = $marca('checkout');
+    $noshow = $marca('noshow');
     $incluidoGuia = $l['criado_por_tipo'] === 'guia';
     $totais['total']++;
     $totais['checkin'] += $checkin ? 1 : 0;
     $totais['checkout'] += $checkout ? 1 : 0;
+    $totais['noshow'] += $noshow ? 1 : 0;
     $totais['ajustados'] += ($ajustes || $incluidoGuia) ? 1 : 0;
     $lista[] = [
       'id' => (int) $l['id'],
@@ -167,6 +262,7 @@ function passageiros_estado(array $viagem, array $diaria, bool $podeMarcar): arr
       'ajustado_em' => $l['ajustado_em'] ? formatar_data_hora($l['ajustado_em']) : '',
       'checkin' => $checkin,
       'checkout' => $checkout,
+      'noshow' => $noshow,
     ];
   }
   return [
@@ -183,7 +279,7 @@ function passageiros_estado(array $viagem, array $diaria, bool $podeMarcar): arr
 function passageiros_nomes_autores(array $linhas): array {
   $ids = ['guia' => [], 'admin' => []];
   foreach ($linhas as $l) {
-    foreach (['checkin', 'checkout'] as $t) {
+    foreach (['checkin', 'checkout', 'noshow'] as $t) {
       if ($l[$t . '_por_tipo'] && $l[$t . '_por_id']) {
         $ids[$l[$t . '_por_tipo']][(int) $l[$t . '_por_id']] = true;
       }
@@ -205,12 +301,13 @@ function passageiros_nomes_autores(array $linhas): array {
 }
 
 /**
- * Marca ou desfaz check-in/check-out. Retorna null em caso de sucesso ou a mensagem de erro.
- * O check-out exige check-in; desfazer o check-in também desfaz o check-out.
+ * Marca ou desfaz check-in, check-out ou no-show. Retorna null em caso de sucesso ou a mensagem de erro.
+ * O check-out exige check-in; desfazer o check-in também desfaz o check-out. No-show só sem check-in;
+ * se o passageiro aparecer depois, o check-in apaga o no-show.
  */
 function passageiro_marcar(int $viagemId, int $passageiroId, int $diariaId, string $tipo, bool $desfazer,
                            string $atorTipo, int $atorId): ?string {
-  if (!in_array($tipo, ['checkin', 'checkout'], true)) {
+  if (!in_array($tipo, ['checkin', 'checkout', 'noshow'], true)) {
     return 'Marcação inválida.';
   }
   if (!valor("SELECT 1 FROM passageiros WHERE id = ? AND viagem_id = ? AND status = 'ativo'", [$passageiroId, $viagemId])) {
@@ -236,7 +333,13 @@ function passageiro_marcar(int $viagemId, int $passageiroId, int $diariaId, stri
     if ($tipo === 'checkout' && !$r['checkin_em']) {
       return 'Faça o check-in antes do check-out.';
     }
+    if ($tipo === 'noshow' && $r['checkin_em']) {
+      return 'Este passageiro já fez check-in. Desfaça o check-in antes de marcar no-show.';
+    }
     $dados = [$tipo . '_em' => agora(), $tipo . '_por_tipo' => $atorTipo, $tipo . '_por_id' => $atorId];
+    if ($tipo === 'checkin') {
+      $dados += ['noshow_em' => null, 'noshow_por_tipo' => null, 'noshow_por_id' => null];
+    }
   }
   atualizar('passageiro_registros', $dados + ['atualizado_em' => agora()], 'id = ?', [$r['id']]);
   return null;

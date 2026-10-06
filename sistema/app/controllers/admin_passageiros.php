@@ -62,8 +62,11 @@ function adm_passageiro_marcar(int $id, int $passageiroId): void {
 
 function adm_passageiro_criar(int $id): void {
   $a = exigir_admin(PAPEIS_VIAGENS);
-  adm_viagem_carregar($id);
+  $v = adm_viagem_carregar($id);
   [$dados, $erro] = passageiro_ler_form();
+  if (!$erro) {
+    [$dados, $erro] = passageiro_aplicar_regras($v, $dados, passageiros_ocupacao($id));
+  }
   if ($erro) {
     resposta_json(['erro' => $erro], 422);
   }
@@ -74,10 +77,13 @@ function adm_passageiro_criar(int $id): void {
 
 function adm_passageiro_editar(int $id, int $passageiroId): void {
   exigir_admin(PAPEIS_VIAGENS);
-  adm_viagem_carregar($id);
+  $v = adm_viagem_carregar($id);
   $p = um("SELECT * FROM passageiros WHERE id = ? AND viagem_id = ? AND status = 'ativo'", [$passageiroId, $id])
     ?? resposta_json(['erro' => 'Passageiro não encontrado.'], 404);
   [$dados, $erro] = passageiro_ler_form();
+  if (!$erro) {
+    [$dados, $erro] = passageiro_aplicar_regras($v, $dados, passageiros_ocupacao($id, $passageiroId));
+  }
   if ($erro) {
     resposta_json(['erro' => $erro], 422);
   }
@@ -134,7 +140,7 @@ function adm_passageiros_importar_previa(int $id): void {
     redirecionar("/admin/viagens/$id/passageiros#importar");
   }
   // Recalcula repetidos: a lista pode ter mudado desde a leitura.
-  $imp['passageiros'] = importacao_marcar_repetidos($id, $imp['passageiros']);
+  $imp['passageiros'] = importacao_aplicar_regras($v, importacao_marcar_repetidos($id, $imp['passageiros']));
   exibir('admin/importar-previa', [
     'titulo' => 'Importar passageiros · ' . $v['codigo'],
     'menu' => 'viagens',
@@ -147,13 +153,13 @@ function adm_passageiros_importar_previa(int $id): void {
 /** Passo 3: grava os passageiros novos (os que já estão na lista são pulados). */
 function adm_passageiros_importar_confirmar(int $id): void {
   $a = exigir_admin(PAPEIS_VIAGENS);
-  adm_viagem_carregar($id);
+  $v = adm_viagem_carregar($id);
   $imp = $_SESSION['importacao'][$id] ?? null;
   if (!$imp) {
     flash('erro', 'A leitura da planilha expirou. Envie o arquivo de novo.');
     redirecionar("/admin/viagens/$id/passageiros#importar");
   }
-  $passageiros = importacao_marcar_repetidos($id, $imp['passageiros']);
+  $passageiros = importacao_aplicar_regras($v, importacao_marcar_repetidos($id, $imp['passageiros']));
   $novos = array_values(array_filter($passageiros, fn($p) => !$p['repetido']));
   transacao(function () use ($novos, $id, $a) {
     foreach ($novos as $p) {
@@ -175,7 +181,7 @@ function adm_passageiros_modelo(): void {
   $saida = fopen('php://output', 'w');
   fwrite($saida, "\xEF\xBB\xBF");
   fputcsv($saida, array_merge(['Nº'], array_map(fn($c) => $c[0], CAMPOS_PASSAGEIRO)), ';', '"', '');
-  fputcsv($saida, ['1', 'Maria da Silva', 'RG', '12.345.678-9', '10/05/1980', 'V-1020', 'Barra Funda', 'Vegetariana', '12', '11999990000'], ';', '"', '');
+  fputcsv($saida, ['1', 'Maria da Silva', 'RG', '12.345.678-9', '10/05/1980', 'V-1020', 'Barra Funda', 'Vegetariana', '12', '11999990000', 'Adulto'], ';', '"', '');
   fclose($saida);
   exit;
 }

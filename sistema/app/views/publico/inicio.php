@@ -2,7 +2,7 @@
   <section class="pub-hero">
     <p class="sobretitulo">Área do Guia · 645 Turismo</p>
     <h1>Do convite ao pagamento, sua viagem organizada</h1>
-    <p class="pub-lead">Receba convites para viagens e tours, consulte o briefing do grupo, envie o relatório depois do trabalho e acompanhe seus recebimentos. Tudo pelo celular.</p>
+    <p class="pub-lead">Receba convites para viagens e tours, consulte o briefing do grupo, envie o relatório depois do trabalho e acompanhe seus recebimentos.</p>
     <ul class="pub-recursos">
       <li><span class="num">01</span><strong>Convite e briefing</strong><span>Ponto de encontro, horário de apresentação, roteiro, transporte e contatos de cada viagem/tour.</span></li>
       <li><span class="num">02</span><strong>Relatório da viagem</strong><span>Conte como foi o trabalho: passageiros, ocorrências e observações.</span></li>

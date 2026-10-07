@@ -209,7 +209,7 @@
 
   function botaoMarca(p, tipo) {
     var feito = p[tipo];
-    var b = el('button', 'marca' + (feito ? ' feita' : ''));
+    var b = el('button', 'marcacao' + (feito ? ' feita' : ''));
     b.type = 'button';
     if (feito) {
       b.appendChild(el('span', 'marca-hora', '✓ ' + feito.hora));

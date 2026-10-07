@@ -178,7 +178,13 @@ $statusDoc = ['enviado' => ['Para conferir', 'aviso'], 'aprovado' => ['Aprovado'
         <?= csrf_campo() ?><button type="submit" class="btn btn-texto btn-p">Reenviar acesso (senha temporária)</button>
       </form>
     <?php endif; ?>
-    <?php if ($g['status'] !== 'pre_cadastro'): ?>
+    <?php if (in_array($g['status'], ['rascunho', 'pre_cadastro'], true)): ?>
+      <form method="post" action="/admin/guias/<?= (int) $g['id'] ?>/excluir" class="inline-form"
+            data-confirmar="Excluir definitivamente o cadastro em andamento de <?= e($g['nome_social'] ?: $g['nome']) ?>? Os dados preenchidos serão apagados e a pessoa poderá se cadastrar de novo com o mesmo CPF. Não dá para desfazer.">
+        <?= csrf_campo() ?><button type="submit" class="btn btn-texto btn-p vermelho">Excluir cadastro em andamento</button>
+      </form>
+    <?php endif; ?>
+    <?php if (!in_array($g['status'], ['rascunho', 'pre_cadastro'], true)): ?>
     <form method="post" action="/admin/guias/<?= (int) $g['id'] ?>/senha" class="inline-form" data-confirmar="Enviar ao guia um link para criar nova senha?">
       <?= csrf_campo() ?><button type="submit" class="btn btn-texto btn-p">Enviar link de nova senha</button>
     </form>

@@ -186,3 +186,39 @@ function adm_guia_senha(int $id): void {
   flash('sucesso', 'Link para nova senha enviado para ' . $g['email'] . '.');
   redirecionar("/admin/guias/$id");
 }
+
+/**
+ * Exclui um cadastro que não chegou a ser usado: incompleto (rascunho) ou pré-cadastro sem trabalho.
+ * Serve para destravar quem não consegue continuar: a pessoa recomeça do zero com o mesmo CPF.
+ * Não exclui se houver convite/escala, nota, pagamento ou chamado ligados ao guia.
+ */
+function adm_guia_excluir_incompleto(int $id): void {
+  $a = exigir_admin(['coordenador']);
+  $g = um('SELECT * FROM guias WHERE id = ?', [$id]) ?? abortar(404);
+  if (!in_array($g['status'], ['rascunho', 'pre_cadastro'], true)) {
+    flash('erro', 'Só é possível excluir cadastro incompleto ou pré-cadastro. Para os demais, use Inativar.');
+    redirecionar("/admin/guias/$id");
+  }
+  foreach (['escalas' => 'convites ou escalas', 'envios' => 'relatórios ou notas fiscais', 'pagamentos' => 'pagamentos', 'chamados' => 'chamados'] as $tabela => $rotulo) {
+    if (valor("SELECT 1 FROM $tabela WHERE guia_id = ?", [$id])) {
+      flash('erro', "Este guia já tem $rotulo no sistema e não pode ser excluído. Use Inativar.");
+      redirecionar("/admin/guias/$id");
+    }
+  }
+  transacao(function () use ($id) {
+    foreach (todos('SELECT arquivo_path FROM guia_documentos WHERE guia_id = ?', [$id]) as $d) {
+      apagar_arquivo($d['arquivo_path']);
+    }
+    apagar_arquivo(valor('SELECT foto_path FROM guias WHERE id = ?', [$id]));
+    foreach (['guia_documentos', 'guia_funcoes', 'guia_idiomas', 'guia_regioes', 'guia_dados_bancarios', 'disponibilidade'] as $t) {
+      q("DELETE FROM $t WHERE guia_id = ?", [$id]);
+    }
+    q("DELETE FROM password_resets WHERE usuario_id = ? AND usuario_tipo IN ('guia', 'cadastro')", [$id]);
+    q("DELETE FROM notificacoes WHERE destinatario_tipo = 'guia' AND destinatario_id = ?", [$id]);
+    q('DELETE FROM guias WHERE id = ?', [$id]);
+  });
+  // A auditoria guarda só o necessário para rastrear a exclusão (sem dados pessoais).
+  auditar('guia_cadastro_excluido', 'guia', $id, ['status' => $g['status'], 'codigo' => $g['codigo']]);
+  flash('sucesso', 'Cadastro de ' . ($g['nome_social'] ?: $g['nome']) . ' excluído. A pessoa pode se cadastrar de novo com o mesmo CPF.');
+  redirecionar('/admin/guias?aba=' . ($g['status'] === 'rascunho' ? 'rascunhos' : 'pre'));
+}

@@ -129,6 +129,7 @@ return [
   ['GET', '/admin/guias/pre-cadastro/modelo.csv', 'adm_pre_cadastro_modelo'],
   ['POST', '/admin/guias/{id}/reenviar-acesso', 'adm_guia_reenviar_acesso'],
   ['POST', '/admin/guias/{id}/link-cadastro', 'adm_guia_link_cadastro'],
+  ['POST', '/admin/guias/{id}/excluir', 'adm_guia_excluir_incompleto'],
   ['GET', '/admin/guias/{id}', 'adm_guia'],
   ['POST', '/admin/guias/{id}/status', 'adm_guia_status'],
   ['POST', '/admin/guias/{id}/notas', 'adm_guia_notas'],

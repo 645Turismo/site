@@ -1,8 +1,7 @@
 <?php
-// Funções, idiomas, especialidades, regiões, Cadastur. Variáveis: $g, $x (guia_extras), $cat (guia_catalogos).
+// Funções, idiomas, especialidades, Cadastur. Variáveis: $g, $x (guia_extras), $cat (guia_catalogos).
 $val = fn(string $c) => antigo($c, (string) ($g[$c] ?? ''));
 $funcoesMarcadas = array_map('intval', antigo_lista('funcoes', $x['funcoes']));
-$regioesMarcadas = array_map('intval', antigo_lista('regioes', $x['regioes']));
 $especialidades = antigo_lista('especialidades', array_filter(array_map('trim', explode(',', (string) ($g['especialidades'] ?? '')))));
 $categorias = antigo_lista('cadastur_categorias', array_filter(array_map('trim', explode(',', (string) ($g['cadastur_categorias'] ?? '')))));
 $idiomas = [];
@@ -71,15 +70,8 @@ while (count($idiomas) < 3) {
 </fieldset>
 
 <fieldset>
-  <legend><span>04</span> Onde e como trabalha</legend>
-  <div class="campo"><span>Regiões em que aceita trabalhar *</span>
-    <div class="opcoes-linha">
-      <?php foreach ($cat['regioes'] as $r): ?>
-        <label class="opcao"><input type="checkbox" name="regioes[]" value="<?= (int) $r['id'] ?>" <?= in_array((int) $r['id'], $regioesMarcadas, true) ? 'checked' : '' ?>> <span><?= e($r['nome']) ?></span></label>
-      <?php endforeach; ?>
-    </div>
-  </div>
-  <div class="campo espaco-topo"><span>Especialidades</span>
+  <legend><span>04</span> Como trabalha</legend>
+  <div class="campo"><span>Especialidades</span>
     <div class="opcoes-linha">
       <?php foreach (ESPECIALIDADES as $esp): ?>
         <label class="opcao"><input type="checkbox" name="especialidades[]" value="<?= e($esp) ?>" <?= in_array($esp, $especialidades, true) ? 'checked' : '' ?>> <span><?= e($esp) ?></span></label>

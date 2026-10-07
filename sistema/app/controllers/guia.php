@@ -167,7 +167,7 @@ function guia_viagem_responder(int $id): void {
   if (!in_array($decisao, ['aceitar', 'recusar'], true)) {
     abortar(400);
   }
-  if ($decisao === 'aceitar' && $g['status'] !== 'aprovado') {
+  if ($decisao === 'aceitar' && !guia_escalavel($g)) {
     flash('erro', 'Seu cadastro precisa estar aprovado para aceitar convites.');
     redirecionar("/guia/viagens/$id");
   }

@@ -77,9 +77,6 @@ function pub_cadastro_salvar(int $etapa): void {
         cadastro_descartar_rascunho((int) $existente['id']); // rascunho abandonado em outro aparelho
       }
     }
-    if (empty($g['foto_path']) && !upload_enviado('foto')) {
-      $erros[] = 'Envie uma foto de rosto.';
-    }
     if ($erros) {
       $volta($erros);
     }
@@ -89,11 +86,6 @@ function pub_cadastro_salvar(int $etapa): void {
       $g = um('SELECT * FROM guias WHERE id = ?', [$id]);
     } else {
       atualizar('guias', $d + ['atualizado_em' => agora()], 'id = ?', [$g['id']]);
-    }
-    try {
-      guia_salvar_foto((int) $g['id'], $g['foto_path']);
-    } catch (RuntimeException $e) {
-      $volta(['Foto: ' . $e->getMessage()]);
     }
   } elseif ($etapa === 2) {
     [$d, $funcoes, $idiomas, $regioes, $erros] = guia_ler_atuacao();

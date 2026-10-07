@@ -19,9 +19,6 @@
   <select name="funcao" aria-label="Função"><option value="">Todas as funções</option>
     <?php foreach ($cat['funcoes'] as $fn): ?><option value="<?= (int) $fn['id'] ?>" <?= $f['funcao'] === (int) $fn['id'] ? 'selected' : '' ?>><?= e($fn['nome']) ?></option><?php endforeach; ?>
   </select>
-  <select name="regiao" aria-label="Região"><option value="">Todas as regiões</option>
-    <?php foreach ($cat['regioes'] as $r): ?><option value="<?= (int) $r['id'] ?>" <?= $f['regiao'] === (int) $r['id'] ? 'selected' : '' ?>><?= e($r['nome']) ?></option><?php endforeach; ?>
-  </select>
   <input type="text" name="idioma" value="<?= e($f['idioma']) ?>" placeholder="Idioma" aria-label="Idioma" list="idiomas-filtro">
   <datalist id="idiomas-filtro"><?php foreach (IDIOMAS_SUGERIDOS as $s): ?><option value="<?= e($s) ?>"><?php endforeach; ?></datalist>
   <button type="submit" class="btn btn-contorno btn-p">Filtrar</button>

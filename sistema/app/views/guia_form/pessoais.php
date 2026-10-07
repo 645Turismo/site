@@ -45,16 +45,6 @@ $val = fn(string $c) => antigo($c, (string) ($g[$c] ?? ''));
     <label class="campo campo-largo"><span>Doença preexistente ou cuidado de saúde</span>
       <input type="text" name="doencas_preexistentes" maxlength="500" value="<?= e($val('doencas_preexistentes')) ?>" placeholder="Ex.: diabetes, pressão alta, alergia a frutos do mar. Deixe em branco se não tiver.">
       <small class="texto-2">Só a equipe da 645 vê. Ajuda a cuidar de você durante as viagens.</small></label>
-    <div class="campo campo-largo">
-      <span>Foto de rosto <?= empty($g['foto_path']) ? '*' : '' ?></span>
-      <div class="foto-envio">
-        <?php if (!empty($g['foto_path']) && !empty($g['id'])): ?>
-          <img src="<?= e(arquivo_url('foto', $g)) ?>" alt="Sua foto atual" class="foto-atual" width="72" height="72">
-        <?php endif; ?>
-        <input type="file" name="foto" accept="image/jpeg,image/png,image/webp" capture="user">
-      </div>
-      <small>Rosto visível, de frente e sem óculos escuros. Pelo celular dá para tirar na hora.</small>
-    </div>
   </div>
 </fieldset>
 

@@ -52,11 +52,6 @@ function guia_perfil_pessoais(): void {
     guia_perfil_volta('dados', $erros);
   }
   atualizar('guias', $d + ['atualizado_em' => agora()], 'id = ?', [$g['id']]);
-  try {
-    guia_salvar_foto((int) $g['id'], $g['foto_path']);
-  } catch (RuntimeException $e) {
-    guia_perfil_volta('dados', ['Foto: ' . $e->getMessage()]);
-  }
   auditar('perfil_dados_editados', 'guia', (int) $g['id']);
   guia_perfil_ok('dados', 'Dados atualizados.');
 }

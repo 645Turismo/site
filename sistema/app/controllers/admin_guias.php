@@ -30,7 +30,6 @@ function adm_guias(): void {
   $f = [
     'q' => trim((string) ($_GET['q'] ?? '')),
     'funcao' => (int) ($_GET['funcao'] ?? 0),
-    'regiao' => (int) ($_GET['regiao'] ?? 0),
     'idioma' => trim((string) ($_GET['idioma'] ?? '')),
   ];
   $where = ['g.anonimizado_em IS NULL'];
@@ -49,10 +48,6 @@ function adm_guias(): void {
   if ($f['funcao']) {
     $where[] = 'EXISTS (SELECT 1 FROM guia_funcoes gf WHERE gf.guia_id = g.id AND gf.funcao_id = ?)';
     $params[] = $f['funcao'];
-  }
-  if ($f['regiao']) {
-    $where[] = 'EXISTS (SELECT 1 FROM guia_regioes gr WHERE gr.guia_id = g.id AND gr.regiao_id = ?)';
-    $params[] = $f['regiao'];
   }
   if ($f['idioma'] !== '') {
     $where[] = 'EXISTS (SELECT 1 FROM guia_idiomas gi WHERE gi.guia_id = g.id AND gi.idioma LIKE ?)';
@@ -91,7 +86,6 @@ function adm_guia(int $id): void {
     'g' => $g,
     'x' => guia_extras($id),
     'funcoesNomes' => array_column(todos('SELECT f.nome FROM guia_funcoes gf JOIN funcoes f ON f.id = gf.funcao_id WHERE gf.guia_id = ? ORDER BY f.ordem', [$id]), 'nome'),
-    'regioesNomes' => array_column(todos('SELECT r.nome FROM guia_regioes gr JOIN regioes r ON r.id = gr.regiao_id WHERE gr.guia_id = ? ORDER BY r.ordem', [$id]), 'nome'),
     'historico' => todos("SELECT v.id, v.codigo, v.nome, MIN(d.data) AS inicio, COUNT(*) AS diarias, MAX(s.status) AS status
       FROM escalas s JOIN diarias d ON d.id = s.diaria_id JOIN viagens v ON v.id = d.viagem_id
       WHERE s.guia_id = ? AND s.status NOT IN ('cancelado') GROUP BY v.id, v.codigo, v.nome ORDER BY MIN(d.data) DESC LIMIT 20", [$id]),

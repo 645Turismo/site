@@ -12,7 +12,6 @@ $statusDoc = ['enviado' => ['Para conferir', 'aviso'], 'aprovado' => ['Aprovado'
 ?>
 <div class="pagina-topo">
   <div class="ficha-guia-topo">
-    <?php if ($g['foto_path']): ?><img src="<?= e(arquivo_url('foto', $g)) ?>" alt="" class="foto-guia" width="88" height="88"><?php endif; ?>
     <div>
       <p class="sobretitulo mono"><?= e($g['codigo']) ?></p>
       <h1><?= e($g['nome']) ?></h1>
@@ -72,7 +71,6 @@ $statusDoc = ['enviado' => ['Para conferir', 'aviso'], 'aprovado' => ['Aprovado'
       <dl class="ficha">
         <dt>Funções</dt><dd><?= e(implode(', ', $funcoesNomes) ?: '—') ?></dd>
         <dt>Idiomas</dt><dd><?= e(implode(', ', $idiomas) ?: 'Só português') ?></dd>
-        <dt>Regiões</dt><dd><?= e(implode(', ', $regioesNomes) ?: '—') ?></dd>
         <dt>Especialidades</dt><dd><?= e($g['especialidades'] ?: '—') ?></dd>
         <dt>Pernoite</dt><dd><?= (int) $g['aceita_pernoite'] ? 'Aceita' : 'Não aceita' ?></dd>
         <dt>Cadastur</dt><dd><?= e(implode(' · ', array_filter([$g['cadastur_numero'], $g['cadastur_uf'], $g['cadastur_categorias'], $g['cadastur_validade'] ? 'validade ' . formatar_data($g['cadastur_validade']) : null])) ?: '—') ?>

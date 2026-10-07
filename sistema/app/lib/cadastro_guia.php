@@ -153,9 +153,6 @@ function guia_ler_atuacao(): array {
   if (!$funcoes) {
     $erros[] = 'Escolha pelo menos uma função.';
   }
-  if (!$regioes) {
-    $erros[] = 'Escolha pelo menos uma região onde pode trabalhar.';
-  }
   $exigeCadastur = (bool) array_filter($catalogo['funcoes'], fn($f) => in_array((int) $f['id'], $funcoes, true) && (int) $f['exige_cadastur']);
   $exigeIdioma = (bool) array_filter($catalogo['funcoes'], fn($f) => in_array((int) $f['id'], $funcoes, true) && (int) $f['exige_idioma']);
   if ($exigeCadastur && (!$d['cadastur_numero'] || !$d['cadastur_uf'])) {

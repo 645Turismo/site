@@ -16,7 +16,7 @@ $contato = email_equipe();
     <h2>3. Acesso</h2>
     <p>O acesso é pessoal e intransferível, com CPF e senha. Não compartilhe sua senha. Em caso de suspeita de uso indevido, troque a senha e avise a equipe.</p>
     <h2>4. Convites e escalas</h2>
-    <p>Estar cadastrado não garante trabalho. Os convites dependem das necessidades de cada viagem ou tour, da sua disponibilidade, função, idiomas e região. Ao aceitar um convite, você se compromete a comparecer no horário de apresentação e seguir as orientações do briefing. Imprevistos devem ser avisados o quanto antes pela Ajuda.</p>
+    <p>Estar cadastrado não garante trabalho. Os convites dependem das necessidades de cada viagem ou tour, da sua disponibilidade, função e idiomas. Ao aceitar um convite, você se compromete a comparecer no horário de apresentação e seguir as orientações do briefing. Imprevistos devem ser avisados o quanto antes pela Ajuda.</p>
     <h2>5. Lista de passageiros</h2>
     <p>Os dados dos passageiros são confidenciais e devem ser usados apenas para a operação da viagem: conferência no embarque, check-in, check-out e contato em caso de necessidade. É proibido copiar, divulgar ou usar esses dados para qualquer outro fim. Ajustes feitos por você na lista ficam registrados e são comunicados à coordenação.</p>
     <h2>6. Relatórios, notas fiscais e pagamentos</h2>
@@ -25,7 +25,7 @@ $contato = email_equipe();
     <p>A 645 Turismo pode suspender ou encerrar o acesso em caso de dados falsos, uso indevido de informações, faltas sem aviso ou descumprimento destes termos.</p>
   <?php else: ?>
     <h2>1. Quais dados tratamos</h2>
-    <p>Dados de cadastro (nome, CPF, nascimento, contatos, endereço, foto), restrição alimentar e informações de saúde que você decidir informar (usadas só para cuidar de você nas viagens e visíveis apenas para a equipe), dados profissionais (funções, idiomas, Cadastur, regiões, disponibilidade), documentos enviados, dados de empresa e de pagamento (CNPJ, chave PIX, conta), registros de trabalho (escalas, relatórios, notas fiscais, pagamentos) e registros de acesso.</p>
+    <p>Dados de cadastro (nome, CPF, nascimento, contatos, endereço), restrição alimentar e informações de saúde que você decidir informar (usadas só para cuidar de você nas viagens e visíveis apenas para a equipe), dados profissionais (funções, idiomas, Cadastur, disponibilidade), documentos enviados, dados de empresa e de pagamento (CNPJ, chave PIX, conta), registros de trabalho (escalas, relatórios, notas fiscais, pagamentos) e registros de acesso.</p>
     <h2>2. Para que usamos</h2>
     <p>Credenciamento e conferência de documentos; montagem de escalas e envio de convites; operação das viagens; pagamento das diárias e cumprimento de obrigações fiscais; comunicação com você; segurança do sistema.</p>
     <h2>3. Base legal</h2>

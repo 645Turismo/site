@@ -3,7 +3,7 @@ $comCpf = empty($g['id']);
 $preCadastro = ($g['status'] ?? '') === 'pre_cadastro';
 $textos = [
   1 => 'Comece pelos seus dados. Leva uns 10 minutos e dá para voltar a qualquer etapa.',
-  2 => 'Conte o que você faz: funções, idiomas, regiões e Cadastur. É assim que os convites chegam até você.',
+  2 => 'Conte o que você faz: funções, idiomas e Cadastur. É assim que os convites chegam até você.',
   3 => 'Envie os documentos. Pelo celular dá para fotografar na hora.',
   4 => 'Dados para a nota fiscal e para receber os pagamentos.',
   5 => 'Crie sua senha de acesso. Você vai entrar com o CPF e essa senha.',

@@ -116,3 +116,12 @@ function ler_moeda(string $valor): float {
   $v = str_replace(['R$', ' ', '.'], '', $valor);
   return round((float) str_replace(',', '.', $v), 2);
 }
+
+// Quem pode ser escalado: guia aprovado ou guia pré-cadastrado pela equipe (antes e depois de completar o
+// cadastro, enquanto a análise não termina). Cadastro público ainda não aprovado não entra.
+const SQL_GUIA_ESCALAVEL = "(g.status = 'aprovado' OR (g.pre_cadastrado_por IS NOT NULL AND g.status IN ('pre_cadastro', 'em_analise')))";
+
+function guia_escalavel(array $g): bool {
+  return $g['status'] === 'aprovado'
+    || (!empty($g['pre_cadastrado_por']) && in_array($g['status'], ['pre_cadastro', 'em_analise'], true));
+}

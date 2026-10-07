@@ -233,7 +233,7 @@ $passos = [
     <?php elseif (!$vagas || !$diasFuturos): ?>
       <p class="texto-2">Cadastre as vagas por função e pelo menos um dia de trabalho a partir de hoje.</p>
     <?php elseif (!$guiasParaAlocar): ?>
-      <p class="texto-2">Nenhum guia aprovado no cadastro ainda.</p>
+      <p class="texto-2">Nenhum guia aprovado ou pré-cadastrado ainda.</p>
     <?php else: ?>
       <form method="post" action="/admin/viagens/<?= (int) $v['id'] ?>/convidar" class="form">
         <?= csrf_campo() ?>
@@ -245,7 +245,8 @@ $passos = [
                   <?php foreach ($porSituacao[$chave] as $g): ?>
                     <option value="<?= (int) $g['id'] ?>"><?= e(($g['nome_social'] ?: $g['nome']) . ' · ' . $g['codigo']
                       . ($g['funcoes'] ? ' · ' . $g['funcoes'] : '') . ($g['idiomas'] ? ' · ' . $g['idiomas'] : '')
-                      . ($g['conflitos'] ? ' · em ' . $g['conflitos'] : '')) ?></option>
+                      . ($g['conflitos'] ? ' · em ' . $g['conflitos'] : '')
+                      . ($g['status'] === 'pre_cadastro' ? ' · pré-cadastro' : ($g['status'] === 'em_analise' ? ' · cadastro em análise' : ''))) ?></option>
                   <?php endforeach; ?>
                 </optgroup>
               <?php endforeach; ?>

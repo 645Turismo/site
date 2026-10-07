@@ -273,15 +273,15 @@ function adm_viagem_criar(): void {
 }
 
 /**
- * Situação de cada guia aprovado para os dias desta viagem/tour, para a alocação:
+ * Situação de cada guia que pode ser escalado (aprovado ou pré-cadastrado) para os dias desta viagem/tour, para a alocação:
  * disponivel (marcou disponibilidade), conflito (escalado em outra viagem no mesmo dia),
  * indisponivel (marcou que não pode), sem_marcacao, ou ja_escalado (já está nesta).
  */
 function adm_viagem_guias_para_alocar(array $v, array $datas): array {
-  $guias = todos("SELECT g.id, g.nome, g.nome_social, g.codigo, g.celular,
+  $guias = todos("SELECT g.id, g.nome, g.nome_social, g.codigo, g.celular, g.status,
       (SELECT " . sql_lista('f.nome') . " FROM guia_funcoes gf JOIN funcoes f ON f.id = gf.funcao_id WHERE gf.guia_id = g.id) AS funcoes,
       (SELECT " . sql_lista('gi.idioma') . " FROM guia_idiomas gi WHERE gi.guia_id = g.id) AS idiomas
-    FROM guias g WHERE g.status = 'aprovado' ORDER BY g.nome");
+    FROM guias g WHERE " . SQL_GUIA_ESCALAVEL . " ORDER BY g.nome");
   if (!$guias || !$datas) {
     foreach ($guias as &$g) {
       $g['situacao'] = 'sem_marcacao';
@@ -541,7 +541,7 @@ function adm_viagem_convidar(int $id): void {
     flash('erro', 'Publique a viagem/tour antes de escalar guias.');
     redirecionar("/admin/viagens/$id#equipe");
   }
-  $g = um("SELECT * FROM guias WHERE id = ? AND status = 'aprovado'", [(int) entrada('guia_id')]);
+  $g = um("SELECT g.* FROM guias g WHERE g.id = ? AND " . SQL_GUIA_ESCALAVEL, [(int) entrada('guia_id')]);
   $vaga = um('SELECT vv.*, f.nome AS funcao FROM viagem_vagas vv JOIN funcoes f ON f.id = vv.funcao_id
     WHERE vv.id = ? AND vv.viagem_id = ?', [(int) entrada('vaga_id'), $id]);
   $diariasIds = array_map('intval', (array) ($_POST['diarias'] ?? []));

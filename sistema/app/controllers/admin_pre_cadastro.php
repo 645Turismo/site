@@ -334,6 +334,15 @@ function adm_pre_cadastro_cancelar(): void {
   redirecionar('/admin/guias/pre-cadastro');
 }
 
+/** Ficha do guia com cadastro incompleto: envia o link para continuar de onde parou. */
+function adm_guia_link_cadastro(int $id): void {
+  exigir_admin(['coordenador']);
+  $g = um("SELECT * FROM guias WHERE id = ? AND status = 'rascunho'", [$id]) ?? abortar(404);
+  $ok = cadastro_enviar_link_continuar($g);
+  flash($ok ? 'sucesso' : 'erro', $ok ? 'Link para continuar o cadastro enviado para ' . $g['email'] . '.' : 'Este cadastro não tem e-mail válido ou o envio falhou.');
+  redirecionar("/admin/guias/$id");
+}
+
 /** Ficha do guia: gera nova senha temporária (pré-cadastro que expirou ou e-mail perdido). */
 function adm_guia_reenviar_acesso(int $id): void {
   exigir_admin(['coordenador']);

@@ -164,6 +164,12 @@ $statusDoc = ['enviado' => ['Para conferir', 'aviso'], 'aprovado' => ['Aprovado'
       </form>
     </section>
 
+    <?php if ($g['status'] === 'rascunho' && $g['email']): ?>
+      <p class="texto-2">Cadastro parado na etapa <?= (int) $g['cadastro_etapa'] ?>. O guia pode receber um link para continuar de onde parou.</p>
+      <form method="post" action="/admin/guias/<?= (int) $g['id'] ?>/link-cadastro" class="inline-form" data-confirmar="Enviar para <?= e($g['email']) ?> o link para continuar o cadastro?">
+        <?= csrf_campo() ?><button type="submit" class="btn btn-contorno btn-p">Enviar link para continuar o cadastro</button>
+      </form>
+    <?php endif; ?>
     <?php if ($g['status'] === 'pre_cadastro'): ?>
       <p class="texto-2"><?= (int) $g['trocar_senha'] ? 'Ainda não fez o primeiro acesso' . ($g['senha_temporaria_expira'] ? ' (senha temporária vale até ' . e(formatar_data_hora($g['senha_temporaria_expira'])) . ')' : '') . '.' : 'Já criou a senha; falta completar o cadastro.' ?></p>
     <?php endif; ?>

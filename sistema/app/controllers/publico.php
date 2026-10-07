@@ -38,7 +38,12 @@ function pub_esqueci_senha_enviar(): void {
     redirecionar('/esqueci-senha');
   }
   registrar_tentativa($chaves);
-  $p = $cpf ? um("SELECT * FROM guias WHERE cpf = ? AND senha_hash IS NOT NULL AND anonimizado_em IS NULL", [$cpf]) : null;
+  // Cadastro ainda em andamento (sem senha): manda o link para continuar o cadastro.
+  $rascunho = $cpf ? um("SELECT * FROM guias WHERE cpf = ? AND status = 'rascunho' AND anonimizado_em IS NULL", [$cpf]) : null;
+  if ($rascunho) {
+    cadastro_enviar_link_continuar($rascunho);
+  }
+  $p = $cpf && !$rascunho ? um("SELECT * FROM guias WHERE cpf = ? AND senha_hash IS NOT NULL AND anonimizado_em IS NULL", [$cpf]) : null;
   if ($p && $p['email']) {
     $token = criar_token_reset('guia', (int) $p['id']);
     $link = url_absoluta('/redefinir-senha?token=' . $token);

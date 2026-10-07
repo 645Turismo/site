@@ -34,6 +34,7 @@
     <div class="painel-acesso-rodape">
       <span>Ainda não trabalha com a gente?</span>
       <a href="/cadastro" class="link-sublinhado">Fazer meu cadastro de guia</a>
+      <a href="/cadastro/continuar" class="link-sublinhado">Continuar um cadastro que comecei</a>
       <a href="/status" class="link-sublinhado">Acompanhar meu cadastro</a>
     </div>
   </section>

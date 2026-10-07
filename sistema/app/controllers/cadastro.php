@@ -68,15 +68,22 @@ function pub_cadastro_salvar(int $etapa): void {
   };
 
   if ($etapa === 1) {
-    [$d, $erros] = guia_ler_pessoais($g === null, $g['id'] ?? null);
-    if (!$g && !$erros) {
-      $existente = um('SELECT * FROM guias WHERE cpf = ?', [$d['cpf']]);
-      if ($existente && $existente['status'] !== 'rascunho') {
-        $erros[] = 'Este CPF já tem cadastro. Entre com sua senha ou use "Esqueci a senha".';
-      } elseif ($existente) {
-        cadastro_descartar_rascunho((int) $existente['id']); // rascunho abandonado em outro aparelho
-      }
+    // CPF que já tem cadastro é tratado antes das outras validações (o e-mail, por exemplo, é o do próprio rascunho).
+    $cpfInformado = so_digitos(entrada('cpf'));
+    $existente = !$g && $cpfInformado !== '' ? um('SELECT * FROM guias WHERE cpf = ?', [$cpfInformado]) : null;
+    if ($existente && $existente['status'] !== 'rascunho') {
+      $volta(['Este CPF já tem cadastro. Entre com sua senha ou use "Esqueci a senha".']);
     }
+    if ($existente && $existente['email']) {
+      // Rascunho começado em outro momento/aparelho: não apaga o que foi preenchido, manda o link para continuar.
+      cadastro_enviar_link_continuar($existente);
+      $volta(['Você já começou um cadastro com este CPF. Enviamos para ' . mascarar_email($existente['email'])
+        . ' um link para continuar de onde parou (confira também o spam).']);
+    }
+    if ($existente) {
+      cadastro_descartar_rascunho((int) $existente['id']); // rascunho sem e-mail: não há como retomar
+    }
+    [$d, $erros] = guia_ler_pessoais($g === null, $g['id'] ?? null);
     if ($erros) {
       $volta($erros);
     }
@@ -182,4 +189,66 @@ function pub_status_consultar(): void {
   $g = um('SELECT status, status_motivo, nome, nome_social, codigo FROM guias WHERE cpf = ? AND nascimento = ? AND anonimizado_em IS NULL',
     [so_digitos(entrada('cpf')), entrada('nascimento')]);
   exibir('publico/status', ['titulo' => 'Acompanhar cadastro', 'resultado' => $g ?: false], 'publico');
+}
+
+// ---------- Continuar o cadastro em outro momento ou aparelho ----------
+// O rascunho fica ligado ao navegador e ainda não tem senha. Quem saiu no meio recebe por e-mail
+// um link (válido por 3 dias) que reabre o cadastro na etapa em que parou, em qualquer aparelho.
+
+const CADASTRO_LINK_VALIDADE_MIN = 3 * 24 * 60;
+
+function mascarar_email(?string $email): string {
+  if (!$email || !str_contains($email, '@')) {
+    return '';
+  }
+  [$usuario, $dominio] = explode('@', $email, 2);
+  return mb_substr($usuario, 0, 2) . str_repeat('*', max(3, mb_strlen($usuario) - 2)) . '@' . $dominio;
+}
+
+function cadastro_enviar_link_continuar(array $g): bool {
+  if (!$g['email']) {
+    return false;
+  }
+  $token = criar_token_reset('cadastro', (int) $g['id'], CADASTRO_LINK_VALIDADE_MIN);
+  auditar('cadastro_link_continuar', 'guia', (int) $g['id']);
+  return enviar_email((string) $g['email'], 'Continue seu cadastro na 645 Turismo',
+    '<p>Olá, ' . e(primeiro_nome($g)) . '.</p>'
+    . '<p>Seu cadastro de guia na 645 Turismo está em andamento. Use o botão abaixo para continuar de onde parou, em qualquer celular ou computador.</p>'
+    . '<p><a href="' . e(url_absoluta('/cadastro/retomar?token=' . $token)) . '" style="display:inline-block;padding:12px 22px;background:#53D9B2;color:#000;text-decoration:none;font-weight:bold;border-radius:999px">Continuar meu cadastro</a></p>'
+    . '<p>O link vale por 3 dias. Se ele vencer, peça outro em ' . e(url_absoluta('/cadastro/continuar')) . '.</p>');
+}
+
+function pub_cadastro_continuar(): void {
+  exibir('publico/continuar-cadastro', ['titulo' => 'Continuar cadastro'], 'publico');
+}
+
+function pub_cadastro_continuar_enviar(): void {
+  $chaves = ['continuar-ip:' . ip_cliente()];
+  if (login_bloqueado($chaves)) {
+    flash('erro', 'Muitas solicitações. Aguarde alguns minutos e tente de novo.');
+    redirecionar('/cadastro/continuar');
+  }
+  registrar_tentativa($chaves);
+  $cpf = so_digitos(entrada('cpf'));
+  $g = $cpf ? um("SELECT * FROM guias WHERE cpf = ? AND status = 'rascunho' AND anonimizado_em IS NULL", [$cpf]) : null;
+  if ($g) {
+    cadastro_enviar_link_continuar($g);
+  }
+  // Mesma resposta exista ou não o rascunho, para não revelar quem tem cadastro.
+  flash('sucesso', 'Se houver um cadastro em andamento com este CPF, enviamos o link para continuar ao e-mail informado nele. Confira também o spam.');
+  redirecionar('/cadastro/continuar');
+}
+
+function pub_cadastro_retomar(): void {
+  $reset = buscar_token_reset((string) ($_GET['token'] ?? ''), 'cadastro');
+  $g = $reset ? um("SELECT * FROM guias WHERE id = ? AND status = 'rascunho'", [$reset['usuario_id']]) : null;
+  if (!$g) {
+    flash('erro', 'Link inválido ou vencido. Peça um novo abaixo.');
+    redirecionar('/cadastro/continuar');
+  }
+  consumir_token_reset((int) $reset['id']);
+  session_regenerate_id(true);
+  $_SESSION['cadastro_guia_id'] = (int) $g['id'];
+  flash('sucesso', 'Bem-vindo(a) de volta! Seu cadastro continua de onde parou.');
+  redirecionar('/cadastro');
 }

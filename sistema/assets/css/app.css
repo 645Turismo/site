@@ -253,3 +253,4 @@ code { font-size: 0.9em; color: var(--amarelo); }
 @media (min-width: 640px) { .tour { align-items: center; } }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+

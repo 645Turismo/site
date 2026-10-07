@@ -148,3 +148,29 @@
 .conferencia-acoes .inline-form { margin: 0; }
 .relatorio-texto { padding: 12px 14px; border-left: 3px solid var(--menta); background: var(--preto); }
 .lista-viagens a.urgente { box-shadow: inset 3px 0 0 var(--erro); }
+
+/* Celular: blocos em coluna única, sem texto espremido entre a data e o selo. */
+@media (max-width: 560px) {
+  .destaque { grid-template-columns: 1fr; padding: 20px; }
+  .destaque-data { grid-row: auto; display: flex; align-items: baseline; gap: 10px; text-align: left; padding: 0 0 12px; border-right: none; border-bottom: 1px solid var(--linha); }
+  .destaque-data strong { font-size: 40px; }
+  .destaque-rodape { grid-column: 1; }
+}
+
+/* Listas com data + texto + selo: em blocos estreitos (coluna lateral ou celular) o selo desce para baixo do texto. */
+.feed { container-type: inline-size; }
+@container (max-width: 520px) {
+  .feed li { grid-template-columns: 64px 1fr; gap: 6px 12px; }
+  .feed li > :nth-child(3) { grid-column: 2; justify-self: start; }
+}
+
+/* Etapas da viagem em grade regular (3 x 2 no computador, 2 x 3 no celular), sem item sobrando sozinho. */
+.passos { display: grid; grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 900px) { .passos { grid-template-columns: repeat(3, 1fr); } }
+.passos a { white-space: normal; height: 100%; }
+
+/* Horários: o número fica sempre na mesma linha, mesmo quando o rótulo quebra em duas. */
+.horarios > div { display: flex; flex-direction: column; justify-content: space-between; gap: 6px; }
+.horarios strong { margin-top: 0; }
+.horarios { container-type: inline-size; }
+@container (max-width: 560px) { .horarios strong { font-size: 24px; } }

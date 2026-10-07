@@ -191,6 +191,22 @@ function adm_viagens(): void {
 
 function adm_viagem_nova(): void {
   $a = exigir_admin(PAPEIS_VIAGENS);
+  // Copiar viagem: o formulário já vem com os dados de outra (menos código), para trocar código e datas.
+  $copia = isset($_GET['copiar']) ? um('SELECT * FROM viagens WHERE id = ?', [(int) $_GET['copiar']]) : null;
+  if ($copia) {
+    exibir('admin/viagem-form', [
+      'titulo' => 'Copiar ' . $copia['codigo'],
+      'menu' => 'viagens',
+      'a' => $a,
+      'v' => ['codigo' => '', 'status' => 'rascunho'] + $copia,
+      'origens' => viagem_origens((int) $copia['id']),
+      'contatos' => todos('SELECT papel, nome, telefone, observacao FROM viagem_contatos WHERE viagem_id = ? ORDER BY ordem', [$copia['id']]),
+      'nova' => true,
+      'copia' => $copia,
+      'vagasCopia' => todos('SELECT vv.vagas, vv.valor_diaria, f.nome FROM viagem_vagas vv JOIN funcoes f ON f.id = vv.funcao_id WHERE vv.viagem_id = ?', [$copia['id']]),
+    ], 'admin');
+    return;
+  }
   exibir('admin/viagem-form', [
     'titulo' => 'Nova viagem/tour',
     'menu' => 'viagens',
@@ -211,6 +227,8 @@ function adm_viagem_criar(): void {
   $a = exigir_admin(PAPEIS_VIAGENS);
   [$d, $erros, $contatos, $origens] = adm_viagem_ler_form();
   $gerar = isset($_POST['gerar_diarias']);
+  $copiaDe = (int) entrada('copiar_de');
+  $copiaDe = $copiaDe && valor('SELECT 1 FROM viagens WHERE id = ?', [$copiaDe]) ? $copiaDe : 0;
   $totalDias = !$erros ? (int) ((strtotime($d['data_fim']) - strtotime($d['data_inicio'])) / 86400) + 1 : 0;
   if ($gerar && $totalDias > LIMITE_DIAS_AUTOMATICOS) {
     $erros[] = 'Para períodos acima de ' . LIMITE_DIAS_AUTOMATICOS . ' dias, cadastre os dias de trabalho manualmente.';
@@ -218,10 +236,10 @@ function adm_viagem_criar(): void {
   if ($erros) {
     guardar_antigo($_POST);
     flash('erro', implode(' ', $erros));
-    redirecionar('/admin/viagens/nova');
+    redirecionar('/admin/viagens/nova' . ($copiaDe ? '?copiar=' . $copiaDe : ''));
   }
 
-  $id = transacao(function () use ($d, $a, $gerar, $totalDias, $contatos, $origens) {
+  $id = transacao(function () use ($d, $a, $gerar, $totalDias, $contatos, $origens, $copiaDe) {
     $id = inserir('viagens', $d + ['status' => 'rascunho', 'criado_por' => $a['id'], 'criado_em' => agora()]);
     adm_viagem_salvar_contatos($id, $contatos);
     adm_viagem_salvar_origens($id, $origens);
@@ -240,9 +258,15 @@ function adm_viagem_criar(): void {
         ]);
       }
     }
+    // Cópia: leva também as vagas por função e o valor da diária (passageiros e escala não são copiados).
+    if ($copiaDe && isset($_POST['copiar_vagas'])) {
+      foreach (todos('SELECT funcao_id, vagas, valor_diaria FROM viagem_vagas WHERE viagem_id = ?', [$copiaDe]) as $vaga) {
+        inserir('viagem_vagas', $vaga + ['viagem_id' => $id]);
+      }
+    }
     return $id;
   });
-  auditar('viagem_criada', 'viagem', $id, ['codigo' => $d['codigo']]);
+  auditar('viagem_criada', 'viagem', $id, ['codigo' => $d['codigo'], 'copia_de' => $copiaDe ?: null]);
   limpar_antigo();
   flash('sucesso', 'Viagem/tour ' . $d['codigo'] . ' criado como rascunho. Agora defina as vagas por função, a lista de passageiros e publique.');
   redirecionar("/admin/viagens/$id");

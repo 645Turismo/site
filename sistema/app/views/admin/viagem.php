@@ -30,6 +30,7 @@ $passos = [
   <div class="acoes-topo" id="acoes">
     <?= selo(STATUS_VIAGEM, $v['status']) ?>
     <a href="/admin/viagens/<?= (int) $v['id'] ?>/editar" class="btn btn-contorno btn-p">Editar dados</a>
+    <a href="/admin/viagens/nova?copiar=<?= (int) $v['id'] ?>" class="btn btn-contorno btn-p">Copiar viagem</a>
     <?php
     $botoes = match ($v['status']) {
       'rascunho' => [['publicar', 'Publicar', 'btn-primario', '']],

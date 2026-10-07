@@ -33,14 +33,16 @@ $papeisContato = ['Hotel / hospedagem', 'Restaurante', 'Atrativo', 'Empresa de �
 ?>
 <div class="pagina-topo">
   <div>
-    <p class="sobretitulo"><?= $nova ? 'Cadastro' : 'Edição · ' . e($v['codigo']) ?></p>
-    <h1><?= $nova ? 'Nova viagem/tour' : e($v['nome']) ?></h1>
+    <p class="sobretitulo"><?= !empty($copia) ? 'Cópia de ' . e($copia['codigo']) : ($nova ? 'Cadastro' : 'Edição · ' . e($v['codigo'])) ?></p>
+    <h1><?= !empty($copia) ? 'Copiar viagem/tour' : ($nova ? 'Nova viagem/tour' : e($v['nome'])) ?></h1>
+    <?php if (!empty($copia)): ?><p>Os dados vieram de <strong><?= e($copia['codigo'] . ' · ' . $copia['nome']) ?></strong>. Informe o novo código, ajuste as datas e o que mais mudar. Passageiros e guias escalados não são copiados.</p><?php endif; ?>
     <p>O que você preencher aqui vira o briefing do guia. Contatos e lista de passageiros só aparecem para quem confirmar presença.</p>
   </div>
   <a href="<?= $nova ? '/admin/viagens' : '/admin/viagens/' . (int) $v['id'] ?>" class="link-sublinhado">Cancelar</a>
 </div>
 
 <form method="post" action="<?= e($acao) ?>" class="form form-secoes" novalidate data-form-viagem>
+  <?php if (!empty($copia)): ?><input type="hidden" name="copiar_de" value="<?= (int) $copia['id'] ?>"><?php endif; ?>
   <?= csrf_campo() ?>
 
   <fieldset>
@@ -193,6 +195,10 @@ $papeisContato = ['Hotel / hospedagem', 'Restaurante', 'Atrativo', 'Empresa de �
       <legend><span>08</span> Dias de trabalho</legend>
       <label class="opcao"><input type="checkbox" name="gerar_diarias" value="1" <?= antigo('gerar_diarias', '1') ? 'checked' : '' ?>>
         <span>Criar um dia de trabalho para cada data, de ida até a volta, com os horários acima (dá para ajustar depois)</span></label>
+      <?php if (!empty($copia)): ?>
+        <label class="opcao"><input type="checkbox" name="copiar_vagas" value="1" <?= antigo('copiar_vagas', '1') ? 'checked' : '' ?>>
+          <span>Copiar as vagas por função e o valor da diária<?= $vagasCopia ? ': ' . e(implode(', ', array_map(fn($x) => $x['vagas'] . ' × ' . $x['nome'] . ' (' . formatar_moeda($x['valor_diaria']) . ')', $vagasCopia))) : ' (a viagem original não tem vagas)' ?></span></label>
+      <?php endif; ?>
     </fieldset>
   <?php endif; ?>
 

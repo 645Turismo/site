@@ -5,23 +5,58 @@
 
 const PRE_CADASTRO_VALIDADE_DIAS = 7;
 
-// Colunas da planilha padrão: [rótulo, obrigatória]. Nomes aceitos no cabeçalho (sem acento/maiúsculas) ao lado.
+// Colunas da planilha padrão, na ordem do formulário "Faça parte do time 645 Turismo": [rótulo, obrigatória].
+// A planilha de respostas exportada do Google Forms também é aceita (cabeçalhos com o texto das perguntas).
+// Do formulário ficam de fora "Restrições alimentares" e "Doença preexistente": o cadastro do sistema não tem esses campos.
 const PRE_CADASTRO_COLUNAS = [
   'nome' => ['Nome completo', true],
-  'cpf' => ['CPF', true],
-  'email' => ['E-mail', true],
-  'celular' => ['Celular', false],
   'nascimento' => ['Data de nascimento', false],
-  'funcoes' => ['Funções', false],
+  'cpf' => ['CPF', true],
+  'nome_social' => ['Os passageiros costumam me chamar de', false],
+  'funcoes' => ['Gostaria de fazer meu cadastro para', false],
+  'cadastur' => ['Número Cadastur', false],
+  'idiomas' => ['Idiomas', false],
+  'experiencia' => ['Experiência', false],
+  'camiseta' => ['Camiseta', false],
+  'pix' => ['Chave PIX', false],
+  'celular' => ['Telefone de contato', false],
+  'email' => ['E-mail', true],
 ];
+// Nomes aceitos no cabeçalho, comparados sem acento, pontuação e maiúsculas.
 const PRE_CADASTRO_ALIASES = [
   'nome' => ['nome completo', 'nome', 'guia', 'nome do guia'],
-  'cpf' => ['cpf', 'documento'],
-  'email' => ['e mail', 'email', 'e mail do guia'],
-  'celular' => ['celular', 'telefone', 'whatsapp', 'fone'],
   'nascimento' => ['data de nascimento', 'nascimento', 'data nascimento', 'dt nascimento'],
-  'funcoes' => ['funcoes', 'funcao', 'atuacao'],
+  'cpf' => ['cpf'],
+  'nome_social' => ['os passageiros costumam me chamar de', 'como prefere ser chamado a', 'nome social', 'apelido'],
+  'funcoes' => ['gostaria de fazer meu cadastro para', 'funcoes', 'funcao', 'atuacao'],
+  'cadastur' => ['numero cadastur', 'cadastur', 'numero do cadastur'],
+  'idiomas' => ['alem de portugues qual outro idioma voce fala', 'idiomas', 'idioma'],
+  'experiencia' => ['nos conte um pouco mais sobre sua experiencia', 'experiencia', 'apresentacao'],
+  'camiseta' => ['qual o tamanho de sua camiseta para uniforme', 'camiseta', 'tamanho da camiseta'],
+  'pix' => ['chave pix', 'pix'],
+  'celular' => ['telefone de contato', 'telefone', 'celular', 'whatsapp'],
+  'email' => ['e mail', 'email', 'endereco de e mail'],
 ];
+// Opções do formulário que têm nome diferente no sistema.
+const PRE_CADASTRO_FUNCOES_FORM = ['monitor pedagogico' => 'monitor de turismo pedagogico'];
+
+/** Tipo da chave PIX pelo formato (o formulário só pede a chave). */
+function pix_tipo_da_chave(string $chave): string {
+  $digitos = so_digitos($chave);
+  if (str_contains($chave, '@')) {
+    return 'email';
+  }
+  if (preg_match('/^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i', trim($chave))) {
+    return 'aleatoria';
+  }
+  if (strlen($digitos) === 11 && cpf_valido($digitos) && !preg_match('/^\(?\d{2}\)?\s*9/', trim($chave))) {
+    return 'cpf';
+  }
+  if (strlen($digitos) === 14 && cnpj_valido($digitos)) {
+    return 'cnpj';
+  }
+  return strlen($digitos) >= 10 ? 'celular' : 'aleatoria';
+}
 
 function adm_pre_cadastro(): void {
   $a = exigir_admin(['coordenador']);
@@ -42,8 +77,9 @@ function adm_pre_cadastro_modelo(): void {
   $saida = fopen('php://output', 'w');
   fwrite($saida, "\xEF\xBB\xBF");
   fputcsv($saida, array_map(fn($c) => $c[0], PRE_CADASTRO_COLUNAS), ';', '"', '');
-  $funcao = (string) valor('SELECT nome FROM funcoes WHERE ativo = 1 ORDER BY ordem, nome LIMIT 1');
-  fputcsv($saida, ['Maria da Silva Souza', '529.982.247-25', 'maria@exemplo.com.br', '(11) 99999-0000', '10/05/1985', $funcao], ';', '"', '');
+  fputcsv($saida, ['Maria da Silva Souza', '10/05/1985', '529.982.247-25', 'Mari', 'Guia de Turismo', '21.123456.10-0001',
+    'Espanhol, Inglês', 'Guia há 5 anos em São Paulo e no interior; trabalhei com grupos escolares e de terceira idade.', 'M',
+    'maria@exemplo.com.br', '(11) 99999-0000', 'maria@exemplo.com.br'], ';', '"', '');
   fclose($saida);
   exit;
 }
@@ -63,8 +99,12 @@ function adm_pre_cadastro_ler(): void {
     redirecionar('/admin/guias/pre-cadastro');
   }
   $cab = planilha_achar_cabecalho($linhas, PRE_CADASTRO_ALIASES);
-  if (!$cab || !in_array('cpf', $cab[1], true) || !in_array('email', $cab[1], true)) {
-    flash('erro', 'Não encontrei o cabeçalho da planilha padrão (Nome completo, CPF e E-mail). Baixe o modelo e use as mesmas colunas.');
+  if (!$cab || !in_array('cpf', $cab[1], true)) {
+    flash('erro', 'Não encontrei o cabeçalho da planilha padrão (Nome completo e CPF). Baixe o modelo e use as mesmas colunas.');
+    redirecionar('/admin/guias/pre-cadastro');
+  }
+  if (!in_array('email', $cab[1], true)) {
+    flash('erro', 'A planilha não tem a coluna de e-mail. O e-mail é obrigatório: é para ele que vai a senha temporária. No Google Forms, ative "Coletar endereços de e-mail" ou inclua a pergunta E-mail.');
     redirecionar('/admin/guias/pre-cadastro');
   }
   [$inicio, $mapa] = $cab;
@@ -93,12 +133,34 @@ function pre_cadastro_validar(array $linhas, array $mapa): array {
     }
     $d = [
       'nome' => mb_substr(preg_replace('/\s+/', ' ', $v['nome']), 0, 160),
+      'nome_social' => mb_substr($v['nome_social'], 0, 120) ?: null,
       'cpf' => so_digitos($v['cpf']),
       'email' => mb_strtolower($v['email']),
-      'celular' => so_digitos($v['celular']) ?: null,
+      'celular' => substr(preg_replace('/^55(?=\d{10,11}$)/', '', so_digitos($v['celular'])), 0, 13) ?: null,
       'nascimento' => null,
+      'cadastur_numero' => mb_substr($v['cadastur'], 0, 40) ?: null,
+      'apresentacao' => mb_substr($v['experiencia'], 0, 1500) ?: null,
+      'camiseta' => null,
     ];
     $erros = [];
+    $avisos = [];
+    if ($v['camiseta'] !== '') {
+      $tam = strtoupper(trim($v['camiseta']));
+      if (in_array($tam, CAMISETAS, true)) {
+        $d['camiseta'] = $tam;
+      } else {
+        $avisos[] = 'camiseta ' . $tam . ' não existe no sistema (fica em branco)';
+      }
+    }
+    // Idiomas além do português (no Google Forms vêm separados por vírgula). Nível começa como "fluente".
+    $idiomas = [];
+    foreach (preg_split('/[,;\/]+/', $v['idiomas'], -1, PREG_SPLIT_NO_EMPTY) as $idioma) {
+      $idioma = mb_substr(trim($idioma), 0, 40);
+      if ($idioma !== '' && !in_array(texto_chave($idioma), ['portugues', 'nenhum', 'nao', 'so portugues'], true)) {
+        $idiomas[mb_strtolower($idioma)] = mb_strtoupper(mb_substr($idioma, 0, 1)) . mb_substr($idioma, 1);
+      }
+    }
+    $pix = mb_substr(trim($v['pix']), 0, 140);
     if (strlen($d['cpf']) < 11 && $d['cpf'] !== '') {
       $d['cpf'] = str_pad($d['cpf'], 11, '0', STR_PAD_LEFT); // Excel tira o zero da frente
     }
@@ -134,6 +196,7 @@ function pre_cadastro_validar(array $linhas, array $mapa): array {
     $naoAchadas = [];
     foreach (preg_split('/[,;\/]+/', $v['funcoes'], -1, PREG_SPLIT_NO_EMPTY) as $nomeFuncao) {
       $chave = texto_chave($nomeFuncao);
+      $chave = PRE_CADASTRO_FUNCOES_FORM[$chave] ?? $chave;
       if (isset($funcoes[$chave])) {
         $ids[$funcoes[$chave]] = true;
       } elseif ($chave !== '') {
@@ -141,8 +204,12 @@ function pre_cadastro_validar(array $linhas, array $mapa): array {
       }
     }
     $vistos['cpf'][$d['cpf']] = $vistos['email'][$d['email']] = true;
+    if ($naoAchadas) {
+      $avisos[] = 'função não cadastrada no sistema: ' . implode(', ', $naoAchadas) . ' (não entra)';
+    }
     $resultado[] = ['linha' => $numero, 'dados' => $d, 'erros' => $erros, 'funcoes' => array_keys($ids),
-      'avisos' => $naoAchadas ? ['função não encontrada: ' . implode(', ', $naoAchadas)] : []];
+      'idiomas' => array_values($idiomas), 'pix' => $pix !== '' ? ['pix_tipo' => pix_tipo_da_chave($pix), 'pix_chave' => $pix] : null,
+      'avisos' => $avisos];
   }
   return $resultado;
 }
@@ -176,7 +243,7 @@ function pre_cadastro_enviar_acesso(array $g): bool {
     '<p>Olá, ' . e(primeiro_nome($g)) . '.</p>'
     . '<p>A equipe da 645 Turismo ' . ($completar ? 'criou seu pré-cadastro' : 'gerou um novo acesso para você') . ' na Área do Guia, onde você recebe convites, vê a lista de passageiros e acompanha seus pagamentos.</p>'
     . '<p><strong>Login:</strong> seu CPF (' . e(mascarar_cpf($g['cpf'])) . ')<br><strong>Senha temporária:</strong> <span style="font-family:monospace;font-size:18px;letter-spacing:1px">' . e($senha) . '</span></p>'
-    . '<p>No primeiro acesso você cria sua própria senha' . ($completar ? ' e completa seu cadastro (dados, atuação, documentos e dados para pagamento)' : '') . '. A senha temporária vale por ' . PRE_CADASTRO_VALIDADE_DIAS . ' dias.</p>'
+    . '<p>No primeiro acesso você cria sua própria senha' . ($completar ? ' e completa seu cadastro (dados, atuação e dados para pagamento)' : '') . '. A senha temporária vale por ' . PRE_CADASTRO_VALIDADE_DIAS . ' dias.</p>'
     . '<p><a href="' . e(url_absoluta('/')) . '" style="display:inline-block;padding:12px 22px;background:#53D9B2;color:#000;text-decoration:none;font-weight:bold;border-radius:999px">Entrar na Área do Guia</a></p>'
     . '<p style="color:#666;font-size:13px">Se você não esperava este e-mail, ignore-o.</p>');
 }
@@ -209,6 +276,12 @@ function adm_pre_cadastro_confirmar(): void {
         'pre_cadastrado_por' => (int) $a['id'], 'criado_em' => agora()]);
       foreach ($l['funcoes'] as $funcaoId) {
         inserir('guia_funcoes', ['guia_id' => $id, 'funcao_id' => $funcaoId]);
+      }
+      foreach ($l['idiomas'] ?? [] as $idioma) {
+        inserir('guia_idiomas', ['guia_id' => $id, 'idioma' => $idioma, 'nivel' => 'fluente']);
+      }
+      if (!empty($l['pix'])) {
+        guia_salvar_bancarios($id, $l['pix']);
       }
       return $id;
     });

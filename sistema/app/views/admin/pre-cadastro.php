@@ -15,10 +15,12 @@ $colunas = array_map(fn($c) => $c[0] . ($c[1] ? ' *' : ''), PRE_CADASTRO_COLUNAS
 <?php if (!$imp): ?>
   <section class="bloco" aria-labelledby="t-planilha">
     <div class="bloco-titulo"><h2 id="t-planilha">1. Baixe e preencha a planilha padrão</h2></div>
-    <p>Colunas, nesta ordem: <b><?= e(implode(' · ', $colunas)) ?></b> (* obrigatória).</p>
+    <p>As mesmas perguntas do formulário "Faça parte do time 645 Turismo", nesta ordem: <b><?= e(implode(' · ', $colunas)) ?></b> (* obrigatória).</p>
+    <p class="texto-2">Você também pode enviar direto a planilha de respostas do Google Forms (Respostas → Ver no Planilhas → Arquivo → Fazer download → .xlsx), desde que ela tenha a coluna de e-mail.</p>
     <ul class="texto-2 lista-simples">
       <li>Uma linha por guia. CPF com ou sem pontuação.</li>
-      <li>Funções (opcional): nomes iguais aos cadastrados, separados por vírgula<?= $funcoes ? ': ' . e(implode(', ', array_column($funcoes, 'nome'))) : '' ?>.</li>
+      <li>"Gostaria de fazer meu cadastro para": nomes das funções do sistema<?= $funcoes ? ' (' . e(implode(', ', array_column($funcoes, 'nome'))) . ')' : '' ?>; "Monitor pedagógico" vira Monitor de Turismo Pedagógico.</li>
+      <li>Idiomas separados por vírgula; camiseta PP, P, M, G, GG ou XG; o tipo da chave PIX é reconhecido sozinho.</li>
       <li>CPF ou e-mail que já existem no sistema são recusados na prévia (nada é duplicado).</li>
     </ul>
     <p><a href="/admin/guias/pre-cadastro/modelo.csv" class="btn btn-contorno btn-p">Baixar planilha padrão</a></p>

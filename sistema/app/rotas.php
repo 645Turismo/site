@@ -152,6 +152,7 @@ return [
   ['POST', '/admin/conteudo/{id}/remover', 'adm_conteudo_remover'],
   ['GET', '/admin/equipe', 'adm_equipe'],
   ['GET', '/admin/diagnostico', 'adm_diagnostico'],
+  ['POST', '/admin/diagnostico/email', 'adm_diagnostico_email'],
   ['POST', '/admin/equipe', 'adm_equipe_criar'],
   ['POST', '/admin/equipe/{id}/status', 'adm_equipe_status'],
   ['POST', '/admin/sair', 'adm_sair'],

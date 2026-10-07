@@ -228,5 +228,33 @@ function adm_diagnostico(): void {
     'banco' => db_driver(),
     'smtp' => config('smtp.host') . ':' . config('smtp.porta') . ' · ' . config('smtp.usuario'),
     'linhas' => $linhas,
+    'teste' => $_SESSION['teste_email'] ?? null,
+    'emailAdmin' => $a['email'],
   ], 'admin');
+  unset($_SESSION['teste_email']);
+}
+
+/** Diagnóstico: envia um e-mail de teste e mostra a conversa com o servidor SMTP (sem usuário e senha). */
+function adm_diagnostico_email(): void {
+  $a = exigir_admin();
+  if ($a['papel'] !== 'admin') {
+    abortar(403, 'Seu perfil não tem acesso a esta área.');
+  }
+  $para = mb_strtolower(entrada('para')) ?: (string) $a['email'];
+  if (!email_valido($para)) {
+    flash('erro', 'Informe um e-mail válido para o teste.');
+    redirecionar('/admin/diagnostico#email');
+  }
+  $html = '<p>Teste de envio do sistema de guias, feito por ' . e($a['nome']) . ' em ' . e(formatar_data_hora(agora())) . '.</p>'
+    . '<p>Se esta mensagem chegou, o envio de e-mails está funcionando.</p>';
+  if (em_dev() || !config('smtp.host')) {
+    enviar_email($para, 'Teste de e-mail · 645 Turismo', $html);
+    $ok = true;
+    $conversa = ['Ambiente de testes: a mensagem foi gravada em storage/logs/mail.log (nenhum e-mail real é enviado).'];
+  } else {
+    $ok = smtp_enviar($para, 'Teste de e-mail · 645 Turismo', email_layout('Teste de e-mail · 645 Turismo', $html),
+      'Teste de envio do sistema de guias. Se esta mensagem chegou, o envio de e-mails está funcionando.', $conversa);
+  }
+  $_SESSION['teste_email'] = ['para' => $para, 'ok' => $ok, 'conversa' => $conversa, 'em' => agora()];
+  redirecionar('/admin/diagnostico#email');
 }

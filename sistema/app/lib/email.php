@@ -31,12 +31,18 @@ function email_layout(string $titulo, string $html): string {
     . '</table></td></tr></table></body></html>';
 }
 
-function smtp_enviar(string $para, string $assunto, string $html, string $texto): bool {
+/**
+ * $conversa (opcional) recebe o diálogo com o servidor, para o teste do Diagnóstico.
+ * Usuário e senha nunca entram na conversa.
+ */
+function smtp_enviar(string $para, string $assunto, string $html, string $texto, ?array &$conversa = null): bool {
   $c = config('smtp');
+  $conversa = [];
   $prefixo = ($c['seguranca'] ?? 'ssl') === 'ssl' ? 'ssl://' : 'tcp://';
   $fp = @stream_socket_client($prefixo . $c['host'] . ':' . (int) $c['porta'], $errno, $errstr, 15);
   if (!$fp) {
-    error_log("SMTP: falha ao conectar em {$c['host']}: $errstr");
+    $conversa[] = "Não conectou em {$c['host']}:{$c['porta']}: $errstr ($errno)";
+    error_log("SMTP: falha ao conectar em {$c['host']}:{$c['porta']}: $errstr");
     return false;
   }
   stream_set_timeout($fp, 20);
@@ -51,11 +57,13 @@ function smtp_enviar(string $para, string $assunto, string $html, string $texto)
     }
     return $resposta;
   };
-  $comando = function (?string $cmd, array $esperado) use ($fp, $ler): string {
+  $comando = function (?string $cmd, array $esperado, ?string $mostrar = null) use ($fp, $ler, &$conversa): string {
     if ($cmd !== null) {
       fwrite($fp, $cmd . "\r\n");
+      $conversa[] = '> ' . ($mostrar ?? (strlen($cmd) > 200 ? '(conteúdo da mensagem)' : $cmd));
     }
     $resposta = $ler();
+    $conversa[] = '< ' . trim($resposta);
     if (!in_array((int) substr($resposta, 0, 3), $esperado, true)) {
       throw new RuntimeException('SMTP inesperado: ' . trim($resposta));
     }
@@ -74,8 +82,8 @@ function smtp_enviar(string $para, string $assunto, string $html, string $texto)
       $comando('EHLO ' . $hostLocal, [250]);
     }
     $comando('AUTH LOGIN', [334]);
-    $comando(base64_encode($c['usuario']), [334]);
-    $comando(base64_encode($c['senha']), [235]);
+    $comando(base64_encode($c['usuario']), [334], '(usuário)');
+    $comando(base64_encode($c['senha']), [235], '(senha)');
     $comando('MAIL FROM:<' . $c['remetente'] . '>', [250]);
     $comando('RCPT TO:<' . $para . '>', [250, 251]);
     $comando('DATA', [354]);
@@ -100,7 +108,8 @@ function smtp_enviar(string $para, string $assunto, string $html, string $texto)
     $comando('QUIT', [221]);
     return true;
   } catch (Throwable $e) {
-    error_log($e->getMessage());
+    $conversa[] = $e->getMessage();
+    error_log('SMTP para ' . $para . ': ' . $e->getMessage());
     return false;
   } finally {
     fclose($fp);

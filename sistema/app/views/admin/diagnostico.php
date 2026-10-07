@@ -19,6 +19,21 @@
   </dl>
 </section>
 
+<section class="bloco" id="email">
+  <div class="bloco-titulo"><h2>Testar envio de e-mail</h2></div>
+  <form method="post" action="/admin/diagnostico/email" class="form filtros-form">
+    <?= csrf_campo() ?>
+    <label class="campo"><span>Enviar para</span><input type="email" name="para" value="<?= e($teste['para'] ?? $emailAdmin) ?>" required></label>
+    <button type="submit" class="btn btn-primario btn-p">Enviar e-mail de teste</button>
+  </form>
+  <?php if ($teste): ?>
+    <div class="alerta alerta-<?= $teste['ok'] ? 'sucesso' : 'erro' ?> espaco-topo"><?= icone($teste['ok'] ? 'check' : 'alerta') ?>
+      <span><?= $teste['ok'] ? 'O servidor de e-mail aceitou a mensagem para ' . e($teste['para']) . '. Se não chegar em alguns minutos, confira o spam: o problema passa a ser de entrega, não do sistema.' : 'O envio falhou. O motivo está na última linha abaixo.' ?></span></div>
+    <pre class="log-erros"><?= e(implode("
+", $teste['conversa'])) ?></pre>
+  <?php endif; ?>
+</section>
+
 <section class="bloco">
   <div class="bloco-titulo"><h2>Últimos erros</h2></div>
   <?php if (!$linhas): ?>

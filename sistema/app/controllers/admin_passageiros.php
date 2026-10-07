@@ -160,17 +160,22 @@ function adm_passageiros_importar_confirmar(int $id): void {
     flash('erro', 'A leitura da planilha expirou. Envie o arquivo de novo.');
     redirecionar("/admin/viagens/$id/passageiros#importar");
   }
-  $passageiros = importacao_aplicar_regras($v, importacao_marcar_repetidos($id, $imp['passageiros']));
-  $novos = array_values(array_filter($passageiros, fn($p) => !$p['repetido']));
-  transacao(function () use ($novos, $id, $a) {
+  // "Substituir a lista atual": esvazia a lista antes, e só repetidos dentro do próprio arquivo são pulados.
+  $substituir = entrada('substituir') === '1';
+  [$novos, $passageiros, $limpeza] = transacao(function () use ($v, $id, $a, $imp, $substituir) {
+    $limpeza = $substituir ? passageiros_limpar_lista($id) : [0, 0];
+    $passageiros = importacao_aplicar_regras($v, importacao_marcar_repetidos($id, $imp['passageiros']));
+    $novos = array_values(array_filter($passageiros, fn($p) => !$p['repetido']));
     foreach ($novos as $p) {
       passageiro_incluir($id, $p['dados'], 'admin', (int) $a['id']);
     }
+    return [$novos, $passageiros, $limpeza];
   });
   unset($_SESSION['importacao'][$id]);
-  auditar('passageiros_importados', 'viagem', $id, ['quantidade' => count($novos), 'origem' => $imp['origem']]);
+  auditar('passageiros_importados', 'viagem', $id, ['quantidade' => count($novos), 'origem' => $imp['origem'], 'substituiu' => $substituir]);
   $pulados = count($passageiros) - count($novos);
-  flash('sucesso', count($novos) . ' passageiro(s) incluído(s)' . ($pulados ? ", $pulados já estavam na lista." : '.'));
+  flash('sucesso', ($substituir ? 'Lista anterior removida (' . ($limpeza[0] + $limpeza[1]) . '). ' : '')
+    . count($novos) . ' passageiro(s) incluído(s)' . ($pulados ? ", $pulados " . ($substituir ? 'repetidos na planilha foram pulados.' : 'já estavam na lista.') : '.'));
   redirecionar("/admin/viagens/$id/passageiros");
 }
 
@@ -201,4 +206,19 @@ function adm_passageiro_remover(int $id, int $passageiroId): void {
   }
   auditar('passageiro_removido', 'viagem', $id, ['passageiro_id' => $passageiroId]);
   resposta_json(['ok' => true]);
+}
+
+/** Esvazia a lista de passageiros da viagem de uma vez (para subir uma lista nova). */
+function adm_passageiros_limpar(int $id): void {
+  exigir_admin(PAPEIS_VIAGENS);
+  adm_viagem_carregar($id);
+  if (entrada('confirmacao') !== 'LIMPAR') {
+    flash('erro', 'Para limpar a lista, digite LIMPAR no campo de confirmação.');
+    redirecionar("/admin/viagens/$id/passageiros#limpar");
+  }
+  [$apagados, $guardados] = transacao(fn() => passageiros_limpar_lista($id));
+  auditar('passageiros_lista_limpa', 'viagem', $id, ['apagados' => $apagados, 'guardados' => $guardados]);
+  flash('sucesso', 'Lista de passageiros limpa: ' . ($apagados + $guardados) . ' removido(s)'
+    . ($guardados ? " ($guardados com check-in ou no-show ficam guardados no histórico da viagem)" : '') . '. Agora é só importar a lista nova.');
+  redirecionar("/admin/viagens/$id/passageiros#importar");
 }

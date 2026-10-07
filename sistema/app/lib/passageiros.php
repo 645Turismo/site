@@ -465,3 +465,26 @@ function viagem_resumo_checkin(int $viagemId): ?array {
   return ['data' => $dia['data'], 'diaria_id' => (int) $dia['id'], 'total' => $total, 'feitos' => $feitos,
     'noshow' => $noshow, 'faltam' => max(0, $total - $feitos - $noshow)];
 }
+
+/**
+ * Esvazia a lista de passageiros da viagem (para subir uma lista nova). Quem já tem check-in, check-out
+ * ou no-show registrado sai da lista mas fica guardado como cancelado (histórico da viagem); os demais
+ * são apagados. Retorna [apagados, guardados].
+ */
+function passageiros_limpar_lista(int $viagemId): array {
+  $apagados = 0;
+  $guardados = 0;
+  foreach (todos("SELECT id FROM passageiros WHERE viagem_id = ? AND status = 'ativo'", [$viagemId]) as $p) {
+    $temRegistro = valor('SELECT 1 FROM passageiro_registros WHERE passageiro_id = ?
+      AND (checkin_em IS NOT NULL OR checkout_em IS NOT NULL OR noshow_em IS NOT NULL)', [$p['id']]);
+    if ($temRegistro) {
+      atualizar('passageiros', ['status' => 'cancelado', 'atualizado_em' => agora()], 'id = ?', [$p['id']]);
+      $guardados++;
+    } else {
+      q('DELETE FROM passageiro_registros WHERE passageiro_id = ?', [$p['id']]);
+      q('DELETE FROM passageiros WHERE id = ?', [$p['id']]);
+      $apagados++;
+    }
+  }
+  return [$apagados, $guardados];
+}

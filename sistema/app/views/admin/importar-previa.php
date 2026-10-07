@@ -49,12 +49,23 @@ $campos = CAMPOS_PASSAGEIRO;
   </div>
 <?php endif; ?>
 
-<?php if ($novos): ?>
+<?php
+$totalAtual = (int) valor("SELECT COUNT(*) FROM passageiros WHERE viagem_id = ? AND status = 'ativo'", [$v['id']]);
+$naPlanilha = count(array_unique(array_map(fn($p) => passageiro_chave($p['dados']), $imp['passageiros'])));
+?>
+<?php if ($novos || $totalAtual): ?>
   <form method="post" action="/admin/viagens/<?= (int) $v['id'] ?>/passageiros/importar/confirmar" class="importar-confirmar">
     <?= csrf_campo() ?>
-    <button type="submit" class="btn btn-primario">Importar <?= count($novos) ?> passageiro(s)</button>
+    <?php if ($totalAtual): ?>
+      <label class="opcao"><input type="checkbox" name="substituir" value="1" <?= $novos ? '' : 'checked required' ?>>
+        <span><strong>Substituir a lista atual</strong>: remove os <?= $totalAtual ?> passageiro(s) que já estão na lista e importa os <?= $naPlanilha ?> desta planilha.</span></label>
+    <?php endif; ?>
+    <button type="submit" class="btn btn-primario"><?= $novos ? 'Importar ' . count($novos) . ' passageiro(s)' : 'Substituir a lista' ?></button>
     <a href="/admin/viagens/<?= (int) $v['id'] ?>/passageiros#importar" class="btn btn-texto">Enviar outro arquivo</a>
   </form>
+<?php endif; ?>
+
+<?php if ($novos): ?>
 
   <section class="bloco" aria-labelledby="t-novos">
     <div class="bloco-titulo"><h2 id="t-novos">Vão entrar (<?= count($novos) ?>)</h2></div>
@@ -76,7 +87,7 @@ $campos = CAMPOS_PASSAGEIRO;
     <?php if (count($novos) > $limite): ?><p class="texto-2">… e mais <?= count($novos) - $limite ?> passageiro(s).</p><?php endif; ?>
   </section>
 <?php else: ?>
-  <p class="vazio">Todos os passageiros da planilha já estão na lista. <a href="/admin/viagens/<?= (int) $v['id'] ?>/passageiros#importar">Enviar outro arquivo</a></p>
+  <p class="vazio">Todos os passageiros da planilha já estão na lista. Para trocar pela versão desta planilha, use "Substituir a lista" acima.</p>
 <?php endif; ?>
 
 <?php if ($repetidos): ?>

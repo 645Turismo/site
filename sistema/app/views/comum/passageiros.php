@@ -169,6 +169,16 @@ $urlIncluir = $admin ? $base : $base . '/incluir';
       <div class="form-rodape"><button type="submit" class="btn btn-primario">Ler planilha e conferir</button></div>
     </form>
   </details>
+
+  <details class="bloco importar" id="limpar">
+    <summary>Limpar a lista de passageiros</summary>
+    <form method="post" action="<?= e($base) ?>/limpar" class="form" data-confirmar="Remover todos os passageiros desta lista? Não dá para desfazer.">
+      <?= csrf_campo() ?>
+      <p class="texto-2">Remove todos os passageiros de uma vez, para subir uma lista nova. Quem já teve check-in, check-out ou no-show sai da lista, mas fica guardado no histórico da viagem. Dica: na prévia da importação também existe a opção "Substituir a lista atual", que limpa e importa de uma vez.</p>
+      <label class="campo"><span>Para confirmar, digite LIMPAR</span><input type="text" name="confirmacao" required autocomplete="off" placeholder="LIMPAR"></label>
+      <div class="form-rodape"><button type="submit" class="btn btn-contorno vermelho">Limpar lista</button></div>
+    </form>
+  </details>
 <?php endif; ?>
 <?php endif; ?>
 <script src="<?= e(asset('js/passageiros.js')) ?>"></script>

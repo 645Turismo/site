@@ -84,7 +84,7 @@ function guia_viagens(): void {
         MIN(d.data) AS primeira, MAX(d.data) AS ultima, COUNT(s.id) AS diarias,
         SUM(CASE WHEN s.status = 'convidado' AND d.data >= ? THEN 1 ELSE 0 END) AS convites,
         SUM(CASE WHEN s.status IN $assumidas THEN 1 ELSE 0 END) AS assumidas,
-        MAX(s.valor) AS valor, MAX(f.nome) AS funcao
+        MAX(f.nome) AS funcao
       FROM escalas s
       JOIN diarias d ON d.id = s.diaria_id
       JOIN viagens v ON v.id = d.viagem_id

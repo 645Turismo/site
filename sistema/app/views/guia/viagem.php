@@ -1,7 +1,6 @@
 <?php
 $assumidas = array_values(array_filter($escalas, fn($s) => in_array($s['status'], ESCALAS_ASSUMIDAS, true)));
 $ultimoDia = $assumidas ? end($assumidas)['data'] : null;
-$valorDiaria = $convites ? (float) $convites[0]['valor'] : 0;
 $grupo = array_filter([$v['cliente'], $v['perfil_grupo'], $v['idioma_grupo'] ? 'Idioma: ' . $v['idioma_grupo'] : null,
   $v['qtd_passageiros'] ? $v['qtd_passageiros'] . ' passageiros' : null]);
 ?>
@@ -36,8 +35,7 @@ $grupo = array_filter([$v['cliente'], $v['perfil_grupo'], $v['idioma_grupo'] ? '
       <p class="sobretitulo">Convite</p>
       <h2 id="t-convite">Você foi convidado(a) como <?= e($convites[0]['funcao'] ?: 'guia') ?></h2>
       <p class="texto-2">
-        <?= count($convites) ?> dia(s) de trabalho · <?= e(formatar_moeda($valorDiaria)) ?> por diária ·
-        total de <b><?= e(formatar_moeda($valorDiaria * count($convites))) ?></b>
+        <?= count($convites) ?> dia(s) de trabalho. O valor da diária foi enviado para o seu e-mail.
       </p>
       <ul class="convite-dias">
         <?php foreach ($convites as $c): ?>

@@ -37,7 +37,7 @@ $abas = [
             <strong><?= e($v['nome']) ?></strong>
             <small>
               <?= $v['primeira'] === $v['ultima'] ? e(formatar_data($v['primeira'])) : e(formatar_data($v['primeira']) . ' a ' . formatar_data($v['ultima'])) ?>
-              · <?= (int) $v['diarias'] ?> diária(s)<?= $v['valor'] ? ' · ' . e(formatar_moeda($v['valor'])) . '/diária' : '' ?>
+              · <?= (int) $v['diarias'] ?> diária(s)
             </small>
           </span>
           <span class="lv-status">

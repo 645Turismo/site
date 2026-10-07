@@ -7,7 +7,6 @@ const PRE_CADASTRO_VALIDADE_DIAS = 7;
 
 // Colunas da planilha padrão, na ordem do formulário "Faça parte do time 645 Turismo": [rótulo, obrigatória].
 // A planilha de respostas exportada do Google Forms também é aceita (cabeçalhos com o texto das perguntas).
-// Do formulário ficam de fora "Restrições alimentares" e "Doença preexistente": o cadastro do sistema não tem esses campos.
 const PRE_CADASTRO_COLUNAS = [
   'nome' => ['Nome completo', true],
   'nascimento' => ['Data de nascimento', false],
@@ -18,6 +17,8 @@ const PRE_CADASTRO_COLUNAS = [
   'idiomas' => ['Idiomas', false],
   'experiencia' => ['Experiência', false],
   'camiseta' => ['Camiseta', false],
+  'restricao' => ['Restrições alimentares', false],
+  'doenca' => ['Doença preexistente', false],
   'pix' => ['Chave PIX', false],
   'celular' => ['Telefone de contato', false],
   'email' => ['E-mail', true],
@@ -33,12 +34,34 @@ const PRE_CADASTRO_ALIASES = [
   'idiomas' => ['alem de portugues qual outro idioma voce fala', 'idiomas', 'idioma'],
   'experiencia' => ['nos conte um pouco mais sobre sua experiencia', 'experiencia', 'apresentacao'],
   'camiseta' => ['qual o tamanho de sua camiseta para uniforme', 'camiseta', 'tamanho da camiseta'],
+  'restricao' => ['restricoes alimentares', 'restricao alimentar', 'alimentacao'],
+  'doenca' => ['voce possui alguma doenca preexistente', 'doenca preexistente', 'doencas preexistentes', 'saude'],
   'pix' => ['chave pix', 'pix'],
   'celular' => ['telefone de contato', 'telefone', 'celular', 'whatsapp'],
   'email' => ['e mail', 'email', 'endereco de e mail'],
 ];
 // Opções do formulário que têm nome diferente no sistema.
 const PRE_CADASTRO_FUNCOES_FORM = ['monitor pedagogico' => 'monitor de turismo pedagogico'];
+
+/** Restrição alimentar a partir do texto da planilha (opções do formulário ou nomes do sistema). */
+function restricao_da_planilha(string $texto): ?string {
+  $t = texto_chave($texto);
+  foreach (RESTRICOES_ALIMENTARES as $chave => $rotulo) {
+    if ($t === texto_chave($rotulo) || $t === texto_chave(str_replace('_', ' ', $chave))) {
+      return $chave;
+    }
+  }
+  return match (true) {
+    $t === '' => null,
+    str_contains($t, 'sem restri'), str_contains($t, 'padrao'), str_contains($t, 'nenhum') => 'padrao',
+    str_contains($t, 'vegan') => 'vegana',
+    str_contains($t, 'vegetarian') => 'vegetariana',
+    str_contains($t, 'alerg') => 'alergia',
+    str_contains($t, 'lactose') => 'sem_lactose',
+    str_contains($t, 'gluten') => 'sem_gluten',
+    default => null,
+  };
+}
 
 /** Tipo da chave PIX pelo formato (o formulário só pede a chave). */
 function pix_tipo_da_chave(string $chave): string {
@@ -78,7 +101,7 @@ function adm_pre_cadastro_modelo(): void {
   fwrite($saida, "\xEF\xBB\xBF");
   fputcsv($saida, array_map(fn($c) => $c[0], PRE_CADASTRO_COLUNAS), ';', '"', '');
   fputcsv($saida, ['Maria da Silva Souza', '10/05/1985', '529.982.247-25', 'Mari', 'Guia de Turismo', '21.123456.10-0001',
-    'Espanhol, Inglês', 'Guia há 5 anos em São Paulo e no interior; trabalhei com grupos escolares e de terceira idade.', 'M',
+    'Espanhol, Inglês', 'Guia há 5 anos em São Paulo e no interior; trabalhei com grupos escolares e de terceira idade.', 'M', 'Vegetariana', '',
     'maria@exemplo.com.br', '(11) 99999-0000', 'maria@exemplo.com.br'], ';', '"', '');
   fclose($saida);
   exit;
@@ -141,9 +164,16 @@ function pre_cadastro_validar(array $linhas, array $mapa): array {
       'cadastur_numero' => mb_substr($v['cadastur'], 0, 40) ?: null,
       'apresentacao' => mb_substr($v['experiencia'], 0, 1500) ?: null,
       'camiseta' => null,
+      'restricao_alimentar' => restricao_da_planilha($v['restricao']),
+      // "Não", "Nenhuma" etc. não são informação de saúde.
+      'doencas_preexistentes' => in_array(texto_chave($v['doenca']), ['', 'nao', 'nenhuma', 'nenhum', 'nao possuo', 'nao tenho', 'n a', 'nao se aplica'], true)
+        ? null : mb_substr($v['doenca'], 0, 500),
     ];
     $erros = [];
     $avisos = [];
+    if ($v['restricao'] !== '' && !$d['restricao_alimentar']) {
+      $avisos[] = 'restrição alimentar "' . $v['restricao'] . '" não reconhecida (fica em branco)';
+    }
     if ($v['camiseta'] !== '') {
       $tam = strtoupper(trim($v['camiseta']));
       if (in_array($tam, CAMISETAS, true)) {

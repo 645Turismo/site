@@ -20,7 +20,7 @@ $colunas = array_map(fn($c) => $c[0] . ($c[1] ? ' *' : ''), PRE_CADASTRO_COLUNAS
     <ul class="texto-2 lista-simples">
       <li>Uma linha por guia. CPF com ou sem pontuação.</li>
       <li>"Gostaria de fazer meu cadastro para": nomes das funções do sistema<?= $funcoes ? ' (' . e(implode(', ', array_column($funcoes, 'nome'))) . ')' : '' ?>; "Monitor pedagógico" vira Monitor de Turismo Pedagógico.</li>
-      <li>Idiomas separados por vírgula; camiseta PP, P, M, G, GG ou XG; o tipo da chave PIX é reconhecido sozinho.</li>
+      <li>Idiomas separados por vírgula; camiseta PP a XGG; restrição alimentar: <?= e(implode(', ', RESTRICOES_ALIMENTARES)) ?>; doença preexistente em texto livre; o tipo da chave PIX é reconhecido sozinho.</li>
       <li>CPF ou e-mail que já existem no sistema são recusados na prévia (nada é duplicado).</li>
     </ul>
     <p><a href="/admin/guias/pre-cadastro/modelo.csv" class="btn btn-contorno btn-p">Baixar planilha padrão</a></p>

@@ -62,6 +62,8 @@ $statusDoc = ['enviado' => ['Para conferir', 'aviso'], 'aprovado' => ['Aprovado'
         <dt>E-mail</dt><dd><?= e($g['email']) ?></dd>
         <dt>Endereço</dt><dd><?= e(implode(', ', array_filter([$g['logradouro'], $g['numero'], $g['complemento'], $g['bairro']]))) ?><br><?= e(trim($g['cidade'] . '/' . $g['uf'], '/')) ?> <?= e($g['cep']) ?></dd>
         <dt>Outros</dt><dd><?= e(implode(' · ', array_filter([$g['genero'], $g['nacionalidade'], $g['camiseta'] ? 'camiseta ' . $g['camiseta'] : null, (int) $g['pcd'] ? 'PCD: ' . ($g['pcd_descricao'] ?: 'sim') : null]))) ?></dd>
+        <dt>Alimentação</dt><dd><?= e(RESTRICOES_ALIMENTARES[$g['restricao_alimentar'] ?? ''] ?? '—') ?></dd>
+        <dt>Saúde</dt><dd><?= e($g['doencas_preexistentes'] ?: '—') ?></dd>
       </dl>
     </section>
 

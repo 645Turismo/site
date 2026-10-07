@@ -25,7 +25,7 @@ $contato = email_equipe();
     <p>A 645 Turismo pode suspender ou encerrar o acesso em caso de dados falsos, uso indevido de informações, faltas sem aviso ou descumprimento destes termos.</p>
   <?php else: ?>
     <h2>1. Quais dados tratamos</h2>
-    <p>Dados de cadastro (nome, CPF, nascimento, contatos, endereço, foto), dados profissionais (funções, idiomas, Cadastur, regiões, disponibilidade), documentos enviados, dados de empresa e de pagamento (CNPJ, chave PIX, conta), registros de trabalho (escalas, relatórios, notas fiscais, pagamentos) e registros de acesso.</p>
+    <p>Dados de cadastro (nome, CPF, nascimento, contatos, endereço, foto), restrição alimentar e informações de saúde que você decidir informar (usadas só para cuidar de você nas viagens e visíveis apenas para a equipe), dados profissionais (funções, idiomas, Cadastur, regiões, disponibilidade), documentos enviados, dados de empresa e de pagamento (CNPJ, chave PIX, conta), registros de trabalho (escalas, relatórios, notas fiscais, pagamentos) e registros de acesso.</p>
     <h2>2. Para que usamos</h2>
     <p>Credenciamento e conferência de documentos; montagem de escalas e envio de convites; operação das viagens; pagamento das diárias e cumprimento de obrigações fiscais; comunicação com você; segurança do sistema.</p>
     <h2>3. Base legal</h2>

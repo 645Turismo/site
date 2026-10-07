@@ -38,6 +38,13 @@ $val = fn(string $c) => antigo($c, (string) ($g[$c] ?? ''));
     </div>
     <label class="campo campo-largo"><span>Se sim, conte o que precisamos saber</span>
       <input type="text" name="pcd_descricao" maxlength="255" value="<?= e($val('pcd_descricao')) ?>"></label>
+    <label class="campo"><span>Restrição alimentar</span>
+      <select name="restricao_alimentar"><option value="">Selecione</option>
+        <?php foreach (RESTRICOES_ALIMENTARES as $chave => $rotulo): ?><option value="<?= e($chave) ?>" <?= $val('restricao_alimentar') === $chave ? 'selected' : '' ?>><?= e($rotulo) ?></option><?php endforeach; ?>
+      </select></label>
+    <label class="campo campo-largo"><span>Doença preexistente ou cuidado de saúde</span>
+      <input type="text" name="doencas_preexistentes" maxlength="500" value="<?= e($val('doencas_preexistentes')) ?>" placeholder="Ex.: diabetes, pressão alta, alergia a frutos do mar. Deixe em branco se não tiver.">
+      <small class="texto-2">Só a equipe da 645 vê. Ajuda a cuidar de você durante as viagens.</small></label>
     <div class="campo campo-largo">
       <span>Foto de rosto <?= empty($g['foto_path']) ? '*' : '' ?></span>
       <div class="foto-envio">

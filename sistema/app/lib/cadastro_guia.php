@@ -26,7 +26,17 @@ const CATEGORIAS_CADASTUR = ['Regional', 'Nacional', 'América do Sul', 'Interna
 const NIVEIS_IDIOMA = ['intermediario' => 'Intermediário', 'fluente' => 'Fluente', 'nativo' => 'Nativo'];
 const IDIOMAS_SUGERIDOS = ['Inglês', 'Espanhol', 'Francês', 'Italiano', 'Alemão', 'Japonês', 'Mandarim', 'Libras'];
 const GENEROS = ['Feminino', 'Masculino', 'Não binário', 'Prefiro não informar'];
-const CAMISETAS = ['PP', 'P', 'M', 'G', 'GG', 'XG'];
+const CAMISETAS = ['PP', 'P', 'M', 'G', 'GG', 'XG', 'XGG'];
+const RESTRICOES_ALIMENTARES = [
+  'padrao' => 'Alimentação padrão',
+  'vegetariana' => 'Vegetariana',
+  'vegana' => 'Vegana',
+  'sem_lactose' => 'Sem lactose',
+  'sem_gluten' => 'Sem glúten',
+  'halal' => 'Halal',
+  'kosher' => 'Kosher',
+  'alergia' => 'Alergia alimentar (descreva em saúde)',
+];
 const UFS = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
 const TIPOS_PIX = ['cpf' => 'CPF', 'cnpj' => 'CNPJ', 'email' => 'E-mail', 'celular' => 'Celular', 'aleatoria' => 'Chave aleatória'];
 const BANCOS_SUGERIDOS = ['001 - Banco do Brasil', '033 - Santander', '104 - Caixa Econômica Federal', '237 - Bradesco', '341 - Itaú',
@@ -74,6 +84,8 @@ function guia_ler_pessoais(bool $comCpf, ?int $guiaId): array {
     'camiseta' => in_array(entrada('camiseta'), CAMISETAS, true) ? entrada('camiseta') : null,
     'pcd' => entrada('pcd') === '1' ? 1 : 0,
     'pcd_descricao' => entrada('pcd') === '1' ? $txt('pcd_descricao', 255) : null,
+    'restricao_alimentar' => isset(RESTRICOES_ALIMENTARES[entrada('restricao_alimentar')]) ? entrada('restricao_alimentar') : null,
+    'doencas_preexistentes' => $txt('doencas_preexistentes', 500),
     'cep' => so_digitos(entrada('cep')) ?: null,
     'logradouro' => $txt('logradouro', 200),
     'numero' => $txt('numero', 20),

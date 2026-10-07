@@ -26,6 +26,7 @@ function iniciar_sessao(): void {
 }
 
 function cabecalhos_seguranca(): void {
+  header_remove('X-Powered-By'); // não revela a versão do PHP
   // O .htaccess também envia o X-Robots-Tag; repetir aqui protege caso ele não seja aplicado.
   header('X-Robots-Tag: noindex, nofollow, noarchive, nosnippet');
   header('X-Frame-Options: DENY');

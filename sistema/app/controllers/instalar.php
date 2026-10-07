@@ -6,6 +6,11 @@ function instalar_liberado(): void {
   if ((string) config('setup_token') === '') {
     abortar(404, 'O endereço acessado não existe.');
   }
+  // Depois do primeiro administrador a página deixa de existir: as atualizações do banco já são
+  // aplicadas sozinhas (migracoes_automaticas) e o código não fica exposto a tentativas.
+  if (!em_dev() && instalar_tem_admin()) {
+    abortar(404, 'O endereço acessado não existe.');
+  }
 }
 
 function instalar_tem_admin(): bool {
@@ -24,15 +29,17 @@ function instalar_form(): void {
 function instalar_executar(): void {
   instalar_liberado();
   // Limite de tentativas guardado na sessão, porque a tabela de tentativas pode ainda não existir.
-  $_SESSION['instalar_tentativas'] = ($_SESSION['instalar_tentativas'] ?? 0) + 1;
-  if ($_SESSION['instalar_tentativas'] > 5) {
-    abortar(403, 'Tentativas demais. Feche o navegador e tente mais tarde.');
+  // Limite por IP (a sessão sozinha seria contornada abrindo uma sessão nova a cada tentativa).
+  $chaves = ['instalar-ip:' . ip_cliente()];
+  if (login_bloqueado($chaves)) {
+    abortar(403, 'Tentativas demais. Aguarde alguns minutos e tente de novo.');
   }
   if (!hash_equals((string) config('setup_token'), (string) ($_POST['token'] ?? ''))) {
+    registrar_tentativa($chaves);
     flash('erro', 'Código de instalação incorreto.');
     redirecionar('/instalar');
   }
-  unset($_SESSION['instalar_tentativas']);
+  limpar_tentativas($chaves);
 
   $aplicadas = executar_migracoes();
 

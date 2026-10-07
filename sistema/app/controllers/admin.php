@@ -194,3 +194,39 @@ function adm_sair(): void {
   flash('sucesso', 'Você saiu do Painel ADM.');
   redirecionar('/admin');
 }
+
+/** Diagnóstico do servidor (só administrador): banco, pastas graváveis e últimos erros registrados. */
+function adm_diagnostico(): void {
+  $a = exigir_admin();
+  if ($a['papel'] !== 'admin') {
+    abortar(403, 'Seu perfil não tem acesso a esta área.');
+  }
+  $arquivos = array_map(fn($f) => basename($f, '.sql'), glob(RAIZ . '/database/migrations/*.sql') ?: []);
+  sort($arquivos);
+  try {
+    $aplicadas = array_column(todos('SELECT versao FROM migracoes ORDER BY versao'), 'versao');
+  } catch (Throwable $e) {
+    $aplicadas = [];
+  }
+  $log = RAIZ . '/storage/logs/php-erros.log';
+  $linhas = [];
+  if (is_file($log)) {
+    $fp = fopen($log, 'r');
+    fseek($fp, max(0, filesize($log) - 20000));
+    $linhas = array_slice(array_filter(explode("\n", (string) stream_get_contents($fp))), -60);
+    fclose($fp);
+  }
+  exibir('admin/diagnostico', [
+    'titulo' => 'Diagnóstico',
+    'menu' => 'equipe',
+    'a' => $a,
+    'pendentes' => array_values(array_diff($arquivos, $aplicadas)),
+    'aplicadas' => $aplicadas,
+    'pastas' => array_map(fn($p) => [$p, is_dir(RAIZ . '/' . $p) && is_writable(RAIZ . '/' . $p)],
+      ['storage/logs', 'storage/uploads', '.']),
+    'php' => PHP_VERSION,
+    'banco' => db_driver(),
+    'smtp' => config('smtp.host') . ':' . config('smtp.porta') . ' · ' . config('smtp.usuario'),
+    'linhas' => $linhas,
+  ], 'admin');
+}

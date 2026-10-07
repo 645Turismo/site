@@ -4,6 +4,7 @@
     <h1>Equipe</h1>
     <p>Quem da 645 Turismo acessa o Painel ADM e com qual perfil.</p>
   </div>
+  <?php if ($a['papel'] === 'admin'): ?><a href="/admin/diagnostico" class="btn btn-contorno btn-p">Diagnóstico do servidor</a><?php endif; ?>
 </div>
 
 <div class="colunas">

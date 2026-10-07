@@ -20,6 +20,9 @@ function db(): PDO {
       config('db.host'), (int) config('db.porta', 3306), config('db.nome'));
     $pdo = new PDO($dsn, config('db.usuario'), config('db.senha'), $opcoes);
     $pdo->exec("SET time_zone = '-03:00'");
+    // Mesmo comportamento do SQLite usado nos testes: sem o modo estrito, que transforma em erro (500)
+    // casos como texto vazio em campo de data ou agrupamento com coluna não agregada.
+    $pdo->exec("SET SESSION sql_mode = 'NO_ENGINE_SUBSTITUTION'");
   }
   return $pdo;
 }

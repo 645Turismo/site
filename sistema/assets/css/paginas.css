@@ -174,3 +174,5 @@
 .horarios strong { margin-top: 0; }
 .horarios { container-type: inline-size; }
 @container (max-width: 560px) { .horarios strong { font-size: 24px; } }
+
+.log-erros { margin: 0; padding: 14px; border: 1px solid var(--linha); background: var(--preto); color: var(--texto-2); font-size: 12px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }

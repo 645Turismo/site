@@ -229,6 +229,9 @@ function adm_diagnostico(): void {
     'smtp' => config('smtp.host') . ':' . config('smtp.porta') . ' · ' . config('smtp.usuario'),
     'linhas' => $linhas,
     'teste' => $_SESSION['teste_email'] ?? null,
+    'emails' => (function () { try { return todos('SELECT * FROM emails_enviados ORDER BY id DESC LIMIT 50'); } catch (Throwable $e) { return []; } })(),
+    // Falhas de envio anteriores ao histórico ficam só no registro de erros.
+    'falhasSmtp' => array_values(array_filter($linhas, fn($l) => str_contains($l, 'SMTP'))),
     'emailAdmin' => $a['email'],
   ], 'admin');
   unset($_SESSION['teste_email']);
@@ -254,6 +257,7 @@ function adm_diagnostico_email(): void {
   } else {
     $ok = smtp_enviar($para, 'Teste de e-mail · 645 Turismo', email_layout('Teste de e-mail · 645 Turismo', $html),
       'Teste de envio do sistema de guias. Se esta mensagem chegou, o envio de e-mails está funcionando.', $conversa);
+    email_registrar($para, 'Teste de e-mail · 645 Turismo', $ok ? 'enviado' : 'falhou', $ok ? null : (string) end($conversa));
   }
   $_SESSION['teste_email'] = ['para' => $para, 'ok' => $ok, 'conversa' => $conversa, 'em' => agora()];
   redirecionar('/admin/diagnostico#email');

@@ -34,6 +34,36 @@
   <?php endif; ?>
 </section>
 
+<section class="bloco" id="historico-emails">
+  <div class="bloco-titulo"><h2>E-mails enviados</h2></div>
+  <?php if (!$emails): ?>
+    <p class="vazio">Nenhum e-mail registrado ainda. O histórico começa a partir desta versão do sistema.</p>
+  <?php else: ?>
+    <div class="tabela-rolagem">
+      <table class="tabela">
+        <thead><tr><th>Quando</th><th>Para</th><th>Assunto</th><th>Situação</th></tr></thead>
+        <tbody>
+          <?php foreach ($emails as $em): ?>
+            <tr>
+              <td><?= e(formatar_data_hora($em['criado_em'])) ?></td>
+              <td><?= e($em['para']) ?></td>
+              <td><?= e($em['assunto']) ?></td>
+              <td><?php if ($em['status'] === 'enviado'): ?><span class="selo selo-sucesso">Aceito pelo servidor</span>
+                <?php elseif ($em['status'] === 'teste'): ?><span class="selo selo-neutro">Ambiente de testes</span>
+                <?php else: ?><span class="selo selo-erro">Falhou</span><br><small class="texto-2"><?= e((string) $em['erro']) ?></small><?php endif; ?></td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+  <?php endif; ?>
+  <?php if ($falhasSmtp): ?>
+    <p class="texto-2 espaco-topo">Falhas de envio no registro de erros (inclui as de antes do histórico):</p>
+    <pre class="log-erros"><?= e(implode("
+", $falhasSmtp)) ?></pre>
+  <?php endif; ?>
+</section>
+
 <section class="bloco">
   <div class="bloco-titulo"><h2>Últimos erros</h2></div>
   <?php if (!$linhas): ?>

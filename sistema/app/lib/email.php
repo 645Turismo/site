@@ -14,9 +14,22 @@ function enviar_email(string $para, string $assunto, string $html): bool {
   if (em_dev() || !config('smtp.host')) {
     $registro = sprintf("==== %s\nPara: %s\nAssunto: %s\n\n%s\n\n", agora(), $para, $assunto, $texto);
     file_put_contents(RAIZ . '/storage/logs/mail.log', $registro, FILE_APPEND | LOCK_EX);
+    email_registrar($para, $assunto, 'teste', null);
     return true;
   }
-  return smtp_enviar($para, $assunto, email_layout($assunto, $html), $texto);
+  $ok = smtp_enviar($para, $assunto, email_layout($assunto, $html), $texto, $conversa);
+  email_registrar($para, $assunto, $ok ? 'enviado' : 'falhou', $ok ? null : (string) end($conversa));
+  return $ok;
+}
+
+/** Guarda o envio no histórico (Diagnóstico). Uma falha aqui nunca impede o resto da operação. */
+function email_registrar(string $para, string $assunto, string $status, ?string $erro): void {
+  try {
+    inserir('emails_enviados', ['para' => mb_substr($para, 0, 190), 'assunto' => mb_substr($assunto, 0, 255), 'status' => $status,
+      'erro' => $erro !== null ? mb_substr($erro, 0, 500) : null, 'criado_em' => agora()]);
+  } catch (Throwable $e) {
+    error_log('Histórico de e-mail: ' . $e->getMessage());
+  }
 }
 
 function email_layout(string $titulo, string $html): string {

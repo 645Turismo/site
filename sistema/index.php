@@ -6,6 +6,7 @@ cabecalhos_seguranca();
 iniciar_sessao();
 
 try {
+  migracoes_automaticas();
   $rotas = require RAIZ . '/app/rotas.php';
   $caminho = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
   despachar($rotas, $_SERVER['REQUEST_METHOD'] ?? 'GET', rawurldecode($caminho));

@@ -38,3 +38,40 @@ function executar_migracoes(): array {
   }
   return $novas;
 }
+
+/**
+ * Aplica sozinho as migrations novas depois de cada publicação (a hospedagem não tem terminal e o
+ * código novo não pode rodar com o banco antigo). Custo normal: ler um arquivo de marca.
+ * As migrations só acrescentam tabelas e colunas; um bloqueio de arquivo evita duas execuções juntas.
+ */
+function migracoes_automaticas(): void {
+  $arquivos = glob(RAIZ . '/database/migrations/*.sql') ?: [];
+  if (!$arquivos) {
+    return;
+  }
+  sort($arquivos);
+  $ultima = basename(end($arquivos), '.sql');
+  $marca = RAIZ . '/storage/logs/.migracao-aplicada';
+  if (is_file($marca) && trim((string) file_get_contents($marca)) === $ultima) {
+    return;
+  }
+  $trava = @fopen(RAIZ . '/storage/logs/.migracao.lock', 'c');
+  if (!$trava) {
+    executar_migracoes(); // pasta sem permissão de escrita: aplica sem trava (cada migration só roda uma vez)
+    return;
+  }
+  flock($trava, LOCK_EX);
+  try {
+    clearstatcache();
+    if (!is_file($marca) || trim((string) file_get_contents($marca)) !== $ultima) {
+      $novas = executar_migracoes();
+      if ($novas) {
+        error_log('Migrations aplicadas automaticamente: ' . implode(', ', $novas));
+      }
+      file_put_contents($marca, $ultima);
+    }
+  } finally {
+    flock($trava, LOCK_UN);
+    fclose($trava);
+  }
+}

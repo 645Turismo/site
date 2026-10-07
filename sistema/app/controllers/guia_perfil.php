@@ -9,10 +9,15 @@ const ABAS_PERFIL = [
   'senha' => 'Senha',
 ];
 
+/** Abas em uso (sem Documentos enquanto o envio estiver desligado). */
+function abas_perfil(): array {
+  return DOCUMENTOS_ATIVOS ? ABAS_PERFIL : array_diff_key(ABAS_PERFIL, ['documentos' => true]);
+}
+
 function guia_perfil(): void {
   $g = exigir_guia();
   $aba = (string) ($_GET['aba'] ?? 'dados');
-  if (!isset(ABAS_PERFIL[$aba])) {
+  if (!isset(abas_perfil()[$aba])) {
     $aba = 'dados';
   }
   exibir('guia/perfil', [
@@ -70,6 +75,9 @@ function guia_perfil_atuacao(): void {
 
 function guia_perfil_documentos(): void {
   $g = exigir_guia();
+  if (!DOCUMENTOS_ATIVOS) {
+    abortar(404);
+  }
   [$salvos, $erros] = guia_salvar_documentos((int) $g['id'], 'guia');
   if ($erros) {
     guia_perfil_volta('documentos', $erros);

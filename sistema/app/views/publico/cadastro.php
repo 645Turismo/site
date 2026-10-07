@@ -2,28 +2,29 @@
 $comCpf = empty($g['id']);
 $preCadastro = ($g['status'] ?? '') === 'pre_cadastro';
 $textos = [
-  1 => 'Comece pelos seus dados. Leva uns 10 minutos para concluir as 5 etapas, e dá para voltar.',
+  1 => 'Comece pelos seus dados. Leva uns 10 minutos e dá para voltar a qualquer etapa.',
   2 => 'Conte o que você faz: funções, idiomas, regiões e Cadastur. É assim que os convites chegam até você.',
   3 => 'Envie os documentos. Pelo celular dá para fotografar na hora.',
   4 => 'Dados para a nota fiscal e para receber os pagamentos.',
   5 => 'Crie sua senha de acesso. Você vai entrar com o CPF e essa senha.',
 ];
 if ($preCadastro) {
-  $textos[1] = 'A equipe da 645 já começou seu cadastro. Confira os dados e complete o que falta: são 5 etapas rápidas.';
+  $textos[1] = 'A equipe da 645 já começou seu cadastro. Confira os dados e complete o que falta: são poucas etapas rápidas.';
   $textos[5] = 'Último passo: aceite os termos para enviar o cadastro para a equipe conferir.';
 }
 
 ?>
 <div class="cadastro">
-  <p class="sobretitulo">Cadastro de guia · etapa <?= $etapa ?> de <?= count(ETAPAS_CADASTRO) ?></p>
-  <h1 class="cadastro-titulo"><?= e(ETAPAS_CADASTRO[$etapa]) ?></h1>
+<?php $etapas = etapas_cadastro(); $posicao = array_search($etapa, array_keys($etapas), true) + 1; ?>
+  <p class="sobretitulo">Cadastro de guia · etapa <?= $posicao ?> de <?= count($etapas) ?></p>
+  <h1 class="cadastro-titulo"><?= e($etapas[$etapa]) ?></h1>
   <p class="pub-lead"><?= e($textos[$etapa]) ?></p>
 
   <ol class="etapas" aria-label="Etapas do cadastro">
-    <?php foreach (ETAPAS_CADASTRO as $n => $rotulo): ?>
+    <?php $i = 0; foreach ($etapas as $n => $rotulo): $i++; ?>
       <li class="<?= $n === $etapa ? 'atual' : ($n < $liberada ? 'feita' : '') ?>">
-        <?php if ($n <= $liberada && $n !== $etapa): ?><a href="/cadastro/<?= $n ?>"><span><?= $n < $liberada ? '✓' : $n ?></span><em><?= e($rotulo) ?></em></a>
-        <?php else: ?><span><span><?= $n ?></span><em><?= e($rotulo) ?></em></span><?php endif; ?>
+        <?php if ($n <= $liberada && $n !== $etapa): ?><a href="/cadastro/<?= $n ?>"><span><?= $n < $liberada ? '✓' : $i ?></span><em><?= e($rotulo) ?></em></a>
+        <?php else: ?><span><span><?= $i ?></span><em><?= e($rotulo) ?></em></span><?php endif; ?>
       </li>
     <?php endforeach; ?>
   </ol>
@@ -57,7 +58,7 @@ if ($preCadastro) {
       </fieldset>
     <?php } ?>
     <div class="form-rodape cadastro-rodape">
-      <?php if ($etapa > 1): ?><a href="/cadastro/<?= $etapa - 1 ?>" class="btn btn-texto">Voltar</a><?php endif; ?>
+      <?php if ($etapa > 1): ?><a href="/cadastro/<?= etapa_anterior($etapa) ?>" class="btn btn-texto">Voltar</a><?php endif; ?>
       <button type="submit" class="btn btn-primario"><?= $etapa < 5 ? 'Salvar e continuar' : 'Concluir cadastro' ?></button>
     </div>
   </form>

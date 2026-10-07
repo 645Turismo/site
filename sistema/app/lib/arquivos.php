@@ -89,3 +89,30 @@ function somar_dias_uteis(string $data, int $dias): string {
 function email_equipe(): string {
   return (string) configuracao('email_alertas_lista', 'contato@645turismo.com.br');
 }
+
+// Tabela e coluna da chave de cada tipo de arquivo servido em /arquivos/{tipo}/{chave}.
+const ARQUIVOS_CHAVES = [
+  'foto' => ['guias', 'foto_chave'],
+  'documento' => ['guia_documentos', 'chave'],
+  'envio' => ['envios', 'chave'],
+  'comprovante' => ['pagamentos', 'chave'],
+  'anexo' => ['chamado_mensagens', 'chave'],
+];
+
+/**
+ * Endereço de um arquivo pela chave aleatória (gerada na primeira vez). Nunca expõe o id sequencial.
+ * $linha precisa ter 'id' (e a coluna da chave, se já carregada).
+ */
+function arquivo_url(string $tipo, array $linha): string {
+  [$tabela, $coluna] = ARQUIVOS_CHAVES[$tipo];
+  $chave = $linha[$coluna] ?? null;
+  if (!$chave) {
+    $chave = valor("SELECT $coluna FROM $tabela WHERE id = ?", [(int) $linha['id']]);
+  }
+  if (!$chave) {
+    $chave = bin2hex(random_bytes(16));
+    q("UPDATE $tabela SET $coluna = ? WHERE id = ? AND $coluna IS NULL", [$chave, (int) $linha['id']]);
+    $chave = valor("SELECT $coluna FROM $tabela WHERE id = ?", [(int) $linha['id']]);
+  }
+  return '/arquivos/' . $tipo . '/' . $chave;
+}

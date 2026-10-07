@@ -38,7 +38,7 @@
             <dt>PIX</dt><dd><?= $p['pix_chave'] ? e((TIPOS_PIX[$p['pix_tipo']] ?? '') . ': ' . $p['pix_chave']) : '<span class="vermelho">não cadastrado</span>' ?></dd>
             <dt>Conta</dt><dd><?= e(implode(' · ', array_filter([$p['banco_nome'], $p['agencia'] ? 'ag. ' . $p['agencia'] : null, $p['conta'] ? 'cc ' . $p['conta'] : null])) ?: '—') ?></dd>
             <dt>CNPJ</dt><dd><?= e(formatar_cnpj($p['cnpj'])) ?> <?= e($p['razao_social']) ?></dd>
-            <dt>NF</dt><dd><?php if ($p['nf']): ?>nº <?= e($p['nf']['numero_nf']) ?> · <a href="/arquivos/envio/<?= (int) $p['nf']['id'] ?>" target="_blank" rel="noopener">abrir</a><?php endif; ?></dd>
+            <dt>NF</dt><dd><?php if ($p['nf']): ?>nº <?= e($p['nf']['numero_nf']) ?> · <a href="<?= e(arquivo_url('envio', $p['nf'])) ?>" target="_blank" rel="noopener">abrir</a><?php endif; ?></dd>
           </dl>
           <details class="acao-motivo"><summary class="btn btn-primario btn-p">Registrar pagamento</summary>
             <form method="post" action="/admin/pagamentos/registrar" class="form" enctype="multipart/form-data"><?= csrf_campo() ?>
@@ -73,7 +73,7 @@
               <td><?= e($pg['nome']) ?> <span class="mono amarelo"><?= e($pg['guia_codigo']) ?></span></td>
               <td><span class="mono codigo"><?= e($pg['codigo']) ?></span> <?= e($pg['viagem']) ?></td>
               <td><?= e(formatar_moeda($pg['valor'])) ?></td>
-              <td><?php if ($pg['comprovante_path']): ?><a href="/arquivos/comprovante/<?= (int) $pg['id'] ?>" target="_blank" rel="noopener">abrir</a><?php else: ?>—<?php endif; ?></td>
+              <td><?php if ($pg['comprovante_path']): ?><a href="<?= e(arquivo_url('comprovante', $pg)) ?>" target="_blank" rel="noopener">abrir</a><?php else: ?>—<?php endif; ?></td>
             </tr>
           <?php endforeach; ?>
         </tbody>

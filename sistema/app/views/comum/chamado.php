@@ -24,7 +24,7 @@ $statusVisao = $admin ? STATUS_CHAMADO_ADM : STATUS_CHAMADO;
     <li class="msg <?= $daEquipe ? 'msg-equipe' : 'msg-guia' ?>">
       <span class="msg-autor"><?= e($daEquipe ? ($admin ? $m['autor'] : 'Equipe 645') : ($admin ? $m['autor'] : 'Você')) ?> · <?= e(formatar_data_hora($m['criado_em'])) ?></span>
       <div class="msg-texto"><?= nl2br(e($m['mensagem'])) ?></div>
-      <?php if ($m['anexo_path']): ?><a href="/arquivos/anexo/<?= (int) $m['id'] ?>" target="_blank" rel="noopener" class="msg-anexo">📎 Ver anexo</a><?php endif; ?>
+      <?php if ($m['anexo_path']): ?><a href="<?= e(arquivo_url('anexo', $m)) ?>" target="_blank" rel="noopener" class="msg-anexo">📎 Ver anexo</a><?php endif; ?>
     </li>
   <?php endforeach; ?>
 </ol>

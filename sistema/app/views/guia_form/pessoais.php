@@ -42,7 +42,7 @@ $val = fn(string $c) => antigo($c, (string) ($g[$c] ?? ''));
       <span>Foto de rosto <?= empty($g['foto_path']) ? '*' : '' ?></span>
       <div class="foto-envio">
         <?php if (!empty($g['foto_path']) && !empty($g['id'])): ?>
-          <img src="/arquivos/foto/<?= (int) $g['id'] ?>" alt="Sua foto atual" class="foto-atual" width="72" height="72">
+          <img src="<?= e(arquivo_url('foto', $g)) ?>" alt="Sua foto atual" class="foto-atual" width="72" height="72">
         <?php endif; ?>
         <input type="file" name="foto" accept="image/jpeg,image/png,image/webp" capture="user">
       </div>

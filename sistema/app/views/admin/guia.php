@@ -12,7 +12,7 @@ $statusDoc = ['enviado' => ['Para conferir', 'aviso'], 'aprovado' => ['Aprovado'
 ?>
 <div class="pagina-topo">
   <div class="ficha-guia-topo">
-    <?php if ($g['foto_path']): ?><img src="/arquivos/foto/<?= (int) $g['id'] ?>" alt="" class="foto-guia" width="88" height="88"><?php endif; ?>
+    <?php if ($g['foto_path']): ?><img src="<?= e(arquivo_url('foto', $g)) ?>" alt="" class="foto-guia" width="88" height="88"><?php endif; ?>
     <div>
       <p class="sobretitulo mono"><?= e($g['codigo']) ?></p>
       <h1><?= e($g['nome']) ?></h1>
@@ -92,7 +92,7 @@ $statusDoc = ['enviado' => ['Para conferir', 'aviso'], 'aprovado' => ['Aprovado'
                 <?php if ($d['motivo']): ?><small class="vermelho">Motivo: <?= e($d['motivo']) ?></small><?php endif; ?></div>
               <div class="docs-adm-acoes">
                 <span class="selo selo-<?= e($c) ?>"><?= e($r) ?></span>
-                <a href="/arquivos/documento/<?= (int) $d['id'] ?>" target="_blank" rel="noopener" class="btn btn-contorno btn-p">Abrir</a>
+                <a href="<?= e(arquivo_url('documento', $d)) ?>" target="_blank" rel="noopener" class="btn btn-contorno btn-p">Abrir</a>
                 <?php if ($d['status'] !== 'aprovado'): ?>
                   <form method="post" action="/admin/guias/<?= (int) $g['id'] ?>/documentos/<?= (int) $d['id'] ?>" class="inline-form"><?= csrf_campo() ?>
                     <input type="hidden" name="decisao" value="aprovar"><button type="submit" class="btn btn-primario btn-p">Aprovar</button></form>

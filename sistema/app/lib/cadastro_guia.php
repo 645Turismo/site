@@ -1,6 +1,10 @@
 <?php
 // Dados do guia: usados no cadastro público (5 etapas) e no Perfil do guia (mesmos formulários).
 
+// Envio de documentos desligado por enquanto (cadastro e perfil). Os dados do Cadastur continuam
+// obrigatórios na etapa de atuação para quem escolhe função que exige Cadastur (ex.: Guia de Turismo).
+const DOCUMENTOS_ATIVOS = false;
+
 const ETAPAS_CADASTRO = [
   1 => 'Quem é você',
   2 => 'Sua atuação',
@@ -199,7 +203,35 @@ function guia_salvar_documentos(int $guiaId, string $enviadoPor): array {
 }
 
 /** Documentos obrigatórios que ainda faltam. */
+/** Etapas em uso (sem a de documentos enquanto ela estiver desligada). */
+function etapas_cadastro(): array {
+  return DOCUMENTOS_ATIVOS ? ETAPAS_CADASTRO : array_diff_key(ETAPAS_CADASTRO, [3 => true]);
+}
+
+/** Próxima etapa em uso depois de $etapa (ou a última). */
+function etapa_seguinte(int $etapa): int {
+  foreach (array_keys(etapas_cadastro()) as $n) {
+    if ($n > $etapa) {
+      return $n;
+    }
+  }
+  return $etapa;
+}
+
+function etapa_anterior(int $etapa): int {
+  $anterior = $etapa;
+  foreach (array_keys(etapas_cadastro()) as $n) {
+    if ($n < $etapa) {
+      $anterior = $n;
+    }
+  }
+  return $anterior;
+}
+
 function guia_documentos_faltando(int $guiaId): array {
+  if (!DOCUMENTOS_ATIVOS) {
+    return [];
+  }
   $tem = array_flip(array_column(todos('SELECT DISTINCT tipo FROM guia_documentos WHERE guia_id = ? AND atual = 1', [$guiaId]), 'tipo'));
   $exigeCadastur = (bool) valor('SELECT 1 FROM guia_funcoes gf JOIN funcoes f ON f.id = gf.funcao_id WHERE gf.guia_id = ? AND f.exige_cadastur = 1', [$guiaId]);
   $faltam = [];

@@ -335,3 +335,4 @@
 .info-embarque { display: flex; flex-direction: column; gap: 2px; margin: 6px 0 12px; padding: 8px 12px; border-left: 3px solid var(--menta); background: rgba(83, 217, 178, 0.08); }
 .info-embarque strong { font-size: 16px; color: #fff; }
 .info-embarque.ed-guia { border-left-color: var(--amarelo); }
+.opcao .aviso-nf { display: block; margin-top: 6px; font-size: 13px; color: var(--amarelo); }

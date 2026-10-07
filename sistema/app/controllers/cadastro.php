@@ -24,21 +24,25 @@ function pub_cadastro(): void {
     redirecionar('/guia/perfil');
   }
   $g = cadastro_rascunho();
-  redirecionar('/cadastro/' . ($g ? max(1, min(5, (int) $g['cadastro_etapa'])) : 1));
+  $etapa = $g ? max(1, min(5, (int) $g['cadastro_etapa'])) : 1;
+  redirecionar('/cadastro/' . (isset(etapas_cadastro()[$etapa]) ? $etapa : etapa_seguinte($etapa)));
 }
 
 function pub_cadastro_etapa(int $etapa): void {
-  if (!isset(ETAPAS_CADASTRO[$etapa])) {
+  if (!isset(etapas_cadastro()[$etapa])) {
     abortar(404);
   }
   $g = cadastro_rascunho();
   $liberada = $g ? (int) $g['cadastro_etapa'] : 1;
+  if (!isset(etapas_cadastro()[$liberada])) {
+    $liberada = etapa_seguinte($liberada); // rascunho parado numa etapa que foi desligada
+  }
   if ($etapa > $liberada) {
     redirecionar('/cadastro/' . $liberada);
   }
   $x = guia_extras($g['id'] ?? null);
   exibir('publico/cadastro', [
-    'titulo' => 'Cadastro de guia · ' . ETAPAS_CADASTRO[$etapa],
+    'titulo' => 'Cadastro de guia · ' . etapas_cadastro()[$etapa],
     'etapa' => $etapa,
     'liberada' => $liberada,
     'g' => $g ?? [],
@@ -49,7 +53,7 @@ function pub_cadastro_etapa(int $etapa): void {
 }
 
 function pub_cadastro_salvar(int $etapa): void {
-  if (!isset(ETAPAS_CADASTRO[$etapa])) {
+  if (!isset(etapas_cadastro()[$etapa])) {
     abortar(404);
   }
   $g = cadastro_rascunho();
@@ -130,7 +134,7 @@ function pub_cadastro_salvar(int $etapa): void {
     cadastro_concluir($g, $preCadastro ? null : (string) $_POST['senha']);
   }
 
-  $proxima = $etapa + 1;
+  $proxima = etapa_seguinte($etapa);
   if ((int) $g['cadastro_etapa'] < $proxima) {
     atualizar('guias', ['cadastro_etapa' => $proxima], 'id = ?', [$g['id']]);
   }

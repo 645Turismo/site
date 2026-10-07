@@ -75,14 +75,14 @@ $etapas = [
 
         <?php if ($v['nf'] && $v['etapa'] !== 'aguardando_nf'): ?>
           <p class="texto-2">NF <?= e($v['nf']['numero_nf']) ?> · <?= e(formatar_moeda($v['nf']['valor_nf'])) ?> · enviada em <?= e(formatar_data($v['nf']['enviado_em'])) ?>
-            · <a href="/arquivos/envio/<?= (int) $v['nf']['id'] ?>" target="_blank" rel="noopener">ver nota</a></p>
+            · <a href="<?= e(arquivo_url('envio', $v['nf'])) ?>" target="_blank" rel="noopener">ver nota</a></p>
         <?php endif; ?>
         <?php if ($v['previsao'] && $v['etapa'] === 'a_pagar'): ?>
           <p><strong>Previsão de pagamento:</strong> <?= e(formatar_data($v['previsao'])) ?></p>
         <?php endif; ?>
         <?php foreach ($v['pagamentos'] as $pg): ?>
           <p class="pago">Pago <?= e(formatar_moeda($pg['valor'])) ?> em <?= e(formatar_data($pg['pago_em'])) ?>
-            <?php if ($pg['comprovante_path']): ?> · <a href="/arquivos/comprovante/<?= (int) $pg['id'] ?>" target="_blank" rel="noopener">comprovante</a><?php endif; ?></p>
+            <?php if ($pg['comprovante_path']): ?> · <a href="<?= e(arquivo_url('comprovante', $pg)) ?>" target="_blank" rel="noopener">comprovante</a><?php endif; ?></p>
         <?php endforeach; ?>
 
         <details class="adicionar">

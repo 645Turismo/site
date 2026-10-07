@@ -15,7 +15,7 @@ $statusDoc = ['enviado' => ['Em conferência', 'info'], 'aprovado' => ['Aprovado
           <?php foreach ($atuais as $d): [$r, $c] = $statusDoc[$d['status']] ?? [$d['status'], 'neutro']; ?>
             <span class="doc-atual">
               <span class="selo selo-<?= e($c) ?>"><?= e($r) ?></span>
-              <a href="/arquivos/documento/<?= (int) $d['id'] ?>" target="_blank" rel="noopener">Ver arquivo</a>
+              <a href="<?= e(arquivo_url('documento', $d)) ?>" target="_blank" rel="noopener">Ver arquivo</a>
             </span>
             <?php if ($d['status'] === 'reprovado' && $d['motivo']): ?><small class="vermelho">Motivo: <?= e($d['motivo']) ?></small><?php endif; ?>
           <?php endforeach; ?>

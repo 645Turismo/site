@@ -9,7 +9,8 @@ $vb = fn(string $c) => antigo($c, (string) ($b[$c] ?? ''));
   <legend><span>01</span> Empresa para a nota fiscal</legend>
   <p class="texto-2">A 645 paga as diárias mediante nota fiscal. Use o CNPJ do seu MEI ou empresa.</p>
   <label class="opcao opcao-destaque"><input type="checkbox" name="nao_emite_nf" value="1" data-alterna="#dados-nf" <?= $naoEmite ? 'checked' : '' ?>>
-    <span><strong>Não emito nota fiscal</strong> (não tenho MEI ou empresa). Pule esta parte: você recebe pelo PIX sem enviar nota.</span></label>
+    <span><strong>Não emito nota fiscal</strong> (não tenho MEI ou empresa). Pule esta parte: você recebe pelo PIX sem enviar nota.
+      <small class="aviso-nf">Atenção: alguns trabalhos exigem nota fiscal. Sem emitir nota, você pode não ser selecionado(a) para eles.</small></span></label>
   <div class="grade-campos" id="dados-nf"<?= $naoEmite ? ' hidden' : '' ?>>
     <label class="campo"><span>CNPJ *</span><input type="text" name="cnpj" inputmode="numeric" maxlength="18" data-mascara="cnpj" value="<?= e(formatar_cnpj($val('cnpj'))) ?>"></label>
     <label class="campo"><span>Razão social *</span><input type="text" name="razao_social" maxlength="200" value="<?= e($val('razao_social')) ?>"></label>

@@ -37,11 +37,11 @@ return [
   ['GET', '/privacidade', 'pub_privacidade'],
 
   // Arquivos (com conferência de permissão)
-  ['GET', '/arquivos/foto/{id}', 'arq_foto'],
-  ['GET', '/arquivos/documento/{id}', 'arq_documento'],
-  ['GET', '/arquivos/envio/{id}', 'arq_envio'],
-  ['GET', '/arquivos/comprovante/{id}', 'arq_comprovante'],
-  ['GET', '/arquivos/anexo/{id}', 'arq_anexo'],
+  ['GET', '/arquivos/foto/{chave}', 'arq_foto'],
+  ['GET', '/arquivos/documento/{chave}', 'arq_documento'],
+  ['GET', '/arquivos/envio/{chave}', 'arq_envio'],
+  ['GET', '/arquivos/comprovante/{chave}', 'arq_comprovante'],
+  ['GET', '/arquivos/anexo/{chave}', 'arq_anexo'],
   ['GET', '/status', 'pub_status'],
   ['GET', '/instalar', 'instalar_form'],
   ['POST', '/instalar', 'instalar_executar'],

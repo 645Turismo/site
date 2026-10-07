@@ -23,7 +23,7 @@ $acoes = ['dados' => 'pessoais', 'atuacao' => 'atuacao', 'documentos' => 'docume
 <?php endif; ?>
 
 <nav class="filtros" aria-label="Seções do perfil">
-  <?php foreach (ABAS_PERFIL as $chave => $rotulo): ?>
+  <?php foreach (abas_perfil() as $chave => $rotulo): ?>
     <a href="?aba=<?= e($chave) ?>" class="<?= $aba === $chave ? 'ativo' : '' ?>" <?= $aba === $chave ? 'aria-current="page"' : '' ?>><?= e($rotulo) ?></a>
   <?php endforeach; ?>
 </nav>

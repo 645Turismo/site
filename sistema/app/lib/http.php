@@ -120,13 +120,19 @@ function despachar(array $rotas, string $metodo, string $caminho): void {
     if ($m !== $metodo && !($m === 'GET' && $metodo === 'HEAD')) {
       continue;
     }
-    $regex = '#^' . preg_replace('#\{(\w+)\}#', '(?P<$1>\d+)', $padrao) . '$#';
+    // {chave} é um código aleatório de 32 caracteres hex (arquivos); os demais parâmetros são ids numéricos.
+    $regex = '#^' . preg_replace_callback('#\{(\w+)\}#',
+      fn($m) => $m[1] === 'chave' ? '(?P<chave>[a-f0-9]{32})' : '(?P<' . $m[1] . '>\d+)', $padrao) . '$#';
     if (preg_match($regex, $caminho, $m2)) {
       $params = array_filter($m2, 'is_string', ARRAY_FILTER_USE_KEY);
       if ($metodo === 'POST') {
         csrf_verificar();
       }
-      $funcao(...array_map('intval', array_values($params)));
+      $valores = [];
+      foreach ($params as $nome => $valor) {
+        $valores[] = $nome === 'chave' ? $valor : (int) $valor;
+      }
+      $funcao(...$valores);
       return;
     }
   }

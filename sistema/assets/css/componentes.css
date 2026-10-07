@@ -92,7 +92,8 @@
 .form-secoes fieldset { margin: 0 0 8px; padding: 26px 0; border: none; border-top: 1px solid var(--linha); min-width: 0; }
 .form-secoes legend { float: left; width: 100%; margin-bottom: 18px; padding: 0; font-family: var(--serif); font-size: 24px; color: #fff; }
 .form-secoes legend span { margin-right: 10px; font-size: 18px; color: var(--menta); }
-.form-secoes fieldset > .campo, .form-secoes fieldset > .opcao, .form-secoes fieldset > .rotulo, .form-secoes fieldset > .contatos-linhas { clear: both; margin-bottom: 16px; }
+.form-secoes fieldset > :not(legend) { clear: both; }
+.form-secoes fieldset > .campo, .form-secoes fieldset > .opcao, .form-secoes fieldset > .rotulo, .form-secoes fieldset > .contatos-linhas { margin-bottom: 16px; }
 .grade-campos { clear: both; display: grid; gap: 16px; }
 .grade-campos + .grade-campos { margin-top: 16px; }
 @media (min-width: 700px) {

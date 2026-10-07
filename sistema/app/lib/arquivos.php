@@ -58,10 +58,16 @@ function servir_arquivo(?string $relativo, string $nome = 'arquivo'): never {
   if (!isset(UPLOAD_TIPOS[$mime])) {
     abortar(404, 'Arquivo não encontrado.');
   }
+  // Nome com a extensão certa (senão o arquivo baixado não abre) e ?baixar=1 força o download.
   $nome = preg_replace('/[^\w.\- ]+/u', '_', $nome) ?: 'arquivo';
+  $extensao = UPLOAD_TIPOS[$mime];
+  if (strtolower(pathinfo($nome, PATHINFO_EXTENSION)) !== $extensao && !($extensao === 'jpg' && preg_match('/\.jpe?g$/i', $nome))) {
+    $nome .= '.' . $extensao;
+  }
+  $modo = isset($_GET['baixar']) ? 'attachment' : 'inline';
   header('Content-Type: ' . $mime);
   header('Content-Length: ' . filesize($caminho));
-  header('Content-Disposition: inline; filename="' . $nome . '"');
+  header('Content-Disposition: ' . $modo . '; filename="' . $nome . '"; filename*=UTF-8\'\'' . rawurlencode($nome));
   header('Cache-Control: private, no-store');
   readfile($caminho);
   exit;

@@ -50,6 +50,6 @@ function arq_comprovante(string $chave): void {
 }
 
 function arq_anexo(string $chave): void {
-  $m = arquivo_autorizar(um('SELECT cm.anexo_path, c.guia_id FROM chamado_mensagens cm JOIN chamados c ON c.id = cm.chamado_id WHERE cm.chave = ?', [$chave]));
-  servir_arquivo($m['anexo_path'], 'anexo');
+  $m = arquivo_autorizar(um('SELECT cm.anexo_path, cm.chamado_id, c.guia_id FROM chamado_mensagens cm JOIN chamados c ON c.id = cm.chamado_id WHERE cm.chave = ?', [$chave]));
+  servir_arquivo($m['anexo_path'], 'anexo-chamado-' . $m['chamado_id']);
 }

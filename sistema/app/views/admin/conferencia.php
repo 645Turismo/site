@@ -38,6 +38,7 @@ $statusEnvio = ['enviado' => ['Para conferir', 'aviso'], 'aprovado' => ['Aprovad
             <dt>Diárias</dt><dd class="<?= $difere ? 'vermelho' : '' ?>"><?= e(formatar_moeda($e['total_diarias'])) ?><?= $difere ? ' · valor diferente da NF' : ' · confere' ?></dd>
           </dl>
           <a href="<?= e(arquivo_url('envio', $e)) ?>" target="_blank" rel="noopener" class="btn btn-contorno btn-p">Abrir a nota</a>
+          <a href="<?= e(arquivo_url('envio', $e)) ?>?baixar=1" class="btn btn-texto btn-p">Baixar</a>
         <?php else: ?>
           <p class="texto-2"><?= $e['qtd_passageiros'] !== null ? (int) $e['qtd_passageiros'] . ' passageiros atendidos' : '' ?></p>
           <div class="texto-longo relatorio-texto"><?= nl2br(e($e['texto'])) ?></div>

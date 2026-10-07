@@ -244,6 +244,10 @@
       if (p.campos.tipo_pax.bruto === 'crianca' || p.campos.tipo_pax.bruto === 'colo') {
         tdNome.appendChild(el('span', 'tag-pax' + (p.campos.tipo_pax.g ? ' ed-guia' : ''), p.campos.tipo_pax.v));
       }
+      if (p.equipe) {
+        var tagEquipe = el('span', 'tag-pax tag-equipe', 'Equipe · fora da contagem');
+        tdNome.appendChild(tagEquipe);
+      }
       tr.appendChild(tdNome);
       var ci = el('td', 'col-marca');
       // Quem não compareceu mostra o no-show no lugar do check-in (tocar desfaz).

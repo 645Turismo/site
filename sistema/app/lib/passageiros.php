@@ -249,10 +249,13 @@ function passageiros_estado(array $viagem, array $diaria, bool $podeMarcar): arr
     $checkout = $marca('checkout');
     $noshow = $marca('noshow');
     $incluidoGuia = $l['criado_por_tipo'] === 'guia';
-    $totais['total']++;
-    $totais['checkin'] += $checkin ? 1 : 0;
-    $totais['checkout'] += $checkout ? 1 : 0;
-    $totais['noshow'] += $noshow ? 1 : 0;
+    $equipe = passageiro_e_equipe($campos['observacao']['bruto']);
+    if (!$equipe) {
+      $totais['total']++;
+      $totais['checkin'] += $checkin ? 1 : 0;
+      $totais['checkout'] += $checkout ? 1 : 0;
+      $totais['noshow'] += $noshow ? 1 : 0;
+    }
     $totais['ajustados'] += ($ajustes || $incluidoGuia) ? 1 : 0;
     $lista[] = [
       'id' => (int) $l['id'],
@@ -263,6 +266,7 @@ function passageiros_estado(array $viagem, array $diaria, bool $podeMarcar): arr
       'checkin' => $checkin,
       'checkout' => $checkout,
       'noshow' => $noshow,
+      'equipe' => $equipe,
     ];
   }
   return [
@@ -450,20 +454,33 @@ function resposta_json(array $dados, int $codigo = 200): never {
  * faltam = passageiros sem check-in e sem no-show.
  */
 function viagem_resumo_checkin(int $viagemId): ?array {
-  $total = (int) valor("SELECT COUNT(*) FROM passageiros WHERE viagem_id = ? AND status = 'ativo'", [$viagemId]);
   $dia = um('SELECT id, data FROM diarias WHERE viagem_id = ? AND data <= ? ORDER BY data DESC LIMIT 1', [$viagemId, hoje()])
     ?? um('SELECT id, data FROM diarias WHERE viagem_id = ? ORDER BY data LIMIT 1', [$viagemId]);
-  if (!$total || !$dia) {
+  if (!$dia) {
     return null;
   }
-  $r = um("SELECT SUM(CASE WHEN r.checkin_em IS NOT NULL THEN 1 ELSE 0 END) AS feitos,
-      SUM(CASE WHEN r.checkin_em IS NULL AND r.noshow_em IS NOT NULL THEN 1 ELSE 0 END) AS noshow
-    FROM passageiros p JOIN passageiro_registros r ON r.passageiro_id = p.id AND r.diaria_id = ?
-    WHERE p.viagem_id = ? AND p.status = 'ativo'", [$dia['id'], $viagemId]);
-  $feitos = (int) ($r['feitos'] ?? 0);
-  $noshow = (int) ($r['noshow'] ?? 0);
+  $total = $feitos = $noshow = 0;
+  foreach (todos("SELECT p.observacao, p.ajustes_guia, r.checkin_em, r.noshow_em FROM passageiros p
+      LEFT JOIN passageiro_registros r ON r.passageiro_id = p.id AND r.diaria_id = ?
+      WHERE p.viagem_id = ? AND p.status = 'ativo'", [$dia['id'], $viagemId]) as $p) {
+    $aj = json_decode((string) $p['ajustes_guia'], true) ?: [];
+    if (passageiro_e_equipe(array_key_exists('observacao', $aj) ? $aj['observacao'] : $p['observacao'])) {
+      continue; // guia/staff não entra na contagem
+    }
+    $total++;
+    $feitos += $p['checkin_em'] ? 1 : 0;
+    $noshow += !$p['checkin_em'] && $p['noshow_em'] ? 1 : 0;
+  }
+  if (!$total) {
+    return null;
+  }
   return ['data' => $dia['data'], 'diaria_id' => (int) $dia['id'], 'total' => $total, 'feitos' => $feitos,
     'noshow' => $noshow, 'faltam' => max(0, $total - $feitos - $noshow)];
+}
+
+/** Guia ou staff da 645 que viaja na lista: a observação traz "Guia" ou "Staff". Fica fora da contagem de check-in. */
+function passageiro_e_equipe(?string $observacao): bool {
+  return (bool) preg_match('/\b(guia|staff)\b/', texto_chave((string) $observacao));
 }
 
 /**

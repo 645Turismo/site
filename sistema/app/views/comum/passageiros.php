@@ -57,7 +57,7 @@ $urlIncluir = $admin ? $base : $base . '/incluir';
       </select>
       <button type="button" class="btn btn-contorno btn-p" data-incluir-abrir>+ Incluir passageiro</button>
     </div>
-    <p class="lp-legenda"><span class="marca-guia"></span> Em amarelo: informação ajustada ou incluída pelo guia<?= $admin ? ' (o original aparece ao passar o mouse ou no editar)' : '. A coordenação é avisada por e-mail' ?>.</p>
+    <p class="lp-legenda">Guia ou staff (observação com "Guia" ou "Staff") aparece na lista, mas não entra na contagem de check-in.<br><span class="marca-guia"></span> Em amarelo: informação ajustada ou incluída pelo guia<?= $admin ? ' (o original aparece ao passar o mouse ou no editar)' : '. A coordenação é avisada por e-mail' ?>.</p>
     <div class="lp-tabela-rolagem">
       <table class="lp-tabela">
         <thead>

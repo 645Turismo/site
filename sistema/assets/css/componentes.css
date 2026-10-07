@@ -337,3 +337,4 @@
 .info-embarque strong { font-size: 16px; color: #fff; }
 .info-embarque.ed-guia { border-left-color: var(--amarelo); }
 .opcao .aviso-nf { display: block; margin-top: 6px; font-size: 13px; color: var(--amarelo); }
+.tag-pax.tag-equipe { border-color: var(--linha-forte); color: var(--texto-2); }

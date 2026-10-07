@@ -443,3 +443,25 @@ function resposta_json(array $dados, int $codigo = 200): never {
   exit;
 }
 
+
+/**
+ * Resumo do check-in de uma viagem para listas: no dia de hoje, senão no último dia que já passou,
+ * senão no próximo. Retorna null se a viagem não tem dias ou passageiros.
+ * faltam = passageiros sem check-in e sem no-show.
+ */
+function viagem_resumo_checkin(int $viagemId): ?array {
+  $total = (int) valor("SELECT COUNT(*) FROM passageiros WHERE viagem_id = ? AND status = 'ativo'", [$viagemId]);
+  $dia = um('SELECT id, data FROM diarias WHERE viagem_id = ? AND data <= ? ORDER BY data DESC LIMIT 1', [$viagemId, hoje()])
+    ?? um('SELECT id, data FROM diarias WHERE viagem_id = ? ORDER BY data LIMIT 1', [$viagemId]);
+  if (!$total || !$dia) {
+    return null;
+  }
+  $r = um("SELECT SUM(CASE WHEN r.checkin_em IS NOT NULL THEN 1 ELSE 0 END) AS feitos,
+      SUM(CASE WHEN r.checkin_em IS NULL AND r.noshow_em IS NOT NULL THEN 1 ELSE 0 END) AS noshow
+    FROM passageiros p JOIN passageiro_registros r ON r.passageiro_id = p.id AND r.diaria_id = ?
+    WHERE p.viagem_id = ? AND p.status = 'ativo'", [$dia['id'], $viagemId]);
+  $feitos = (int) ($r['feitos'] ?? 0);
+  $noshow = (int) ($r['noshow'] ?? 0);
+  return ['data' => $dia['data'], 'diaria_id' => (int) $dia['id'], 'total' => $total, 'feitos' => $feitos,
+    'noshow' => $noshow, 'faltam' => max(0, $total - $feitos - $noshow)];
+}

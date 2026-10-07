@@ -27,7 +27,7 @@ $filtros = ['ativas' => 'Em andamento', 'rascunho' => 'Rascunhos', 'publicada' =
 <?php else: ?>
   <div class="tabela-rolagem">
     <table class="tabela">
-      <thead><tr><th>Viagem/Tour</th><th>Período</th><th>Dias</th><th>Guias / vagas</th><th>Situação</th></tr></thead>
+      <thead><tr><th>Viagem/Tour</th><th>Período</th><th>Dias</th><th>Guias / vagas</th><th>Check-in</th><th>Situação</th></tr></thead>
       <tbody>
         <?php foreach ($viagens as $v): ?>
           <tr>
@@ -36,6 +36,11 @@ $filtros = ['ativas' => 'Em andamento', 'rascunho' => 'Rascunhos', 'publicada' =
             <td><?= e(periodo_viagem($v)) ?></td>
             <td><?= (int) $v['dias'] ?></td>
             <td><?= (int) $v['guias'] ?> / <?= (int) $v['vagas'] ?></td>
+            <td><?php if ($c = $v['checkin']): ?>
+              <a href="/admin/viagens/<?= (int) $v['id'] ?>/passageiros?diaria=<?= $c['diaria_id'] ?>" class="link-limpo resumo-checkin" title="<?= $c['feitos'] ?> com check-in, <?= $c['faltam'] ?> faltando<?= $c['noshow'] ? ', ' . $c['noshow'] . ' no-show' : '' ?> de <?= $c['total'] ?> passageiros">
+                <strong><span class="verde"><?= $c['feitos'] ?></span> / <span class="<?= $c['faltam'] ? 'amarelo' : '' ?>"><?= $c['faltam'] ?></span></strong>
+                <small class="texto-2">feitos / faltam<?= $c['noshow'] ? ' · ' . $c['noshow'] . ' no-show' : '' ?><br><?= e(date('d/m', strtotime($c['data']))) ?><?= $c['data'] === hoje() ? ' (hoje)' : '' ?></small></a>
+            <?php else: ?><span class="texto-2">—</span><?php endif; ?></td>
             <td><?= selo(STATUS_VIAGEM, $v['status']) ?></td>
           </tr>
         <?php endforeach; ?>

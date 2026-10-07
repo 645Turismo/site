@@ -179,6 +179,10 @@ function adm_viagens(): void {
         WHERE d.viagem_id = v.id AND s.status NOT IN (\'recusado\',\'cancelado\')) AS guias
     FROM viagens v' . ($where ? ' WHERE ' . implode(' AND ', $where) : '') . '
     ORDER BY CASE WHEN v.status IN (\'rascunho\',\'publicada\') THEN 0 ELSE 1 END, v.data_inicio', $params);
+  foreach ($viagens as &$linha) {
+    $linha['checkin'] = viagem_resumo_checkin((int) $linha['id']);
+  }
+  unset($linha);
   exibir('admin/viagens', [
     'titulo' => 'Viagens/Tours',
     'menu' => 'viagens',

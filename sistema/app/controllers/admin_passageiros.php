@@ -127,6 +127,7 @@ function adm_passageiros_importar(int $id): void {
     'passageiros' => importacao_marcar_repetidos($id, $r['passageiros']),
     'ignoradas' => $r['ignoradas'],
     'colunas' => $r['colunas'],
+    'poltrona_sem_titulo' => $r['poltrona_sem_titulo'] ?? null,
   ];
   redirecionar("/admin/viagens/$id/passageiros/importar");
 }

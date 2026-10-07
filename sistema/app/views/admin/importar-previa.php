@@ -23,6 +23,9 @@ $campos = CAMPOS_PASSAGEIRO;
 <p class="texto-2 espaco-topo">
   <?php if ($imp['colunas']): ?>
     Colunas reconhecidas: <b><?= e(implode(', ', array_map(fn($c) => $campos[$c][0], $imp['colunas']))) ?></b>.
+    <?php if (!empty($imp['poltrona_sem_titulo'])): ?>
+      <br><strong>Poltrona:</strong> a coluna <?= e($imp['poltrona_sem_titulo']) ?> não tem título, mas tem os números de poltrona de cada passageiro, por isso foi usada como Poltrona.
+    <?php endif; ?>
     <?php $faltam = array_diff(array_keys($campos), $imp['colunas']); if ($faltam): ?>
       Sem coluna para: <?= e(implode(', ', array_map(fn($c) => $campos[$c][0], $faltam))) ?> (ficam em branco).
     <?php endif; ?>

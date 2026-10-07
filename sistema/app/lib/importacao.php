@@ -74,8 +74,12 @@ function planilha_interpretar(array $linhas): array {
   $cab = planilha_achar_cabecalho($linhas);
   if ($cab) {
     [$inicio, $mapa] = $cab;
-    $resultado['colunas'] = array_values($mapa);
     $linhas = array_slice($linhas, $inicio + 1);
+    if (!in_array('poltrona', $mapa, true) && ($coluna = planilha_achar_coluna_poltrona($linhas, $mapa)) !== null) {
+      $mapa[$coluna] = 'poltrona';
+      $resultado['poltrona_sem_titulo'] = planilha_letra_coluna($coluna);
+    }
+    $resultado['colunas'] = array_values($mapa);
   } else {
     $mapa = null; // sem cabeçalho: ordem padrão da planilha da 645
   }
@@ -188,4 +192,55 @@ function importacao_aplicar_regras(array $viagem, array $passageiros): array {
   }
   unset($p);
   return $passageiros;
+}
+
+/**
+ * Planilha sem a coluna "Poltrona" no cabeçalho (na lista da 645 a numeração ao lado do nome é a poltrona):
+ * procura uma coluna não reconhecida em que pelo menos 80% dos passageiros têm número inteiro de 1 a 99,
+ * sem repetir. Retorna o índice da coluna ou null.
+ */
+function planilha_achar_coluna_poltrona(array $linhas, array $mapa): ?int {
+  $colNome = array_search('nome', $mapa, true);
+  $melhor = null;
+  $melhorTaxa = 0.0;
+  $candidatas = [];
+  foreach ($linhas as [, $celulas]) {
+    foreach (array_keys($celulas) as $col) {
+      if (!isset($mapa[$col])) {
+        $candidatas[$col] = true;
+      }
+    }
+  }
+  foreach (array_keys($candidatas) as $col) {
+    $comNome = 0;
+    $numeros = [];
+    foreach ($linhas as [, $celulas]) {
+      if (trim((string) ($celulas[$colNome] ?? '')) === '') {
+        continue;
+      }
+      $comNome++;
+      $v = trim((string) ($celulas[$col] ?? ''));
+      if (preg_match('/^0*([1-9]\d?)(\.0+)?$/', $v, $m)) {
+        $numeros[] = (int) $m[1];
+      }
+    }
+    if ($comNome === 0 || count($numeros) !== count(array_unique($numeros))) {
+      continue;
+    }
+    $taxa = count($numeros) / $comNome;
+    // Empate: a coluna mais perto do nome.
+    if ($taxa >= 0.8 && ($taxa > $melhorTaxa || ($taxa === $melhorTaxa && abs($col - $colNome) < abs($melhor - $colNome)))) {
+      $melhor = $col;
+      $melhorTaxa = $taxa;
+    }
+  }
+  return $melhor;
+}
+
+function planilha_letra_coluna(int $indice): string {
+  $letra = '';
+  for ($n = $indice + 1; $n > 0; $n = intdiv($n - 1, 26)) {
+    $letra = chr(65 + ($n - 1) % 26) . $letra;
+  }
+  return $letra;
 }

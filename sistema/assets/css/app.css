@@ -254,3 +254,19 @@ code { font-size: 0.9em; color: var(--amarelo); }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
+
+/* Menu lateral sem barra de rolagem: em telas mais baixas os itens ficam mais compactos para caber inteiro. */
+.lateral { scrollbar-width: none; }
+.lateral::-webkit-scrollbar { display: none; }
+@media (min-width: 1000px) and (max-height: 860px) {
+  .lateral-topo { padding: 20px 28px 16px; }
+  .lateral-topo .sobretitulo { margin-top: 10px; }
+  .lateral-nav { padding: 8px 0; }
+  .lateral-nav a { padding: 9px 28px; }
+  .lateral-perfil { padding: 14px 28px 16px; }
+  .lateral-perfil-acoes { margin-top: 8px; }
+}
+@media (min-width: 1000px) and (max-height: 680px) {
+  .lateral-nav a { padding: 6px 28px; font-size: 13px; }
+  .lateral-perfil-acoes { flex-direction: row; gap: 16px; }
+}

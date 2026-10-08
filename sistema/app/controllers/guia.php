@@ -155,6 +155,12 @@ function guia_viagem(int $id): void {
     'relatorioLiberado' => $ultimaAssumida !== null && $ultimaAssumida <= $hoje,
     'relatorioEditavel' => !$relatorio || in_array($relatorio['status'], ['enviado', 'reprovado'], true),
     'comentarios' => todos('SELECT * FROM viagem_comentarios WHERE viagem_id = ? AND guia_id = ? ORDER BY id', [$id, $g['id']]),
+    // Sua equipe: guias que confirmaram presença nesta viagem, só nome e função.
+    'equipe' => todos("SELECT DISTINCT g.id, COALESCE(NULLIF(g.nome_social, ''), g.nome) AS nome, f.nome AS funcao, f.ordem
+      FROM escalas s JOIN diarias d ON d.id = s.diaria_id JOIN guias g ON g.id = s.guia_id
+      LEFT JOIN viagem_vagas vv ON vv.id = s.viagem_vaga_id LEFT JOIN funcoes f ON f.id = vv.funcao_id
+      WHERE d.viagem_id = ? AND s.status IN ('" . implode("','", ESCALAS_ASSUMIDAS) . "')
+      ORDER BY f.ordem, nome", [$id]),
     'anexos' => $assumidas ? todos('SELECT * FROM viagem_anexos WHERE viagem_id = ? ORDER BY id', [$id]) : [],
     'origens' => viagem_origens($id),
     'contatos' => $assumidas ? todos('SELECT * FROM viagem_contatos WHERE viagem_id = ? ORDER BY ordem', [$id]) : [],

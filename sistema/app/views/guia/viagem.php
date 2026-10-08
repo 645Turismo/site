@@ -135,6 +135,17 @@ $grupo = array_filter([$v['cliente'], $v['perfil_grupo'], $v['idioma_grupo'] ? '
       </ul>
     </section>
 
+    <?php if ($confirmado && $equipe): ?>
+      <section class="bloco" aria-labelledby="t-equipe">
+        <div class="bloco-titulo"><h2 id="t-equipe">Sua equipe</h2></div>
+        <ul class="equipe-lista">
+          <?php foreach ($equipe as $m): ?>
+            <li><strong><?= e($m['nome']) ?><?= (int) $m['id'] === (int) $p['id'] ? ' <span class="texto-2">(você)</span>' : '' ?></strong><span><?= e($m['funcao'] ?: 'Guia') ?></span></li>
+          <?php endforeach; ?>
+        </ul>
+      </section>
+    <?php endif; ?>
+
     <section class="bloco" aria-labelledby="t-contatos">
       <div class="bloco-titulo"><h2 id="t-contatos">Contatos e materiais</h2></div>
       <?php if (!$confirmado): ?>

@@ -62,7 +62,7 @@ $urlIncluir = $admin ? $base : $base . '/incluir';
       <table class="lp-tabela">
         <thead>
           <tr>
-            <th class="col-n">Nº</th>
+            <th class="col-n"><?= e($campos['poltrona']) ?></th>
             <th class="col-nome"><?= e($campos['nome']) ?></th>
             <th>Check-in</th>
             <th>Check-out</th>
@@ -71,7 +71,6 @@ $urlIncluir = $admin ? $base : $base . '/incluir';
             <th><?= e($campos['nascimento']) ?></th>
             <th><?= e($campos['venda']) ?></th>
             <th><?= e($campos['embarque']) ?></th>
-            <th><?= e($campos['poltrona']) ?></th>
             <th><?= e($campos['telefone']) ?></th>
             <th><?= e($campos['observacao']) ?></th>
             <th><span class="sr">Ações</span></th>
@@ -159,13 +158,15 @@ $urlIncluir = $admin ? $base : $base . '/incluir';
     <summary>Importar da planilha</summary>
     <form method="post" action="<?= e($base) ?>/importar" class="form" enctype="multipart/form-data">
       <?= csrf_campo() ?>
-      <p class="texto-2">Envie a planilha da lista (.xlsx ou .csv). Você confere a prévia antes de gravar. <a href="/admin/passageiros/modelo.csv">Baixar modelo</a></p>
+      <p class="texto-2">Envie a planilha da lista (.xlsx ou .csv). Você confere a prévia antes de gravar.</p>
+      <p><a href="<?= e($base) ?>/modelo.xlsx" class="btn btn-contorno btn-p">Baixar planilha padrão</a>
+        <span class="texto-2">já numerada com as poltronas do veículo desta viagem e com a lista de embarques.</span></p>
       <label class="campo"><span>Arquivo da planilha (.xlsx ou .csv, até 5 MB)</span>
         <input type="file" name="arquivo" accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
       <p class="texto-2">As colunas são reconhecidas pelo nome do cabeçalho, em qualquer ordem. Passageiros que já estão na lista são pulados. Sem arquivo, você pode colar as linhas abaixo, nesta ordem:
-        <b><?= e(implode(' · ', $campos)) ?></b>. A coluna de numeração e o cabeçalho são ignorados.</p>
+        <b><?= e(implode(' · ', array_map(fn($c) => $campos[$c], ORDEM_PLANILHA))) ?></b>. O número da primeira coluna é a poltrona; o cabeçalho é ignorado.</p>
       <label class="campo"><span>Linhas da planilha</span>
-        <textarea name="lista" rows="8" class="mono" placeholder="Maria Souza&#9;RG&#9;12.345.678-9&#9;10/05/1980&#9;V-1020&#9;Estação da Luz&#9;Vegetariana&#9;12&#9;11999990000"></textarea></label>
+        <textarea name="lista" rows="8" class="mono" placeholder="12&#9;Maria Souza&#9;RG&#9;12.345.678-9&#9;10/05/1980&#9;V-1020&#9;Estação da Luz&#9;Vegetariana&#9;11999990000&#9;Adulto"></textarea></label>
       <div class="form-rodape"><button type="submit" class="btn btn-primario">Ler planilha e conferir</button></div>
     </form>
   </details>

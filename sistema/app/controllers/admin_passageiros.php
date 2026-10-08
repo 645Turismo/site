@@ -179,17 +179,45 @@ function adm_passageiros_importar_confirmar(int $id): void {
   redirecionar("/admin/viagens/$id/passageiros");
 }
 
-/** Modelo da planilha em CSV (abre direto no Excel, com acentos). */
-function adm_passageiros_modelo(): void {
+/**
+ * Planilha padrão (.xlsx) para subir a lista. Com viagem: uma linha por poltrona do veículo (bloqueadas
+ * ficam de fora) e lista de escolha com os locais de embarque da viagem.
+ */
+function adm_passageiros_modelo_xlsx(?int $viagemId = null): void {
   exigir_admin(PAPEIS_VIAGENS);
-  header('Content-Type: text/csv; charset=utf-8');
-  header('Content-Disposition: attachment; filename="modelo-lista-passageiros-645.csv"');
-  $saida = fopen('php://output', 'w');
-  fwrite($saida, "\xEF\xBB\xBF");
-  fputcsv($saida, array_merge(['Nº'], array_map(fn($c) => $c[0], CAMPOS_PASSAGEIRO)), ';', '"', '');
-  fputcsv($saida, ['1', 'Maria da Silva', 'RG', '12.345.678-9', '10/05/1980', 'V-1020', 'Barra Funda', 'Vegetariana', '12', '11999990000', 'Adulto'], ';', '"', '');
-  fclose($saida);
+  $v = $viagemId ? adm_viagem_carregar($viagemId) : null;
+  $linhas = [array_map(fn($c) => CAMPOS_PASSAGEIRO[$c][0], ORDEM_PLANILHA)];
+  $layout = $v ? veiculo_layout($v) : null;
+  if ($layout) {
+    for ($p = 1; $p <= $layout['lugares']; $p++) {
+      if (!in_array($p, $layout['bloqueadas'], true)) {
+        $linhas[] = [$p];
+      }
+    }
+  } else {
+    $linhas[] = [1, 'Maria da Silva', 'RG', '12.345.678-9', '10/05/1980', 'V-1020', '', '', '(11) 99999-0000', 'Adulto'];
+    for ($p = 2; $p <= 46; $p++) {
+      $linhas[] = [$p];
+    }
+  }
+  $col = array_flip(ORDEM_PLANILHA);
+  $listas = [$col['tipo_documento'] => TIPOS_DOCUMENTO, $col['tipo_pax'] => array_values(TIPOS_PAX)];
+  $origens = $v ? array_column(viagem_origens((int) $v['id']), 'local') : [];
+  if ($origens) {
+    $listas[$col['embarque']] = $origens;
+  }
+  $larguras = [9, 34, 16, 18, 16, 12, 24, 28, 17, 18];
+  $nome = 'lista-passageiros-645' . ($v ? '-' . preg_replace('/[^A-Za-z0-9.]+/', '-', $v['codigo']) : '') . '.xlsx';
+  header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  header('Content-Disposition: attachment; filename="' . $nome . '"');
+  header('Cache-Control: private, no-store');
+  echo planilha_gerar_xlsx($linhas, $listas, $larguras);
   exit;
+}
+
+/** Endereço antigo do modelo (CSV): passa a entregar a planilha padrão em .xlsx. */
+function adm_passageiros_modelo(): void {
+  adm_passageiros_modelo_xlsx();
 }
 
 function adm_passageiro_remover(int $id, int $passageiroId): void {

@@ -179,18 +179,18 @@
 .lp-tabela-rolagem { border: 1px solid var(--linha-forte); }
 .lp-tabela { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0; font-size: 13px; }
 /* Larguras fixas por coluna (somam 100%): a tabela cabe sempre na tela, sem rolagem lateral. */
-.lp-tabela thead th:nth-child(1) { width: 3%; } .lp-tabela thead th:nth-child(2) { width: 14%; }
+.lp-tabela thead th:nth-child(1) { width: 5%; } .lp-tabela thead th:nth-child(2) { width: 14%; }
 .lp-tabela thead th:nth-child(3), .lp-tabela thead th:nth-child(4) { width: 8%; }
 .lp-tabela thead th:nth-child(5) { width: 7.5%; } .lp-tabela thead th:nth-child(6) { width: 10.5%; } .lp-tabela thead th:nth-child(7) { width: 8.5%; }
-.lp-tabela thead th:nth-child(8) { width: 6%; } .lp-tabela thead th:nth-child(9) { width: 9%; } .lp-tabela thead th:nth-child(10) { width: 5%; }
-.lp-tabela thead th:nth-child(11) { width: 9%; } .lp-tabela thead th:nth-child(12) { width: 7.5%; } .lp-tabela thead th:nth-child(13) { width: 4%; }
+.lp-tabela thead th:nth-child(8) { width: 6%; } .lp-tabela thead th:nth-child(9) { width: 10%; } .lp-tabela thead th:nth-child(10) { width: 9%; }
+.lp-tabela thead th:nth-child(11) { width: 9.5%; } .lp-tabela thead th:nth-child(12) { width: 4%; }
 .lp-tabela thead th { position: sticky; top: 0; z-index: 2; background: var(--menta); color: var(--preto); padding: 8px 4px; font-size: 10.5px; font-weight: 700; line-height: 1.2; text-align: center; border-right: 1px solid rgba(0, 0, 0, 0.18); hyphens: auto; }
 .lp-tabela td { padding: 7px 6px; border-right: 1px solid var(--linha); border-bottom: 1px solid var(--linha); vertical-align: middle; background: var(--preto); overflow-wrap: break-word; hyphens: auto; }
 .lp-tabela .link-tel { white-space: normal; }
 .lp-tabela .col-nascimento, .lp-tabela .col-documento { hyphens: none; font-size: 12px; }
 .lp-tabela .col-nascimento { white-space: nowrap; letter-spacing: -0.01em; }
 .lp-tabela tbody tr:nth-child(even) td { background: #070d0b; }
-.lp-tabela .col-n { text-align: center; color: var(--texto-3); font-size: 12px; }
+.lp-tabela .col-n { text-align: center; color: #fff; font-size: 14px; font-weight: 700; }
 .lp-tabela .col-nome { font-weight: 600; color: #fff; }
 .lp-tabela .col-observacao { color: var(--texto-2); }
 .lp-tabela .col-marca { text-align: center; padding-left: 4px; padding-right: 4px; }

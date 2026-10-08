@@ -111,6 +111,7 @@ return [
   ['POST', '/admin/viagens/{id}/passageiros/importar/confirmar', 'adm_passageiros_importar_confirmar'],
   ['POST', '/admin/viagens/{id}/passageiros/limpar', 'adm_passageiros_limpar'],
   ['GET', '/admin/passageiros/modelo.csv', 'adm_passageiros_modelo'],
+  ['GET', '/admin/viagens/{id}/passageiros/modelo.xlsx', 'adm_passageiros_modelo_xlsx'],
   ['POST', '/admin/viagens/{id}/passageiros/{p}/marcar', 'adm_passageiro_marcar'],
   ['POST', '/admin/viagens/{id}/passageiros/{p}/remover', 'adm_passageiro_remover'],
   ['POST', '/admin/viagens/{id}/passageiros/{p}/editar', 'adm_passageiro_editar'],

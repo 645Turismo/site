@@ -22,6 +22,9 @@ const CAMPOS_PASSAGEIRO = [
   'tipo_pax' => ['Tipo de passageiro', 10],
 ];
 
+// Ordem das colunas da planilha padrão da 645 (a numeração da primeira coluna é a poltrona).
+const ORDEM_PLANILHA = ['poltrona', 'nome', 'tipo_documento', 'documento', 'nascimento', 'venda', 'embarque', 'observacao', 'telefone', 'tipo_pax'];
+
 // Só a criança de colo pode dividir a poltrona com outro passageiro.
 const TIPOS_PAX = ['adulto' => 'Adulto', 'crianca' => 'Criança', 'colo' => 'Criança de colo'];
 

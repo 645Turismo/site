@@ -17,8 +17,9 @@
   var INTERVALO = 8000;
   var CHAVE_FILA = 'fila-passageiros-' + base + '-' + diaria;
   // Colunas da tabela (na ordem da planilha). O tipo de passageiro aparece junto ao nome.
-  var CAMPOS = ['tipo_documento', 'documento', 'nascimento', 'venda', 'embarque', 'poltrona', 'telefone', 'observacao'];
-  var CAMPOS_FORM = ['nome'].concat(CAMPOS, ['tipo_pax']);
+  // A poltrona é a primeira coluna da tabela (na lista da 645, o número da linha é a poltrona).
+  var CAMPOS = ['tipo_documento', 'documento', 'nascimento', 'venda', 'embarque', 'telefone', 'observacao'];
+  var CAMPOS_FORM = ['nome'].concat(CAMPOS, ['poltrona', 'tipo_pax']);
   var NOMES_MARCA = { checkin: 'Check-in', checkout: 'Check-out', noshow: 'No-show' };
 
   var dados = null;
@@ -232,14 +233,17 @@
     if (!visiveis.length) {
       var tr = el('tr');
       var td = el('td', 'vazio-linha', dados.passageiros.length ? 'Nenhum passageiro neste filtro.' : 'A lista ainda está vazia.');
-      td.colSpan = 13;
+      td.colSpan = 12;
       tr.appendChild(td);
       corpo.appendChild(tr);
       return;
     }
     visiveis.forEach(function (p) {
       var tr = el('tr', (p.checkin ? 'com-checkin' : '') + (p.noshow ? ' com-noshow' : '') + (p.incluido_guia ? ' incluido-guia' : ''));
-      tr.appendChild(el('td', 'col-n', String(p.n)));
+      var tdPoltrona = celula(p, 'poltrona');
+      tdPoltrona.classList.add('col-n');
+      if (!p.campos.poltrona.v) tdPoltrona.textContent = '—';
+      tr.appendChild(tdPoltrona);
       var tdNome = celula(p, 'nome');
       if (p.campos.tipo_pax.bruto === 'crianca' || p.campos.tipo_pax.bruto === 'colo') {
         tdNome.appendChild(el('span', 'tag-pax' + (p.campos.tipo_pax.g ? ' ed-guia' : ''), p.campos.tipo_pax.v));

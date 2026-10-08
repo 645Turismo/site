@@ -89,11 +89,10 @@ function planilha_interpretar(array $linhas): array {
       continue;
     }
     if ($mapa === null) {
-      if (isset($celulas[0]) && preg_match('/^\d{1,4}$/', (string) $celulas[0])) {
-        array_shift($celulas); // coluna de numeração
-      }
-      $valores = [];
-      foreach (array_keys(CAMPOS_PASSAGEIRO) as $i => $campo) {
+      // Ordem padrão da 645: a primeira coluna (número) é a poltrona; sem número, começa no nome.
+      $ordem = isset($celulas[0]) && preg_match('/^\d{1,4}$/', trim((string) $celulas[0])) ? ORDEM_PLANILHA : array_slice(ORDEM_PLANILHA, 1);
+      $valores = array_fill_keys(array_keys(CAMPOS_PASSAGEIRO), '');
+      foreach ($ordem as $i => $campo) {
         $valores[$campo] = (string) ($celulas[$i] ?? '');
       }
     } else {

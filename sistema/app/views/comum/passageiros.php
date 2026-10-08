@@ -9,7 +9,13 @@ $urlIncluir = $admin ? $base : $base . '/incluir';
     <h1>Passageiros</h1>
     <p><?= e($v['nome']) ?> · <?= e(periodo_viagem($v)) ?></p>
   </div>
-  <a href="<?= e($voltar) ?>" class="link-sublinhado">Voltar</a>
+  <div class="acoes-topo">
+    <?php if ($admin): ?>
+      <a href="<?= e($base) ?>/modelo.xlsx" class="btn btn-contorno btn-p">Baixar planilha padrão</a>
+      <a href="#importar" class="btn btn-primario btn-p">Importar planilha</a>
+    <?php endif; ?>
+    <a href="<?= e($voltar) ?>" class="link-sublinhado">Voltar</a>
+  </div>
 </div>
 
 <?php if (!$dias): ?>

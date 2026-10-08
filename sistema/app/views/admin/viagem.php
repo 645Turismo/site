@@ -173,6 +173,8 @@ $passos = [
           <p class="destaque-info"><?= $passageiros['ajustados'] ? '<span class="amarelo">' . (int) $passageiros['ajustados'] . ' com ajuste do guia</span> · ' : '' ?>check-in ao vivo, importação da planilha</p>
         </div>
       </a>
+      <p class="espaco-topo"><a href="/admin/viagens/<?= (int) $v['id'] ?>/passageiros/modelo.xlsx" class="btn btn-contorno btn-p">Baixar planilha padrão</a>
+        <a href="/admin/viagens/<?= (int) $v['id'] ?>/passageiros#importar" class="btn btn-texto btn-p">Importar planilha</a></p>
     </section>
 
     <section class="bloco" aria-labelledby="t-contatos">

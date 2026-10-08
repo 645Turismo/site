@@ -233,4 +233,15 @@
     caixa.addEventListener('change', aplicar);
     aplicar();
   });
+
+  // Link para um bloco recolhido (ex.: #importar) abre o bloco e rola até ele.
+  function abrirAncora() {
+    var alvo = location.hash && document.getElementById(location.hash.slice(1));
+    if (alvo && alvo.tagName === 'DETAILS') {
+      alvo.open = true;
+      alvo.scrollIntoView({ block: 'start' });
+    }
+  }
+  abrirAncora();
+  window.addEventListener('hashchange', abrirAncora);
 })();

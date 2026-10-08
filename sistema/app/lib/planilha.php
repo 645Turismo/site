@@ -294,14 +294,29 @@ function planilha_gerar_xlsx(array $linhas, array $listas = [], array $larguras 
       . '<xf numFmtId="49" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs></styleSheet>',
     'xl/worksheets/sheet1.xml' => $sheet,
   ];
-  $tmp = tempnam(sys_get_temp_dir(), 'xlsx');
-  $zip = new ZipArchive();
-  $zip->open($tmp, ZipArchive::OVERWRITE);
+  return zip_montar($arquivos);
+}
+
+/**
+ * Monta um .zip em memória sem depender da extensão ZipArchive (que pode não existir na hospedagem).
+ * Usa "deflate" quando a zlib está disponível; senão grava sem compressão. [nome => conteúdo] → bytes.
+ */
+function zip_montar(array $arquivos): string {
+  $corpo = '';
+  $central = '';
+  $hora = ((int) date('H') << 11) | ((int) date('i') << 5) | intdiv((int) date('s'), 2);
+  $data = (((int) date('Y') - 1980) << 9) | ((int) date('n') << 5) | (int) date('j');
   foreach ($arquivos as $nome => $conteudo) {
-    $zip->addFromString($nome, $conteudo);
+    $crc = crc32($conteudo);
+    $comprimido = function_exists('gzdeflate') ? gzdeflate($conteudo, 6) : false;
+    $metodo = $comprimido !== false ? 8 : 0;
+    $gravado = $comprimido !== false ? $comprimido : $conteudo;
+    $deslocamento = strlen($corpo);
+    $corpo .= pack('VvvvvvVVVvv', 0x04034b50, 20, 0x0800, $metodo, $hora, $data, $crc, strlen($gravado), strlen($conteudo), strlen($nome), 0)
+      . $nome . $gravado;
+    $central .= pack('VvvvvvvVVVvvvvvVV', 0x02014b50, 20, 20, 0x0800, $metodo, $hora, $data, $crc, strlen($gravado), strlen($conteudo),
+      strlen($nome), 0, 0, 0, 0, 0, $deslocamento) . $nome;
   }
-  $zip->close();
-  $dados = (string) file_get_contents($tmp);
-  @unlink($tmp);
-  return $dados;
+  return $corpo . $central
+    . pack('VvvvvVVv', 0x06054b50, 0, 0, count($arquivos), count($arquivos), strlen($central), strlen($corpo), 0);
 }

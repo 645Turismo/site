@@ -177,6 +177,19 @@ $passos = [
         <a href="/admin/viagens/<?= (int) $v['id'] ?>/passageiros#importar" class="btn btn-texto btn-p">Importar planilha</a></p>
     </section>
 
+    <section class="bloco" id="comentarios" aria-labelledby="t-comentarios">
+      <div class="bloco-titulo"><h2 id="t-comentarios">Comentários dos guias</h2></div>
+      <?php if (!$comentarios): ?>
+        <p class="vazio">Nenhum comentário durante a viagem.</p>
+      <?php else: ?>
+        <ul class="comentarios-lista">
+          <?php foreach ($comentarios as $cm): ?>
+            <li><small><?= e(($cm['nome_social'] ?: $cm['nome']) . ' · ' . formatar_data_hora($cm['criado_em'])) ?></small><span class="texto-longo"><?= nl2br(e($cm['texto'])) ?></span></li>
+          <?php endforeach; ?>
+        </ul>
+      <?php endif; ?>
+    </section>
+
     <section class="bloco" aria-labelledby="t-contatos">
       <div class="bloco-titulo"><h2 id="t-contatos">Contatos</h2></div>
       <ul class="contatos">

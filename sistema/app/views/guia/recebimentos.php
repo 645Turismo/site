@@ -1,7 +1,7 @@
 <?php
 $etapas = [
   'agendada' => ['Agendada', 'neutro', 'Valor previsto. Depois da viagem, envie o relatório para liberar o pagamento.'],
-  'realizada' => ['Aguardando relatório', 'aviso', 'Envie o relatório da viagem para liberar a nota fiscal.'],
+  'realizada' => ['Aguardando relatório', 'aviso', 'Faça o relatório da viagem no Pós-viagem para liberar o pagamento.'],
   'aguardando_nf' => ['Envie a nota fiscal', 'aviso', ''],
   'nf_em_conferencia' => ['NF em conferência', 'info', 'A equipe está conferindo sua nota fiscal.'],
   'a_pagar' => ['Pagamento programado', 'info', ''],
@@ -28,7 +28,7 @@ $etapas = [
 </div>
 
 <?php if ($resumo['nf_pendentes']): ?>
-  <div class="alerta alerta-aviso espaco-topo"><?= icone('alerta') ?><span><strong><?= (int) $resumo['nf_pendentes'] ?> nota(s) fiscal(is) para enviar.</strong> Sem a nota, o pagamento não entra no lote.</span></div>
+  <div class="alerta alerta-aviso espaco-topo"><?= icone('alerta') ?><span><strong><?= (int) $resumo['nf_pendentes'] ?> nota(s) fiscal(is) para enviar.</strong> Sem a nota, o pagamento não entra no lote. <a href="/guia/pos-viagem">Enviar no Pós-viagem</a>.</span></div>
 <?php endif; ?>
 
 <?php if (!$viagens): ?>
@@ -53,24 +53,9 @@ $etapas = [
         <?php if ($dica): ?><p class="texto-2"><?= e($dica) ?></p><?php endif; ?>
 
         <?php if ($v['etapa'] === 'aguardando_nf'): ?>
-          <?php if ($v['nf'] && $v['nf']['status'] === 'reprovado'): ?>
-            <div class="alerta alerta-erro"><?= icone('alerta') ?><span><strong>A nota anterior foi devolvida:</strong> <?= e($v['nf']['motivo'] ?: 'confira e envie de novo.') ?></span></div>
-          <?php endif; ?>
-          <div class="nf-instrucoes">
-            <p><strong>Emita a nota para:</strong> <?= e($empresa['razao']) ?> · CNPJ <?= e(formatar_cnpj($empresa['cnpj'])) ?></p>
-            <p>Valor: <strong><?= e(formatar_moeda($v['total'])) ?></strong> · prazo: <strong class="<?= $v['prazo_nf'] < hoje() ? 'vermelho' : '' ?>"><?= e(formatar_data($v['prazo_nf'])) ?></strong><?= $v['prazo_nf'] < hoje() ? ' (vencido)' : '' ?></p>
-            <?php if ($v['instrucoes_nf']): ?><p class="texto-2"><?= nl2br(e($v['instrucoes_nf'])) ?></p><?php endif; ?>
-          </div>
-          <form method="post" action="/guia/recebimentos/<?= (int) $v['id'] ?>/nf" class="form nf-form" enctype="multipart/form-data" novalidate>
-            <?= csrf_campo() ?>
-            <div class="grade-campos">
-              <label class="campo"><span>Número da NF</span><input type="text" name="numero_nf" maxlength="40" required inputmode="numeric"></label>
-              <label class="campo"><span>Valor da NF (R$)</span><input type="text" name="valor_nf" inputmode="decimal" required value="<?= e(number_format($v['total'], 2, ',', '.')) ?>"></label>
-              <label class="campo campo-largo"><span>Arquivo da nota (PDF ou foto)</span>
-                <input type="file" name="arquivo_nf" accept="application/pdf,image/jpeg,image/png,image/webp" required></label>
-            </div>
-            <button type="submit" class="btn btn-primario btn-bloco">Enviar nota fiscal</button>
-          </form>
+          <p><a href="/guia/pos-viagem#viagem-<?= (int) $v['id'] ?>" class="btn btn-primario btn-p">Enviar a nota fiscal no Pós-viagem</a></p>
+        <?php elseif ($v['etapa'] === 'realizada'): ?>
+          <p><a href="/guia/pos-viagem#viagem-<?= (int) $v['id'] ?>" class="btn btn-primario btn-p">Fazer o relatório no Pós-viagem</a></p>
         <?php endif; ?>
 
         <?php if ($v['nf'] && $v['etapa'] !== 'aguardando_nf'): ?>

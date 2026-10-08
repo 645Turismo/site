@@ -91,19 +91,19 @@ function guia_recebimentos_nf(int $viagemId): void {
       WHERE d.viagem_id = ? AND s.guia_id = ? AND s.status = 'aguardando_nf'", [$viagemId, $g['id']]);
   if (!$escalas) {
     flash('erro', 'Esta viagem/tour não está aguardando nota fiscal.');
-    redirecionar('/guia/recebimentos');
+    redirecionar('/guia/pos-viagem');
   }
   $numero = mb_substr(entrada('numero_nf'), 0, 40);
   $valorNf = ler_moeda(entrada('valor_nf'));
   if ($numero === '' || $valorNf <= 0) {
     flash('erro', 'Informe o número e o valor da nota fiscal.');
-    redirecionar('/guia/recebimentos#viagem-' . $viagemId);
+    redirecionar('/guia/pos-viagem#viagem-' . $viagemId);
   }
   try {
     [$caminho, $nome, $mime, $tamanho] = salvar_upload('arquivo_nf', 'notas');
   } catch (RuntimeException $e) {
     flash('erro', 'Nota fiscal: ' . $e->getMessage());
-    redirecionar('/guia/recebimentos#viagem-' . $viagemId);
+    redirecionar('/guia/pos-viagem#viagem-' . $viagemId);
   }
   $total = array_sum(array_map(fn($s) => (float) $s['valor'], $escalas));
   transacao(function () use ($g, $viagemId, $caminho, $nome, $mime, $tamanho, $numero, $valorNf, $escalas) {
@@ -119,5 +119,5 @@ function guia_recebimentos_nf(int $viagemId): void {
   auditar('nf_enviada', 'viagem', $viagemId, ['numero' => $numero, 'valor' => $valorNf]);
   $aviso = abs($valorNf - $total) > 0.009 ? ' Atenção: o valor informado (' . formatar_moeda($valorNf) . ') é diferente do total das diárias (' . formatar_moeda($total) . ').' : '';
   flash('sucesso', 'Nota fiscal enviada para conferência.' . $aviso);
-  redirecionar('/guia/recebimentos#viagem-' . $viagemId);
+  redirecionar('/guia/pos-viagem#viagem-' . $viagemId);
 }

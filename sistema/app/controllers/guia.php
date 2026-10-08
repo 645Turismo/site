@@ -30,12 +30,12 @@ function guia_hoje(): void {
         GROUP BY d.viagem_id HAVING MAX(d.data) <= ?) t
         WHERE NOT EXISTS (SELECT 1 FROM envios e WHERE e.viagem_id = t.viagem_id AND e.guia_id = ? AND e.tipo = 'relatorio' AND e.status <> 'reprovado')",
         [$id, $hoje, $id]),
-      'Relatórios de viagem para enviar', 'Conte como foi: passageiros, ocorrências e observações.', '/guia/viagens?aba=realizadas',
+      'Relatórios de viagem para enviar', 'Conte como foi: passageiros, ocorrências e observações.', '/guia/pos-viagem',
     ],
     [
       (int) valor("SELECT COUNT(DISTINCT d.viagem_id) FROM escalas s JOIN diarias d ON d.id = s.diaria_id
         WHERE s.guia_id = ? AND s.status = 'aguardando_nf'", [$id]),
-      'Notas fiscais para emitir', 'Sem a NF o pagamento não entra no lote.', '/guia/recebimentos',
+      'Notas fiscais para emitir', 'Sem a NF o pagamento não entra no lote.', '/guia/pos-viagem',
     ],
     [
       (int) valor("SELECT COUNT(*) FROM chamados WHERE guia_id = ? AND status IN ('respondido','aguardando_confirmacao')", [$id]),
@@ -154,6 +154,7 @@ function guia_viagem(int $id): void {
     'relatorio' => $relatorio,
     'relatorioLiberado' => $ultimaAssumida !== null && $ultimaAssumida <= $hoje,
     'relatorioEditavel' => !$relatorio || in_array($relatorio['status'], ['enviado', 'reprovado'], true),
+    'comentarios' => todos('SELECT * FROM viagem_comentarios WHERE viagem_id = ? AND guia_id = ? ORDER BY id', [$id, $g['id']]),
     'anexos' => $assumidas ? todos('SELECT * FROM viagem_anexos WHERE viagem_id = ? ORDER BY id', [$id]) : [],
     'origens' => viagem_origens($id),
     'contatos' => $assumidas ? todos('SELECT * FROM viagem_contatos WHERE viagem_id = ? ORDER BY ordem', [$id]) : [],
@@ -196,20 +197,20 @@ function guia_viagem_relatorio(int $id): void {
   $assumidas = array_values(array_filter($escalas, fn($s) => in_array($s['status'], ESCALAS_ASSUMIDAS, true)));
   if (!$assumidas || end($assumidas)['data'] > hoje()) {
     flash('erro', 'O relatório fica disponível a partir do último dia de trabalho.');
-    redirecionar("/guia/viagens/$id");
+    redirecionar("/guia/pos-viagem");
   }
   $texto = trim((string) ($_POST['texto'] ?? ''));
   $pax = entrada('qtd_passageiros');
   if (mb_strlen($texto) < 20 || mb_strlen($texto) > 5000) {
     guardar_antigo(['texto' => $texto, 'qtd_passageiros' => $pax]);
     flash('erro', 'Escreva o relatório com pelo menos 20 caracteres (máximo de 5.000).');
-    redirecionar("/guia/viagens/$id#relatorio");
+    redirecionar("/guia/pos-viagem#viagem-$id");
   }
   $pax = $pax === '' ? null : max(0, min(9999, (int) $pax));
   $existente = um("SELECT * FROM envios WHERE viagem_id = ? AND guia_id = ? AND tipo = 'relatorio' ORDER BY id DESC LIMIT 1", [$id, $g['id']]);
   if ($existente && $existente['status'] === 'aprovado') {
     flash('aviso', 'Este relatório já foi conferido pela equipe.');
-    redirecionar("/guia/viagens/$id");
+    redirecionar("/guia/pos-viagem#viagem-$id");
   }
   if ($existente && $existente['status'] === 'enviado') {
     atualizar('envios', ['texto' => $texto, 'qtd_passageiros' => $pax, 'enviado_em' => agora()], 'id = ?', [$existente['id']]);
@@ -228,7 +229,7 @@ function guia_viagem_relatorio(int $id): void {
   }
   auditar('relatorio_enviado', 'viagem', $id);
   flash('sucesso', $emiteNf ? 'Relatório enviado. Obrigado! O próximo passo é a nota fiscal.' : 'Relatório enviado. Obrigado! O pagamento segue para programação.');
-  redirecionar("/guia/viagens/$id");
+  redirecionar("/guia/pos-viagem#viagem-$id");
 }
 
 // ---------- Lista de passageiros (check-in e check-out em campo) ----------

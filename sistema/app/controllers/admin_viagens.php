@@ -347,6 +347,7 @@ function adm_viagem(int $id): void {
   $datasFuturas = array_values(array_filter(array_column($diarias, 'data'), fn($d) => $d >= hoje()));
 
   exibir('admin/viagem', [
+    'comentarios' => todos('SELECT c.*, g.nome, g.nome_social, g.codigo FROM viagem_comentarios c JOIN guias g ON g.id = c.guia_id WHERE c.viagem_id = ? ORDER BY c.id DESC', [$id]),
     'titulo' => $v['codigo'] . ' · ' . $v['nome'],
     'menu' => 'viagens',
     'a' => $a,

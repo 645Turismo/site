@@ -93,39 +93,27 @@ $grupo = array_filter([$v['cliente'], $v['perfil_grupo'], $v['idioma_grupo'] ? '
     </section>
 
     <?php if ($confirmado): ?>
-      <section class="bloco" id="relatorio" aria-labelledby="t-relatorio">
-        <div class="bloco-titulo"><h2 id="t-relatorio">Relatório da viagem/tour</h2>
-          <?php if ($relatorio): ?><?= selo(['enviado' => ['Enviado', 'info'], 'aprovado' => ['Conferido', 'sucesso'], 'reprovado' => ['Devolvido', 'erro']], $relatorio['status']) ?><?php endif; ?>
-        </div>
-        <?php if (!$relatorioLiberado): ?>
-          <p class="vazio">O relatório abre no último dia de trabalho (<?= e(formatar_data($ultimoDia)) ?>). Anote durante a viagem o que for importante.</p>
-        <?php elseif (!$relatorioEditavel): ?>
-          <div class="painel"><p class="texto-longo"><?= nl2br(e($relatorio['texto'])) ?></p>
-            <p class="texto-2">Passageiros: <?= e($relatorio['qtd_passageiros'] ?? '—') ?> · conferido pela equipe.</p></div>
-        <?php else: ?>
-          <?php if ($relatorio && $relatorio['status'] === 'reprovado'): ?>
-            <div class="alerta alerta-erro"><?= icone('alerta') ?><span><strong>A equipe pediu ajustes:</strong> <?= e($relatorio['motivo'] ?: 'revise e envie de novo.') ?></span></div>
-          <?php endif; ?>
-          <form method="post" action="/guia/viagens/<?= (int) $v['id'] ?>/relatorio" class="form painel">
-            <?= csrf_campo() ?>
-            <label class="campo">
-              <span>Como foi o trabalho?</span>
-              <textarea name="texto" rows="8" maxlength="5000" required
-                placeholder="Pontualidade do grupo e do transporte, roteiro cumprido ou alterado, ocorrências (atrasos, saúde, perdas), feedback dos passageiros e sugestões."><?= e(antigo('texto', $relatorio['texto'] ?? '')) ?></textarea>
-            </label>
-            <label class="campo campo-curto">
-              <span>Passageiros atendidos</span>
-              <input type="number" name="qtd_passageiros" min="0" max="9999" inputmode="numeric"
-                     value="<?= e(antigo('qtd_passageiros', (string) ($relatorio['qtd_passageiros'] ?? $v['qtd_passageiros'] ?? ''))) ?>">
-            </label>
-            <div class="form-rodape">
-              <?php if ($relatorio && $relatorio['status'] === 'enviado'): ?>
-                <span class="texto-2">Enviado em <?= e(formatar_data_hora($relatorio['enviado_em'])) ?>. Você pode ajustar até a equipe conferir.</span>
-              <?php endif; ?>
-              <button type="submit" class="btn btn-primario"><?= $relatorio ? 'Atualizar relatório' : 'Enviar relatório' ?></button>
-            </div>
-          </form>
+      <?php if ($relatorioLiberado): ?>
+        <div class="alerta alerta-<?= !$relatorio || $relatorio['status'] === 'reprovado' ? 'aviso' : 'sucesso' ?>"><?= icone('documento') ?>
+          <span><strong>Viagem terminada.</strong> <?= !$relatorio || $relatorio['status'] === 'reprovado' ? 'Faça o relatório e envie a nota fiscal em' : 'Relatório enviado. Acompanhe a nota fiscal em' ?>
+            <a href="/guia/pos-viagem#viagem-<?= (int) $v['id'] ?>">Pós-viagem</a>.</span></div>
+      <?php endif; ?>
+      <section class="bloco" id="comentarios" aria-labelledby="t-comentarios">
+        <div class="bloco-titulo"><h2 id="t-comentarios">Comentários para a equipe</h2></div>
+        <p class="texto-2">Avisos durante a viagem: atraso, troca de embarque, ocorrência com o grupo. A coordenação lê no painel. O relatório final é feito no Pós-viagem.</p>
+        <?php if ($comentarios): ?>
+          <ul class="comentarios-lista">
+            <?php foreach ($comentarios as $cm): ?>
+              <li><small><?= e(formatar_data_hora($cm['criado_em'])) ?></small><span class="texto-longo"><?= nl2br(e($cm['texto'])) ?></span></li>
+            <?php endforeach; ?>
+          </ul>
         <?php endif; ?>
+        <form method="post" action="/guia/viagens/<?= (int) $v['id'] ?>/comentarios" class="form painel">
+          <?= csrf_campo() ?>
+          <label class="campo"><span>Novo comentário</span>
+            <textarea name="texto" rows="3" maxlength="2000" required placeholder="Ex.: ônibus atrasou 20 minutos na saída do Tietê."></textarea></label>
+          <div class="form-rodape"><button type="submit" class="btn btn-primario btn-p">Enviar comentário</button></div>
+        </form>
       </section>
     <?php endif; ?>
   </div>

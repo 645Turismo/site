@@ -13,6 +13,7 @@ require RAIZ . '/app/controllers/arquivos.php';
 require RAIZ . '/app/controllers/guia_perfil.php';
 require RAIZ . '/app/controllers/guia_disponibilidade.php';
 require RAIZ . '/app/controllers/guia_recebimentos.php';
+require RAIZ . '/app/controllers/guia_pos_viagem.php';
 require RAIZ . '/app/controllers/guia_ajuda.php';
 require RAIZ . '/app/controllers/admin_guias.php';
 require RAIZ . '/app/controllers/admin_pre_cadastro.php';
@@ -56,6 +57,8 @@ return [
   ['GET', '/guia/viagens/{id}', 'guia_viagem'],
   ['POST', '/guia/viagens/{id}/responder', 'guia_viagem_responder'],
   ['POST', '/guia/viagens/{id}/relatorio', 'guia_viagem_relatorio'],
+  ['POST', '/guia/viagens/{id}/comentarios', 'guia_viagem_comentar'],
+  ['GET', '/guia/pos-viagem', 'guia_pos_viagem'],
   ['GET', '/guia/viagens/{id}/passageiros', 'guia_passageiros'],
   ['GET', '/guia/viagens/{id}/passageiros/dados', 'guia_passageiros_dados'],
   ['POST', '/guia/viagens/{id}/passageiros/{p}/marcar', 'guia_passageiro_marcar'],

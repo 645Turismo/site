@@ -170,6 +170,10 @@ function importacao_aplicar_regras(array $viagem, array $passageiros): array {
       continue;
     }
     $d = $p['dados'];
+    // Guia/staff identificado pela observação vira tipo Staff (pode ficar em poltrona bloqueada).
+    if (($d['tipo_pax'] ?? null) === null && passageiro_e_equipe($d['observacao'] ?? null)) {
+      $d['tipo_pax'] = 'staff';
+    }
     [$semPoltrona, $erro] = passageiro_aplicar_regras($viagem, ['poltrona' => null] + $d, []);
     if ($erro) {
       $p['avisos'][] = 'embarque "' . $d['embarque'] . '" não cadastrado na viagem (foi para a observação)';

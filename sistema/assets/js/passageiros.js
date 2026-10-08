@@ -473,7 +473,9 @@
     if (ocupantes.length && ocupantes[0].checkin) b.classList.add('checkin');
     if (ocupantes.length && ocupantes.every(function (p) { return p.noshow; })) b.classList.add('noshow');
     var adultos = ocupantes.filter(function (p) { return p.campos.tipo_pax.bruto !== 'colo'; });
-    if (adultos.length > 1 || (ocupantes.length && bloqueadas[k])) b.classList.add('conflito');
+    // Poltrona bloqueada só pode ter Staff (equipe da 645).
+    var naoStaff = ocupantes.filter(function (p) { return p.campos.tipo_pax.bruto !== 'staff'; });
+    if (adultos.length > 1 || (naoStaff.length && bloqueadas[k])) b.classList.add('conflito');
     if (ocupantes.length > adultos.length) b.classList.add('com-colo');
     if (ocupantes.some(foiAjustado)) b.classList.add('editada');
     if (selecionada === k) b.classList.add('selecionada');
@@ -520,8 +522,10 @@
       if (bloqueada) info.appendChild(el('p', 'texto-2', 'Poltrona bloqueada pela coordenação para esta viagem.'));
       return;
     }
-    if (bloqueada) {
+    if (bloqueada && ocupantes.some(function (p) { return p.campos.tipo_pax.bruto !== 'staff'; })) {
       info.appendChild(el('p', 'alerta-mini erro', 'Atenção: esta poltrona está bloqueada, mas há passageiro nela na lista.'));
+    } else if (bloqueada) {
+      info.appendChild(el('p', 'texto-2', 'Poltrona bloqueada, reservada para a equipe.'));
     }
     var naoColo = ocupantes.filter(function (p) { return p.campos.tipo_pax.bruto !== 'colo'; });
     if (naoColo.length > 1) {

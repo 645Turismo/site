@@ -26,7 +26,8 @@ const CAMPOS_PASSAGEIRO = [
 const ORDEM_PLANILHA = ['poltrona', 'nome', 'tipo_documento', 'documento', 'nascimento', 'venda', 'embarque', 'observacao', 'telefone', 'tipo_pax'];
 
 // Só a criança de colo pode dividir a poltrona com outro passageiro.
-const TIPOS_PAX = ['adulto' => 'Adulto', 'crianca' => 'Criança', 'colo' => 'Criança de colo'];
+// Staff: equipe da 645 na viagem (guia, coordenação); pode ocupar poltrona bloqueada e fica fora da contagem.
+const TIPOS_PAX = ['adulto' => 'Adulto', 'crianca' => 'Criança', 'colo' => 'Criança de colo', 'staff' => 'Staff'];
 
 // Veículos disponíveis no cadastro da viagem/tour. [rótulo, lugares padrão (null = informado pelo ADM)]
 // Mapa: fileiras de 4 (2 + corredor + 2), numeração da janela esquerda para a janela direita.
@@ -122,6 +123,9 @@ function passageiro_ler_tipo_pax(string $valor): array {
   if (isset(TIPOS_PAX[$t])) {
     return [$t, null];
   }
+  if (preg_match('/staff|^guia|equipe|^tl$|tour leader|coordena/', $t)) {
+    return ['staff', null];
+  }
   if (preg_match('/colo|^inf|bebe|lap/', $t)) {
     return ['colo', null];
   }
@@ -131,7 +135,7 @@ function passageiro_ler_tipo_pax(string $valor): array {
   if (preg_match('/adult|^adt|idos|senior|^pax$/', $t)) {
     return ['adulto', null];
   }
-  return [null, 'Tipo de passageiro inválido: use Adulto, Criança ou Criança de colo.'];
+  return [null, 'Tipo de passageiro inválido: use Adulto, Criança, Criança de colo ou Staff.'];
 }
 
 /**
@@ -181,8 +185,8 @@ function passageiro_aplicar_regras(array $viagem, array $dados, array $ocupacao)
     if (!ctype_digit($poltrona) || (int) $poltrona < 1 || (int) $poltrona > $layout['lugares']) {
       return [$dados, 'A poltrona ' . $poltrona . ' não existe neste veículo (1 a ' . $layout['lugares'] . ').'];
     }
-    if (in_array((int) $poltrona, $layout['bloqueadas'], true)) {
-      return [$dados, 'A poltrona ' . $poltrona . ' está bloqueada nesta viagem.'];
+    if (in_array((int) $poltrona, $layout['bloqueadas'], true) && ($dados['tipo_pax'] ?? null) !== 'staff') {
+      return [$dados, 'A poltrona ' . $poltrona . ' está bloqueada nesta viagem (só o tipo Staff pode ocupar poltrona bloqueada).'];
     }
   }
   if ($poltrona !== null && ($dados['tipo_pax'] ?? null) !== 'colo') {
@@ -252,7 +256,7 @@ function passageiros_estado(array $viagem, array $diaria, bool $podeMarcar): arr
     $checkout = $marca('checkout');
     $noshow = $marca('noshow');
     $incluidoGuia = $l['criado_por_tipo'] === 'guia';
-    $equipe = passageiro_e_equipe($campos['observacao']['bruto']);
+    $equipe = passageiro_e_equipe($campos['observacao']['bruto'], $campos['tipo_pax']['bruto']);
     if (!$equipe) {
       $totais['total']++;
       $totais['checkin'] += $checkin ? 1 : 0;
@@ -463,11 +467,12 @@ function viagem_resumo_checkin(int $viagemId): ?array {
     return null;
   }
   $total = $feitos = $noshow = 0;
-  foreach (todos("SELECT p.observacao, p.ajustes_guia, r.checkin_em, r.noshow_em FROM passageiros p
+  foreach (todos("SELECT p.observacao, p.tipo_pax, p.ajustes_guia, r.checkin_em, r.noshow_em FROM passageiros p
       LEFT JOIN passageiro_registros r ON r.passageiro_id = p.id AND r.diaria_id = ?
       WHERE p.viagem_id = ? AND p.status = 'ativo'", [$dia['id'], $viagemId]) as $p) {
     $aj = json_decode((string) $p['ajustes_guia'], true) ?: [];
-    if (passageiro_e_equipe(array_key_exists('observacao', $aj) ? $aj['observacao'] : $p['observacao'])) {
+    if (passageiro_e_equipe(array_key_exists('observacao', $aj) ? $aj['observacao'] : $p['observacao'],
+        array_key_exists('tipo_pax', $aj) ? $aj['tipo_pax'] : $p['tipo_pax'])) {
       continue; // guia/staff não entra na contagem
     }
     $total++;
@@ -481,9 +486,9 @@ function viagem_resumo_checkin(int $viagemId): ?array {
     'noshow' => $noshow, 'faltam' => max(0, $total - $feitos - $noshow)];
 }
 
-/** Guia ou staff da 645 que viaja na lista: a observação traz "Guia" ou "Staff". Fica fora da contagem de check-in. */
-function passageiro_e_equipe(?string $observacao): bool {
-  return (bool) preg_match('/\b(guia|staff)\b/', texto_chave((string) $observacao));
+/** Equipe da 645 na lista (tipo Staff, ou observação com "Guia" ou "Staff"): fica fora da contagem de check-in. */
+function passageiro_e_equipe(?string $observacao, ?string $tipoPax = null): bool {
+  return $tipoPax === 'staff' || (bool) preg_match('/\b(guia|staff)\b/', texto_chave((string) $observacao));
 }
 
 /**

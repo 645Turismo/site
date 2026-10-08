@@ -65,6 +65,23 @@ $urlIncluir = $admin ? $base : $base . '/incluir';
     </div>
     <p class="lp-legenda">Guia ou staff (observação com "Guia" ou "Staff") aparece na lista, mas não entra na contagem de check-in.<br><span class="marca-guia"></span> Em amarelo: informação ajustada ou incluída pelo guia<?= $admin ? ' (o original aparece ao passar o mouse ou no editar)' : '. A coordenação é avisada por e-mail' ?>.</p>
     <div class="lp-tabela-rolagem">
+      <?php if (!$admin): ?>
+      <!-- Guia: lista enxuta para o embarque; o resto fica em "Mais detalhes". -->
+      <table class="lp-tabela lp-simples">
+        <thead>
+          <tr>
+            <th class="col-n"><?= e($campos['poltrona']) ?></th>
+            <th class="col-nome"><?= e($campos['nome']) ?></th>
+            <th>Check-in / Check-out</th>
+            <th><?= e($campos['documento']) ?></th>
+            <th><?= e($campos['nascimento']) ?></th>
+            <th><?= e($campos['embarque']) ?></th>
+            <th><span class="sr">Mais detalhes</span></th>
+          </tr>
+        </thead>
+        <tbody data-corpo></tbody>
+      </table>
+      <?php else: ?>
       <table class="lp-tabela">
         <thead>
           <tr>
@@ -84,6 +101,7 @@ $urlIncluir = $admin ? $base : $base . '/incluir';
         </thead>
         <tbody data-corpo></tbody>
       </table>
+      <?php endif; ?>
     </div>
   </section>
 

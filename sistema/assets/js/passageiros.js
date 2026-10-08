@@ -233,9 +233,13 @@
     if (!visiveis.length) {
       var tr = el('tr');
       var td = el('td', 'vazio-linha', dados.passageiros.length ? 'Nenhum passageiro neste filtro.' : 'A lista ainda está vazia.');
-      td.colSpan = 12;
+      td.colSpan = admin ? 12 : 7;
       tr.appendChild(td);
       corpo.appendChild(tr);
+      return;
+    }
+    if (!admin) {
+      visiveis.forEach(function (p) { linhaGuia(corpo, p); });
       return;
     }
     visiveis.forEach(function (p) {
@@ -280,6 +284,97 @@
       corpo.appendChild(tr);
     });
   }
+  // ---------- Lista do guia: enxuta para o embarque ----------
+  // Poltrona, nome, check-in/check-out num botão só, documento, nascimento e embarque; o resto em "Mais".
+  var abertos = {}; // detalhes abertos continuam abertos quando a lista se atualiza sozinha
+
+  function nomeComTags(p) {
+    var td = celula(p, 'nome');
+    if (p.campos.tipo_pax.bruto === 'crianca' || p.campos.tipo_pax.bruto === 'colo') {
+      td.appendChild(el('span', 'tag-pax' + (p.campos.tipo_pax.g ? ' ed-guia' : ''), p.campos.tipo_pax.v));
+    }
+    if (p.equipe) td.appendChild(el('span', 'tag-pax tag-equipe', 'Equipe · fora da contagem'));
+    return td;
+  }
+
+  // Um toque: check-in. Depois do check-in, o horário fica visível e o botão passa a ser o check-out.
+  function celulaEmbarque(p) {
+    var td = el('td', 'col-marca col-embarque-acao');
+    if (p.noshow) {
+      td.appendChild(botaoMarca(p, 'noshow'));
+    } else if (!p.checkin) {
+      var b = botaoMarca(p, 'checkin');
+      b.classList.add('marcacao-principal');
+      td.appendChild(b);
+    } else {
+      var feito = botaoMarca(p, 'checkin');
+      feito.classList.add('marcacao-feita-mini');
+      td.appendChild(feito);
+      td.appendChild(botaoMarca(p, 'checkout'));
+    }
+    return td;
+  }
+
+  function linhaGuia(corpo, p) {
+    var tr = el('tr', (p.checkin ? 'com-checkin' : '') + (p.noshow ? ' com-noshow' : '') + (p.incluido_guia ? ' incluido-guia' : ''));
+    var tdPoltrona = celula(p, 'poltrona');
+    tdPoltrona.classList.add('col-n');
+    if (!p.campos.poltrona.v) tdPoltrona.textContent = '—';
+    tr.appendChild(tdPoltrona);
+    tr.appendChild(nomeComTags(p));
+    tr.appendChild(celulaEmbarque(p));
+    var doc = celula(p, 'documento');
+    if (p.campos.tipo_documento.v && p.campos.documento.v) doc.insertBefore(el('small', 'doc-tipo', p.campos.tipo_documento.v + ' '), doc.firstChild);
+    tr.appendChild(doc);
+    tr.appendChild(celula(p, 'nascimento'));
+    tr.appendChild(celula(p, 'embarque'));
+    var acoes = el('td', 'col-acoes');
+    var mais = el('button', 'btn btn-texto btn-p btn-mais', abertos[p.id] ? 'Menos' : 'Mais');
+    mais.type = 'button';
+    mais.setAttribute('aria-expanded', abertos[p.id] ? 'true' : 'false');
+    mais.setAttribute('aria-label', 'Mais detalhes de ' + p.campos.nome.v);
+    mais.addEventListener('click', function () {
+      abertos[p.id] = !abertos[p.id];
+      renderizarLista();
+    });
+    acoes.appendChild(mais);
+    tr.appendChild(acoes);
+    Array.prototype.forEach.call(tr.children, function (td, i) {
+      if (rotulosColunas[i]) td.dataset.rotulo = rotulosColunas[i];
+    });
+    corpo.appendChild(tr);
+    if (abertos[p.id]) corpo.appendChild(linhaDetalhes(p));
+  }
+
+  function linhaDetalhes(p) {
+    var tr = el('tr', 'lp-detalhe');
+    var td = el('td');
+    td.colSpan = 7;
+    var dl = el('dl', 'ficha ficha-compacta');
+    [['Tipo de passageiro', p.campos.tipo_pax.v], ['Tipo do documento', p.campos.tipo_documento.v], ['Venda', p.campos.venda.v],
+     ['Telefone', p.campos.telefone.v], ['Observação', p.campos.observacao.v]].forEach(function (par) {
+      dl.appendChild(el('dt', null, par[0]));
+      var dd = el('dd', null, par[1] && String(par[1]).trim() ? par[1] : '—');
+      if (par[0] === 'Telefone' && p.campos.telefone.bruto) {
+        dd.textContent = '';
+        var a = el('a', 'link-tel', p.campos.telefone.v);
+        a.href = 'tel:+55' + p.campos.telefone.bruto.replace(/^55(?=\d{10,11}$)/, '');
+        dd.appendChild(a);
+      }
+      dl.appendChild(dd);
+    });
+    td.appendChild(dl);
+    var acoes = el('div', 'info-acoes');
+    if (!p.checkin && !p.noshow && dados.pode_marcar) acoes.appendChild(botaoMarca(p, 'noshow'));
+    var ed = el('button', 'btn btn-contorno btn-p', 'Editar passageiro');
+    ed.type = 'button';
+    ed.addEventListener('click', function () { abrirDialogo(p); });
+    acoes.appendChild(ed);
+    td.appendChild(acoes);
+    tr.appendChild(td);
+    return tr;
+  }
+
   var rotulosColunas = Array.prototype.map.call(raiz.querySelectorAll('.lp-tabela thead th'), function (th) {
     return th.textContent.trim();
   });

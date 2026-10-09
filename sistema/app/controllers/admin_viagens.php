@@ -14,7 +14,7 @@ function adm_viagem_carregar(int $id): array {
 function adm_viagem_ler_form(?int $id = null): array {
   $txt = fn(string $c, int $max) => ($v = mb_substr(entrada($c), 0, $max)) === '' ? null : $v;
   $longo = fn(string $c) => ($v = trim((string) ($_POST[$c] ?? ''))) === '' ? null : mb_substr($v, 0, 10000);
-  $tel = fn(string $c) => substr(so_digitos(entrada($c)), 0, 13) ?: null;
+  $tel = fn(string $c) => normalizar_celular(entrada($c)) ?: null;
   $veiculo = isset(VEICULOS[entrada('veiculo')]) ? entrada('veiculo') : null;
   $d = [
     // Código definido pela equipe (texto livre, ex.: TR.R.20261010.1); só não pode repetir.
@@ -86,7 +86,7 @@ function adm_viagem_ler_form(?int $id = null): array {
     $linha = [
       'papel' => mb_substr(trim((string) $papel), 0, 60),
       'nome' => mb_substr(trim((string) ($_POST['contato_nome'][$i] ?? '')), 0, 120) ?: null,
-      'telefone' => substr(so_digitos((string) ($_POST['contato_telefone'][$i] ?? '')), 0, 13) ?: null,
+      'telefone' => normalizar_celular((string) ($_POST['contato_telefone'][$i] ?? '')) ?: null,
       'observacao' => mb_substr(trim((string) ($_POST['contato_observacao'][$i] ?? '')), 0, 255) ?: null,
     ];
     if ($linha['nome'] || $linha['telefone']) {

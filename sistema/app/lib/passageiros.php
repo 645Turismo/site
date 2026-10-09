@@ -96,8 +96,8 @@ function passageiro_normalizar(string $campo, $valor): array {
     return data_valida($valor) && $valor <= hoje() ? [$valor, null] : [null, 'Data de nascimento inválida (use dd/mm/aaaa).'];
   }
   if ($campo === 'telefone') {
-    $d = so_digitos($valor);
-    return [$d === '' ? null : substr($d, 0, 13), null];
+    $d = normalizar_celular($valor);
+    return [$d === '' ? null : $d, null];
   }
   if ($campo === 'tipo_pax') {
     return passageiro_ler_tipo_pax($valor);

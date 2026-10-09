@@ -1,7 +1,7 @@
 // Lista de passageiros em tempo real (guia e ADM).
 // - Atualiza sozinha a cada poucos segundos: o que a equipe inclui e o que outros guias marcam aparece aqui.
 // - Check-in/check-out com resposta imediata na tela; sem sinal, as marcações ficam numa fila e são reenviadas.
-// - Aba "Mapa do carro": ao tocar numa poltrona mostra o passageiro, telefone para ligar e destaca (piscando)
+// - Aba "Mapa do carro": ao tocar numa poltrona mostra o passageiro, WhatsApp do passageiro e destaca (piscando)
 //   as outras poltronas da mesma reserva (mesma "Venda").
 (function () {
   'use strict';
@@ -30,6 +30,15 @@
   var $ = function (sel, ctx) { return (ctx || raiz).querySelector(sel); };
 
   // ---------- utilidades ----------
+  // Abre a conversa no WhatsApp; aceita o número com ou sem 0/55 na frente.
+  function linkWhatsapp(bruto) {
+    var d = String(bruto).replace(/\D/g, '').replace(/^0+/, '');
+    if (d.length >= 12 && d.indexOf('55') === 0) {
+      d = d.slice(2);
+    }
+    return 'https://wa.me/55' + d;
+  }
+
   function el(tag, classe, texto) {
     var n = document.createElement(tag);
     if (classe) n.className = classe;
@@ -196,7 +205,9 @@
     var td = el('td', 'col-' + campo);
     if (campo === 'telefone' && c.bruto) {
       var a = el('a', 'link-tel', c.v);
-      a.href = 'tel:+55' + c.bruto.replace(/^55(?=\d{10,11}$)/, '');
+      a.href = linkWhatsapp(c.bruto);
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
       td.appendChild(a);
     } else {
       td.textContent = c.v;
@@ -358,7 +369,9 @@
       if (par[0] === 'Telefone' && p.campos.telefone.bruto) {
         dd.textContent = '';
         var a = el('a', 'link-tel', p.campos.telefone.v);
-        a.href = 'tel:+55' + p.campos.telefone.bruto.replace(/^55(?=\d{10,11}$)/, '');
+        a.href = linkWhatsapp(p.campos.telefone.bruto);
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
         dd.appendChild(a);
       }
       dl.appendChild(dd);
@@ -570,9 +583,11 @@
 
       var acoes = el('div', 'info-acoes');
       if (p.campos.telefone.bruto) {
-        var ligar = el('a', 'btn btn-primario btn-p', 'Ligar ' + p.campos.telefone.v);
-        ligar.href = 'tel:+55' + p.campos.telefone.bruto.replace(/^55(?=\d{10,11}$)/, '');
-        acoes.appendChild(ligar);
+        var zap = el('a', 'btn btn-primario btn-p', 'WhatsApp ' + p.campos.telefone.v);
+        zap.href = linkWhatsapp(p.campos.telefone.bruto);
+        zap.target = '_blank';
+        zap.rel = 'noopener noreferrer';
+        acoes.appendChild(zap);
       } else {
         acoes.appendChild(el('span', 'texto-2', 'Sem telefone cadastrado'));
       }

@@ -84,8 +84,17 @@ function formatar_cnpj(?string $cnpj): string {
   return strlen($d) === 14 ? preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $d) : (string) $cnpj;
 }
 
+/** Só os dígitos com DDD, sem o 0 de operadora nem o 55 do país: "+55 (11) 9 5250-4927" vira "11952504927". */
+function normalizar_celular(?string $cel): string {
+  $d = ltrim(so_digitos($cel), '0');
+  if (strlen($d) >= 12 && str_starts_with($d, '55')) {
+    $d = substr($d, 2);
+  }
+  return substr($d, 0, 13);
+}
+
 function formatar_celular(?string $cel): string {
-  $d = so_digitos($cel);
+  $d = normalizar_celular($cel);
   if (strlen($d) === 11) {
     return preg_replace('/(\d{2})(\d{5})(\d{4})/', '($1) $2-$3', $d);
   }

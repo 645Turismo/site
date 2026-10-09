@@ -77,7 +77,7 @@ function guia_ler_pessoais(bool $comCpf, ?int $guiaId): array {
     'nome' => mb_substr(preg_replace('/\s+/', ' ', entrada('nome')), 0, 160),
     'nome_social' => $txt('nome_social', 120),
     'nascimento' => entrada('nascimento') ?: null,
-    'celular' => so_digitos(entrada('celular')) ?: null,
+    'celular' => normalizar_celular(entrada('celular')) ?: null,
     'email' => mb_strtolower(entrada('email')) ?: null,
     'genero' => in_array(entrada('genero'), GENEROS, true) ? entrada('genero') : null,
     'nacionalidade' => $txt('nacionalidade', 30),

@@ -19,6 +19,22 @@
     });
   });
 
+  // Telefone/celular: (11) 95250-4927 ou (11) 3333-4444
+  document.querySelectorAll('input[type="tel"]').forEach(function (campo) {
+    var formatar = function () {
+      var d = campo.value.replace(/\D/g, '').replace(/^0+/, '');
+      if (d.length >= 12 && d.indexOf('55') === 0) {
+        d = d.slice(2);
+      }
+      d = d.slice(0, 11);
+      campo.value = d.length > 10 ? d.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3')
+        : d.length > 6 ? d.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3')
+        : d.length > 2 ? d.replace(/^(\d{2})(\d*)/, '($1) $2') : d;
+    };
+    campo.addEventListener('input', formatar);
+    formatar();
+  });
+
   // CEP: preenche rua, bairro, cidade e estado (ViaCEP)
   document.querySelectorAll('[data-cep]').forEach(function (campo) {
     campo.addEventListener('blur', function () {

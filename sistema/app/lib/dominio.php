@@ -89,7 +89,7 @@ function saudacao(): string {
 }
 
 function link_whatsapp(?string $telefone): string {
-  $d = so_digitos($telefone);
+  $d = normalizar_celular($telefone);
   if ($d === '') {
     return '';
   }

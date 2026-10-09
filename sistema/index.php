@@ -4,6 +4,7 @@ require __DIR__ . '/app/bootstrap.php';
 
 cabecalhos_seguranca();
 iniciar_sessao();
+register_shutdown_function('tarefas_agendadas');
 
 try {
   migracoes_automaticas();

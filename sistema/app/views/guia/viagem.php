@@ -158,15 +158,15 @@ $grupo = array_filter([$v['cliente'], $v['perfil_grupo'], $v['idioma_grupo'] ? '
           <?php endif; ?>
           <?php if ($v['motorista_nome'] || $v['motorista_telefone']): ?>
             <li><span class="rotulo">Motorista</span><strong><?= e($v['motorista_nome'] ?: 'Motorista') ?></strong>
-              <?php if ($v['motorista_telefone']): ?><a href="tel:+55<?= e(so_digitos($v['motorista_telefone'])) ?>">Ligar <?= e(formatar_celular($v['motorista_telefone'])) ?></a><?php endif; ?></li>
+              <?php if ($v['motorista_telefone']): ?><a href="<?= e(link_whatsapp($v['motorista_telefone'])) ?>" target="_blank" rel="noopener noreferrer">WhatsApp <?= e(formatar_celular($v['motorista_telefone'])) ?></a><?php endif; ?></li>
           <?php endif; ?>
           <?php if ($v['guia_local_nome'] || $v['guia_local_telefone']): ?>
             <li><span class="rotulo">Guia local</span><strong><?= e($v['guia_local_nome'] ?: 'Guia local') ?></strong>
-              <?php if ($v['guia_local_telefone']): ?><a href="tel:+55<?= e(so_digitos($v['guia_local_telefone'])) ?>">Ligar <?= e(formatar_celular($v['guia_local_telefone'])) ?></a><?php endif; ?></li>
+              <?php if ($v['guia_local_telefone']): ?><a href="<?= e(link_whatsapp($v['guia_local_telefone'])) ?>" target="_blank" rel="noopener noreferrer">WhatsApp <?= e(formatar_celular($v['guia_local_telefone'])) ?></a><?php endif; ?></li>
           <?php endif; ?>
           <?php foreach ($contatos as $c): ?>
             <li><span class="rotulo"><?= e($c['papel']) ?></span><strong><?= e($c['nome'] ?: $c['papel']) ?></strong>
-              <?php if ($c['telefone']): ?><a href="tel:+55<?= e(so_digitos($c['telefone'])) ?>">Ligar <?= e(formatar_celular($c['telefone'])) ?></a><?php endif; ?>
+              <?php if ($c['telefone']): ?><a href="<?= e(link_whatsapp($c['telefone'])) ?>" target="_blank" rel="noopener noreferrer">WhatsApp <?= e(formatar_celular($c['telefone'])) ?></a><?php endif; ?>
               <?php if ($c['observacao']): ?><small><?= e($c['observacao']) ?></small><?php endif; ?></li>
           <?php endforeach; ?>
           <?php foreach ($anexos as $an): ?>

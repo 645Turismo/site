@@ -196,10 +196,10 @@ $passos = [
         <?php foreach ([['Coordenação', $v['coordenador_nome'], $v['coordenador_telefone']], ['Motorista', $v['motorista_nome'], $v['motorista_telefone']],
                         ['Guia local', $v['guia_local_nome'], $v['guia_local_telefone']]] as [$papel, $nome, $tel]):
           if (!$nome && !$tel) continue; ?>
-          <li><span class="rotulo"><?= e($papel) ?></span><strong><?= e($nome ?: '—') ?></strong><?php if ($tel): ?><a href="tel:+55<?= e(so_digitos($tel)) ?>"><?= e(formatar_celular($tel)) ?></a><?php endif; ?></li>
+          <li><span class="rotulo"><?= e($papel) ?></span><strong><?= e($nome ?: '—') ?></strong><?php if ($tel): ?><a href="<?= e(link_whatsapp($tel)) ?>" target="_blank" rel="noopener noreferrer">WhatsApp <?= e(formatar_celular($tel)) ?></a><?php endif; ?></li>
         <?php endforeach; ?>
         <?php foreach ($contatos as $c): ?>
-          <li><span class="rotulo"><?= e($c['papel']) ?></span><strong><?= e($c['nome'] ?: '—') ?></strong><?php if ($c['telefone']): ?><a href="tel:+55<?= e(so_digitos($c['telefone'])) ?>"><?= e(formatar_celular($c['telefone'])) ?></a><?php endif; ?><?php if ($c['observacao']): ?><small><?= e($c['observacao']) ?></small><?php endif; ?></li>
+          <li><span class="rotulo"><?= e($c['papel']) ?></span><strong><?= e($c['nome'] ?: '—') ?></strong><?php if ($c['telefone']): ?><a href="<?= e(link_whatsapp($c['telefone'])) ?>" target="_blank" rel="noopener noreferrer">WhatsApp <?= e(formatar_celular($c['telefone'])) ?></a><?php endif; ?><?php if ($c['observacao']): ?><small><?= e($c['observacao']) ?></small><?php endif; ?></li>
         <?php endforeach; ?>
       </ul>
     </section>

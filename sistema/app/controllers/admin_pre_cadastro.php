@@ -159,7 +159,7 @@ function pre_cadastro_validar(array $linhas, array $mapa): array {
       'nome_social' => mb_substr($v['nome_social'], 0, 120) ?: null,
       'cpf' => so_digitos($v['cpf']),
       'email' => mb_strtolower($v['email']),
-      'celular' => substr(preg_replace('/^55(?=\d{10,11}$)/', '', so_digitos($v['celular'])), 0, 13) ?: null,
+      'celular' => normalizar_celular($v['celular']) ?: null,
       'nascimento' => null,
       'cadastur_numero' => mb_substr($v['cadastur'], 0, 40) ?: null,
       'apresentacao' => mb_substr($v['experiencia'], 0, 1500) ?: null,

@@ -1,8 +1,8 @@
 <div class="pagina-topo">
   <div>
-    <p class="sobretitulo">Em breve</p>
+    <p class="sobretitulo">Seus trabalhos</p>
     <h1><?= e($titulo) ?></h1>
-    <p>Esta área está sendo preparada. Quando estiver pronta, os trabalhos de consultoria aparecem aqui, com convite, briefing e relatório como nas outras abas.</p>
+    <p>Trabalhos de consultoria da 645 Turismo.</p>
   </div>
 </div>
-<p class="vazio">Nada por aqui ainda.</p>
+<p class="vazio">Nenhum trabalho de consultoria no momento.</p>

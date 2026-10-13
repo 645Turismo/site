@@ -1,6 +1,6 @@
 <?php
 // Cadastro público de novos guias, em 5 etapas, e consulta de status.
-// O rascunho fica ligado à sessão do navegador; ao concluir, o guia entra direto na Área do Guia (cadastro em análise).
+// O rascunho fica ligado à sessão do navegador; ao concluir, o guia entra direto na Área do Prestador (cadastro em análise).
 // O guia pré-cadastrado pelo ADM usa o mesmo fluxo, já logado, para completar as informações pendentes.
 
 function cadastro_rascunho(): ?array {
@@ -42,7 +42,7 @@ function pub_cadastro_etapa(int $etapa): void {
   }
   $x = guia_extras($g['id'] ?? null);
   exibir('publico/cadastro', [
-    'titulo' => 'Cadastro de guia · ' . etapas_cadastro()[$etapa],
+    'titulo' => 'Cadastro de prestador · ' . etapas_cadastro()[$etapa],
     'etapa' => $etapa,
     'liberada' => $liberada,
     'g' => $g ?? [],
@@ -147,13 +147,13 @@ function cadastro_concluir(array $g, ?string $senha): never {
   ], 'id = ?', [$g['id']]);
   auditar('cadastro_concluido', 'guia', (int) $g['id'], null, 'guia', (int) $g['id']);
   enviar_email((string) $g['email'], 'Recebemos seu cadastro',
-    '<p>Olá, ' . e(primeiro_nome($g)) . '.</p><p>Recebemos seu cadastro de guia na 645 Turismo. Nossa equipe vai conferir seus dados e documentos e avisar por e-mail.</p>'
-    . '<p>Seu código de guia é <strong>' . e($g['codigo']) . '</strong>. Você já pode entrar na Área do Guia com seu CPF e senha.</p>');
-  enviar_email(email_equipe(), 'Novo cadastro de guia: ' . $g['nome'],
+    '<p>Olá, ' . e(primeiro_nome($g)) . '.</p><p>Recebemos seu cadastro de prestador na 645 Turismo. Nossa equipe vai conferir seus dados e documentos e avisar por e-mail.</p>'
+    . '<p>Seu código de prestador é <strong>' . e($g['codigo']) . '</strong>. Você já pode entrar na Área do Prestador com seu CPF e senha.</p>');
+  enviar_email(email_equipe(), 'Novo cadastro de prestador: ' . $g['nome'],
     '<p><strong>' . e($g['nome']) . '</strong> (código ' . e($g['codigo']) . ') concluiu o cadastro e aguarda triagem.</p>'
     . '<p><a href="' . e(url_absoluta('/admin/guias/' . (int) $g['id'])) . '">Abrir ficha no Painel ADM</a></p>');
   unset($_SESSION['cadastro_guia_id']);
-  // Entra direto na Área do Guia.
+  // Entra direto na Área do Prestador.
   session_regenerate_id(true);
   $_SESSION['guia_id'] = (int) $g['id'];
   limpar_antigo();
@@ -213,7 +213,7 @@ function cadastro_enviar_link_continuar(array $g): bool {
   auditar('cadastro_link_continuar', 'guia', (int) $g['id']);
   return enviar_email((string) $g['email'], 'Continue seu cadastro na 645 Turismo',
     '<p>Olá, ' . e(primeiro_nome($g)) . '.</p>'
-    . '<p>Seu cadastro de guia na 645 Turismo está em andamento. Use o botão abaixo para continuar de onde parou, em qualquer celular ou computador.</p>'
+    . '<p>Seu cadastro de prestador na 645 Turismo está em andamento. Use o botão abaixo para continuar de onde parou, em qualquer celular ou computador.</p>'
     . '<p><a href="' . e(url_absoluta('/cadastro/retomar?token=' . $token)) . '" style="display:inline-block;padding:12px 22px;background:#53D9B2;color:#000;text-decoration:none;font-weight:bold;border-radius:999px">Continuar meu cadastro</a></p>'
     . '<p>O link vale por 3 dias. Se ele vencer, peça outro em ' . e(url_absoluta('/cadastro/continuar')) . '.</p>');
 }

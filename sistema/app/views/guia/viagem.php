@@ -1,19 +1,21 @@
 <?php
 $assumidas = array_values(array_filter($escalas, fn($s) => in_array($s['status'], ESCALAS_ASSUMIDAS, true)));
 $ultimoDia = $assumidas ? end($assumidas)['data'] : null;
+// Serviço (recepção, bordo, eventos): sem lista de passageiros, veículo e origens.
+$servico = e_servico($v);
 $grupo = array_filter([$v['cliente'], $v['perfil_grupo'], $v['idioma_grupo'] ? 'Idioma: ' . $v['idioma_grupo'] : null,
-  $v['qtd_passageiros'] ? $v['qtd_passageiros'] . ' passageiros' : null]);
+  $v['qtd_passageiros'] ? $v['qtd_passageiros'] . ($servico ? ' pessoas previstas' : ' passageiros') : null]);
 ?>
 <div class="pagina-topo">
   <div>
-    <p class="sobretitulo mono"><?= e($v['codigo']) ?> · <?= e(TIPOS_VIAGEM[$v['tipo']] ?? 'Viagem/Tour') ?></p>
+    <p class="sobretitulo mono"><?= e($v['codigo']) ?> · <?= e(tipo_trabalho($v) ?: ($servico ? 'Serviço' : 'Viagem/Tour')) ?></p>
     <h1><?= e($v['nome']) ?></h1>
-    <p><?= e(($v['origem'] ?? '') . ' → ' . ($v['destino'] ?? '')) ?> · <?= e(periodo_viagem($v)) ?> · <?= (int) $v['com_pernoite'] ? 'com pernoite' : 'bate e volta' ?></p>
+    <p><?= e($servico ? (string) $v['destino'] : ($v['origem'] ?? '') . ' → ' . ($v['destino'] ?? '')) ?> · <?= e(periodo_viagem($v)) ?> · <?= (int) $v['com_pernoite'] ? 'com pernoite' : ($servico ? 'sem pernoite' : 'bate e volta') ?></p>
   </div>
-  <a href="/guia/viagens" class="link-sublinhado">Voltar</a>
+  <a href="<?= e(CATEGORIAS[categoria($v)][3]) ?>" class="link-sublinhado">Voltar</a>
 </div>
 
-<?php if ($confirmado): ?>
+<?php if ($confirmado && !$servico): ?>
   <a class="atalho-lista" href="/guia/viagens/<?= (int) $v['id'] ?>/passageiros">
     <span><?= icone('usuarios') ?></span>
     <strong>Lista de passageiros e mapa do carro</strong>
@@ -22,20 +24,25 @@ $grupo = array_filter([$v['cliente'], $v['perfil_grupo'], $v['idioma_grupo'] ? '
   </a>
 <?php endif; ?>
 
-<div class="horarios">
+<div class="horarios<?= $servico ? ' horarios-3' : '' ?>">
   <div><span class="rotulo">Apresentação</span><strong><?= e($v['horario_apresentacao'] ?: '—') ?></strong></div>
-  <div><span class="rotulo">Saída</span><strong><?= e($v['horario_saida'] ?: '—') ?></strong></div>
-  <div><span class="rotulo">Saída do destino</span><strong><?= e($v['horario_saida_destino'] ?: '—') ?></strong></div>
-  <div><span class="rotulo">Chegada prevista</span><strong><?= e($v['previsao_chegada'] ?: '—') ?></strong></div>
+  <?php if ($servico): ?>
+    <div><span class="rotulo">Início</span><strong><?= e($v['horario_saida'] ?: '—') ?></strong></div>
+    <div><span class="rotulo">Término</span><strong><?= e($v['previsao_chegada'] ?: '—') ?></strong></div>
+  <?php else: ?>
+    <div><span class="rotulo">Saída</span><strong><?= e($v['horario_saida'] ?: '—') ?></strong></div>
+    <div><span class="rotulo">Saída do destino</span><strong><?= e($v['horario_saida_destino'] ?: '—') ?></strong></div>
+    <div><span class="rotulo">Chegada prevista</span><strong><?= e($v['previsao_chegada'] ?: '—') ?></strong></div>
+  <?php endif; ?>
 </div>
 
 <?php if ($convites): ?>
   <section class="convite" aria-labelledby="t-convite">
     <div>
       <p class="sobretitulo">Convite</p>
-      <h2 id="t-convite">Você foi convidado(a) como <?= e($convites[0]['funcao'] ?: 'guia') ?></h2>
+      <h2 id="t-convite">Você foi convidado(a) como <?= e($convites[0]['funcao'] ?: 'prestador(a)') ?></h2>
       <p class="texto-2">
-        <?= count($convites) ?> dia(s) de trabalho. O valor da diária foi enviado para o seu e-mail.
+        <?= count($convites) ?> dia(s) de trabalho. O valor <?= e(e_empreitada($v) ? 'do serviço (valor fechado)' : 'da diária') ?> foi enviado para o seu e-mail.
       </p>
       <ul class="convite-dias">
         <?php foreach ($convites as $c): ?>
@@ -77,15 +84,16 @@ $grupo = array_filter([$v['cliente'], $v['perfil_grupo'], $v['idioma_grupo'] ? '
           <dd><?= e($v['ponto_encontro']) ?>
             <?php if ($v['ponto_encontro_mapa']): ?><br><a href="<?= e($v['ponto_encontro_mapa']) ?>" target="_blank" rel="noopener noreferrer">Abrir no mapa</a><?php endif; ?></dd>
         <?php endif; ?>
-        <?php if ($grupo): ?><dt>Grupo</dt><dd><?= e(implode(' · ', $grupo)) ?></dd><?php endif; ?>
-        <?php $veic = veiculo_layout($v); if ($veic || $v['transporte']): ?>
+        <?php if ($servico): ?><dt>Local</dt><dd><?= e((string) $v['destino']) ?></dd><?php endif; ?>
+        <?php if ($grupo): ?><dt><?= $servico ? 'Público' : 'Grupo' ?></dt><dd><?= e(implode(' · ', $grupo)) ?></dd><?php endif; ?>
+        <?php $veic = $servico ? null : veiculo_layout($v); if ($veic || $v['transporte']): ?>
           <dt>Veículo</dt><dd><?= e(implode(' · ', array_filter([$veic ? $veic['rotulo'] : null, $v['transporte']]))) ?></dd>
         <?php endif; ?>
         <?php if ((int) $v['com_pernoite']): ?><dt>Hospedagem</dt><dd><?= e($v['hospedagem'] ?: 'A confirmar com a coordenação') ?></dd><?php endif; ?>
         <?php if ($v['uniforme']): ?><dt>Uniforme</dt><dd><?= e($v['uniforme']) ?></dd><?php endif; ?>
         <?php if ($v['alimentacao']): ?><dt>Alimentação</dt><dd><?= e($v['alimentacao']) ?></dd><?php endif; ?>
       </dl>
-      <?php foreach (['roteiro' => 'Roteiro', 'regras' => 'Regras e orientações', 'observacoes' => 'Observações'] as $campo => $rotulo):
+      <?php foreach (['roteiro' => $servico ? 'Programação' : 'Roteiro', 'regras' => 'Regras e orientações', 'observacoes' => 'Observações'] as $campo => $rotulo):
         if ($v[$campo]): ?>
           <h3 class="subtitulo"><?= e($rotulo) ?></h3>
           <div class="texto-longo"><?= nl2br(e($v[$campo])) ?></div>
@@ -95,12 +103,12 @@ $grupo = array_filter([$v['cliente'], $v['perfil_grupo'], $v['idioma_grupo'] ? '
     <?php if ($confirmado): ?>
       <?php if ($relatorioLiberado): ?>
         <div class="alerta alerta-<?= !$relatorio || $relatorio['status'] === 'reprovado' ? 'aviso' : 'sucesso' ?>"><?= icone('documento') ?>
-          <span><strong>Viagem terminada.</strong> <?= !$relatorio || $relatorio['status'] === 'reprovado' ? 'Faça o relatório e envie a nota fiscal em' : 'Relatório enviado. Acompanhe a nota fiscal em' ?>
+          <span><strong><?= $servico ? 'Serviço terminado.' : 'Viagem terminada.' ?></strong> <?= !$relatorio || $relatorio['status'] === 'reprovado' ? 'Faça o relatório e envie a nota fiscal em' : 'Relatório enviado. Acompanhe a nota fiscal em' ?>
             <a href="/guia/pos-viagem#viagem-<?= (int) $v['id'] ?>">Pós-viagem</a>.</span></div>
       <?php endif; ?>
       <section class="bloco" id="comentarios" aria-labelledby="t-comentarios">
         <div class="bloco-titulo"><h2 id="t-comentarios">Comentários para a equipe</h2></div>
-        <p class="texto-2">Avisos durante a viagem: atraso, troca de embarque, ocorrência com o grupo. A coordenação lê no painel. O relatório final é feito no Pós-viagem.</p>
+        <p class="texto-2"><?= $servico ? 'Avisos durante o serviço: atraso, mudança de local, ocorrência com o público.' : 'Avisos durante a viagem: atraso, troca de embarque, ocorrência com o grupo.' ?> A coordenação lê no painel. O relatório final é feito no Pós-viagem.</p>
         <?php if ($comentarios): ?>
           <ul class="comentarios-lista">
             <?php foreach ($comentarios as $cm): ?>
@@ -111,7 +119,7 @@ $grupo = array_filter([$v['cliente'], $v['perfil_grupo'], $v['idioma_grupo'] ? '
         <form method="post" action="/guia/viagens/<?= (int) $v['id'] ?>/comentarios" class="form painel">
           <?= csrf_campo() ?>
           <label class="campo"><span>Novo comentário</span>
-            <textarea name="texto" rows="3" maxlength="2000" required placeholder="Ex.: ônibus atrasou 20 minutos na saída do Tietê."></textarea></label>
+            <textarea name="texto" rows="3" maxlength="2000" required placeholder="<?= $servico ? 'Ex.: credenciamento começou 30 minutos depois.' : 'Ex.: ônibus atrasou 20 minutos na saída do Tietê.' ?>"></textarea></label>
           <div class="form-rodape"><button type="submit" class="btn btn-primario btn-p">Enviar comentário</button></div>
         </form>
       </section>
@@ -127,7 +135,7 @@ $grupo = array_filter([$v['cliente'], $v['perfil_grupo'], $v['idioma_grupo'] ? '
             <span class="feed-data"><?= e(dia_semana_curto($s['data'])) ?> <?= e(date('d/m', strtotime($s['data']))) ?></span>
             <div>
               <strong><?= $s['horario_apresentacao'] ? 'Apresentação ' . e($s['horario_apresentacao']) : 'Horário a confirmar' ?></strong>
-              <p><?= e(trim(($s['hora_inicio'] ? $s['hora_inicio'] . '–' . $s['hora_fim'] : '') . ((int) $s['pernoite'] ? ' · pernoite' : '') . ($s['observacao'] ? ' · ' . $s['observacao'] : ''), ' ·')) ?></p>
+              <p><?= e(trim(($s['hora_inicio'] ? 'Início ' . $s['hora_inicio'] . ($s['hora_fim'] ? ' · término ' . $s['hora_fim'] : '') : ($s['hora_fim'] ? 'Término ' . $s['hora_fim'] : '')) . ((int) $s['pernoite'] ? ' · pernoite' : '') . ($s['observacao'] ? ' · ' . $s['observacao'] : ''), ' ·')) ?></p>
             </div>
             <?= selo(STATUS_ESCALA, $s['status']) ?>
           </li>
@@ -149,7 +157,7 @@ $grupo = array_filter([$v['cliente'], $v['perfil_grupo'], $v['idioma_grupo'] ? '
     <section class="bloco" aria-labelledby="t-contatos">
       <div class="bloco-titulo"><h2 id="t-contatos">Contatos e materiais</h2></div>
       <?php if (!$confirmado): ?>
-        <p class="vazio">Contatos do coordenador e do motorista e os materiais do grupo aparecem quando você confirma presença.</p>
+        <p class="vazio">Os contatos da coordenação e os materiais aparecem quando você confirma presença.</p>
       <?php else: ?>
         <ul class="contatos">
           <?php if ($v['coordenador_nome'] || $v['coordenador_telefone']): ?>

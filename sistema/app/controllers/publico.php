@@ -5,7 +5,7 @@ function pub_inicio(): void {
   if (guia_atual()) {
     redirecionar('/guia/hoje');
   }
-  exibir('publico/inicio', ['titulo' => 'Área do Guia'], 'publico');
+  exibir('publico/inicio', ['titulo' => 'Área do Prestador'], 'publico');
 }
 
 function pub_entrar(): void {
@@ -23,7 +23,7 @@ function pub_esqueci_senha(): void {
   exibir('publico/esqueci-senha', [
     'titulo' => 'Recuperar senha',
     'acao' => '/esqueci-senha',
-    'rotulo' => 'CPF do guia',
+    'rotulo' => 'CPF do prestador',
     'campo' => 'cpf',
     'placeholder' => '000.000.000-00',
     'voltar' => '/',
@@ -48,7 +48,7 @@ function pub_esqueci_senha_enviar(): void {
     $token = criar_token_reset('guia', (int) $p['id']);
     $link = url_absoluta('/redefinir-senha?token=' . $token);
     enviar_email($p['email'], 'Redefinição de senha',
-      '<p>Olá, ' . e(primeiro_nome($p)) . '.</p><p>Recebemos um pedido para redefinir sua senha na Área do Guia da 645 Turismo.</p>'
+      '<p>Olá, ' . e(primeiro_nome($p)) . '.</p><p>Recebemos um pedido para redefinir sua senha na Área do Prestador da 645 Turismo.</p>'
       . '<p><a href="' . e($link) . '" style="display:inline-block;padding:12px 22px;background:#53D9B2;color:#000;text-decoration:none;font-weight:bold;border-radius:999px">Criar nova senha</a></p>'
       . '<p>O link vale por 1 hora. Se não foi você, ignore este e-mail.</p>');
     auditar('reset_senha_solicitado', 'guia', (int) $p['id'], null, 'guia', (int) $p['id']);

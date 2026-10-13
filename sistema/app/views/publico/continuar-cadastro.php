@@ -1,5 +1,5 @@
 <section class="painel-acesso centro" aria-labelledby="titulo-form">
-  <p class="sobretitulo">Cadastro de guia</p>
+  <p class="sobretitulo">Cadastro de prestador</p>
   <h2 id="titulo-form">Continuar meu cadastro</h2>
   <p>Começou o cadastro e não terminou? Informe seu CPF: enviamos para o seu e-mail um link que abre o cadastro de onde você parou, em qualquer aparelho.</p>
   <form method="post" action="/cadastro/continuar" class="form" novalidate>

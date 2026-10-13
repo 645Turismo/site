@@ -1,13 +1,18 @@
 <?php
 $filtros = ['ativas' => 'Em andamento', 'rascunho' => 'Rascunhos', 'publicada' => 'Publicadas', 'concluida' => 'Concluídas', 'cancelada' => 'Canceladas', 'todas' => 'Todas'];
+$servico = $categoria === 'servico';
+$base = CATEGORIAS[$categoria][2];
+$novo = $servico ? 'Novo serviço' : 'Nova viagem/tour';
 ?>
 <div class="pagina-topo">
   <div>
     <p class="sobretitulo">Operação</p>
-    <h1>Viagens/Tours</h1>
-    <p>Cadastre o trabalho, defina dias e vagas por função, publique e convide os guias.</p>
+    <h1><?= e(CATEGORIAS[$categoria][0]) ?></h1>
+    <p><?= $servico
+      ? 'Recepção, serviço de bordo, eventos e outros trabalhos sem lista de passageiros. Cadastre, defina dias e vagas por função, publique e convide os prestadores.'
+      : 'Cadastre o trabalho, defina dias e vagas por função, publique e convide os prestadores.' ?></p>
   </div>
-  <a href="/admin/viagens/nova" class="btn btn-primario">Nova viagem/tour</a>
+  <a href="<?= e($base) ?>/nova" class="btn btn-primario"><?= e($novo) ?></a>
 </div>
 
 <div class="barra-filtros">
@@ -23,24 +28,26 @@ $filtros = ['ativas' => 'Em andamento', 'rascunho' => 'Rascunhos', 'publicada' =
 </div>
 
 <?php if (!$viagens): ?>
-  <p class="vazio">Nenhuma viagem/tour encontrado. <a href="/admin/viagens/nova">Cadastrar o primeiro</a></p>
+  <p class="vazio">Nada encontrado. <a href="<?= e($base) ?>/nova">Cadastrar <?= $servico ? 'o primeiro serviço' : 'a primeira viagem/tour' ?></a></p>
 <?php else: ?>
   <div class="tabela-rolagem">
     <table class="tabela">
-      <thead><tr><th>Viagem/Tour</th><th>Período</th><th>Dias</th><th>Guias / vagas</th><th>Check-in</th><th>Situação</th></tr></thead>
+      <thead><tr><th><?= $servico ? 'Serviço' : 'Viagem/Tour' ?></th><th>Período</th><th>Dias</th><th>Prestadores / vagas</th><?= $servico ? '' : '<th>Check-in</th>' ?><th>Situação</th></tr></thead>
       <tbody>
         <?php foreach ($viagens as $v): ?>
           <tr>
             <td><a href="/admin/viagens/<?= (int) $v['id'] ?>" class="link-limpo"><span class="mono codigo"><?= e($v['codigo']) ?></span><br><strong><?= e($v['nome']) ?></strong></a><br>
-              <span class="texto-2"><?= e(($v['origem'] ?? '') . ' → ' . ($v['destino'] ?? '')) ?><?= (int) $v['com_pernoite'] ? ' · pernoite' : '' ?></span></td>
+              <span class="texto-2"><?= e($servico ? ($v['destino'] ?? '') . (e_empreitada($v) ? ' · valor fechado' : '') : ($v['origem'] ?? '') . ' → ' . ($v['destino'] ?? '')) ?><?= (int) $v['com_pernoite'] ? ' · pernoite' : '' ?></span></td>
             <td><?= e(periodo_viagem($v)) ?></td>
             <td><?= (int) $v['dias'] ?></td>
             <td><?= (int) $v['guias'] ?> / <?= (int) $v['vagas'] ?></td>
+            <?php if (!$servico): ?>
             <td><?php if ($c = $v['checkin']): ?>
               <a href="/admin/viagens/<?= (int) $v['id'] ?>/passageiros?diaria=<?= $c['diaria_id'] ?>" class="link-limpo resumo-checkin" title="<?= $c['feitos'] ?> com check-in, <?= $c['faltam'] ?> faltando<?= $c['noshow'] ? ', ' . $c['noshow'] . ' no-show' : '' ?> de <?= $c['total'] ?> passageiros">
                 <strong><span class="verde"><?= $c['feitos'] ?></span> / <span class="<?= $c['faltam'] ? 'amarelo' : '' ?>"><?= $c['faltam'] ?></span></strong>
                 <small class="texto-2">feitos / faltam<?= $c['noshow'] ? ' · ' . $c['noshow'] . ' no-show' : '' ?><br><?= e(date('d/m', strtotime($c['data']))) ?><?= $c['data'] === hoje() ? ' (hoje)' : '' ?></small></a>
             <?php else: ?><span class="texto-2">—</span><?php endif; ?></td>
+            <?php endif; ?>
             <td><?= selo(STATUS_VIAGEM, $v['status']) ?></td>
           </tr>
         <?php endforeach; ?>

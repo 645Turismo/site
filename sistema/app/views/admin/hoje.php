@@ -3,7 +3,7 @@
     <p class="sobretitulo"><?= e(data_extenso(hoje())) ?></p>
     <h1>Operação de hoje</h1>
   </div>
-  <a href="/admin/viagens/nova" class="btn btn-primario">Nova viagem/tour</a>
+  <div class="acoes-topo"><a href="/admin/viagens/nova" class="btn btn-primario">Nova viagem/tour</a> <a href="/admin/servicos/nova" class="btn btn-contorno">Novo serviço</a></div>
 </div>
 
 <section class="bloco" aria-labelledby="t-campo">

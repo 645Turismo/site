@@ -12,11 +12,11 @@ const POS_VIAGEM_ETAPAS = [
 /** Viagens já terminadas do guia, com a etapa do pós-viagem de cada uma (pendentes primeiro). */
 function guia_pos_viagem_lista(array $g): array {
   $assumidas = "('" . implode("','", ESCALAS_ASSUMIDAS) . "')";
-  $linhas = todos("SELECT v.id, v.codigo, v.nome, v.qtd_passageiros, v.instrucoes_nf, v.prazo_nf_dias_uteis,
+  $linhas = todos("SELECT v.id, v.codigo, v.nome, v.categoria, v.qtd_passageiros, v.instrucoes_nf, v.prazo_nf_dias_uteis,
       MIN(d.data) AS inicio, MAX(d.data) AS fim
     FROM escalas s JOIN diarias d ON d.id = s.diaria_id JOIN viagens v ON v.id = d.viagem_id
     WHERE s.guia_id = ? AND s.status IN $assumidas
-    GROUP BY v.id, v.codigo, v.nome, v.qtd_passageiros, v.instrucoes_nf, v.prazo_nf_dias_uteis
+    GROUP BY v.id, v.codigo, v.nome, v.categoria, v.qtd_passageiros, v.instrucoes_nf, v.prazo_nf_dias_uteis
     HAVING MAX(d.data) <= ?
     ORDER BY MAX(d.data) DESC", [$g['id'], hoje()]);
   $emiteNf = (int) ($g['emite_nf'] ?? 1) === 1;

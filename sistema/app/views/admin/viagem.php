@@ -1,12 +1,14 @@
 <?php
-$veic = veiculo_layout($v);
+$servico = e_servico($v);
+$valorRotulo = e_empreitada($v) ? 'Valor fechado' : 'Diária';
+$veic = $servico ? null : veiculo_layout($v);
 $diasFuturos = array_values(array_filter($diarias, fn($d) => $d['data'] >= $hoje));
 $situacoes = [
   'disponivel' => 'Disponíveis nas datas',
   'sem_marcacao' => 'Sem marcação de agenda',
-  'ja_escalado' => 'Já escalados nesta viagem/tour',
+  'ja_escalado' => 'Já escalados neste trabalho',
   'indisponivel' => 'Marcaram indisponibilidade',
-  'conflito' => 'Escalados em outra viagem no mesmo dia',
+  'conflito' => 'Escalados em outro trabalho no mesmo dia',
 ];
 $porSituacao = [];
 foreach ($guiasParaAlocar as $g) {
@@ -16,26 +18,27 @@ $passos = [
   ['Dados e briefing', true, '/admin/viagens/' . (int) $v['id'] . '/editar'],
   ['Dias de trabalho', (bool) $diarias, '#dias'],
   ['Vagas por função', (bool) $vagas, '#vagas'],
-  ['Lista de passageiros', $passageiros['total'] > 0, '/admin/viagens/' . (int) $v['id'] . '/passageiros'],
+  $servico ? null : ['Lista de passageiros', $passageiros['total'] > 0, '/admin/viagens/' . (int) $v['id'] . '/passageiros'],
   ['Publicar', $v['status'] !== 'rascunho', '#acoes'],
-  ['Escalar guias', (bool) $equipe, '#equipe'],
+  ['Escalar prestadores', (bool) $equipe, '#equipe'],
 ];
+$passos = array_values(array_filter($passos));
 ?>
 <div class="pagina-topo">
   <div>
-    <p class="sobretitulo mono"><?= e($v['codigo']) ?> · <?= e(TIPOS_VIAGEM[$v['tipo']] ?? '') ?></p>
+    <p class="sobretitulo mono"><?= e($v['codigo']) ?> · <?= $servico ? 'Serviço · ' : '' ?><?= e(tipo_trabalho($v)) ?></p>
     <h1><?= e($v['nome']) ?></h1>
-    <p><?= e(($v['origem'] ?? '') . ' → ' . ($v['destino'] ?? '')) ?> · <?= e(periodo_viagem($v)) ?> · <?= (int) $v['com_pernoite'] ? 'com pernoite' : 'sem pernoite' ?></p>
+    <p><?= e($servico ? (string) $v['destino'] : ($v['origem'] ?? '') . ' → ' . ($v['destino'] ?? '')) ?> · <?= e(periodo_viagem($v)) ?> · <?= (int) $v['com_pernoite'] ? 'com pernoite' : 'sem pernoite' ?><?= $servico ? ' · ' . e(MODALIDADES[$v['modalidade']] ?? '') : '' ?></p>
   </div>
   <div class="acoes-topo" id="acoes">
     <?= selo(STATUS_VIAGEM, $v['status']) ?>
     <a href="/admin/viagens/<?= (int) $v['id'] ?>/editar" class="btn btn-contorno btn-p">Editar dados</a>
-    <a href="/admin/viagens/nova?copiar=<?= (int) $v['id'] ?>" class="btn btn-contorno btn-p">Copiar viagem</a>
+    <a href="<?= e(CATEGORIAS[categoria($v)][2]) ?>/nova?copiar=<?= (int) $v['id'] ?>" class="btn btn-contorno btn-p">Copiar <?= $servico ? 'serviço' : 'viagem' ?></a>
     <?php
     $botoes = match ($v['status']) {
       'rascunho' => [['publicar', 'Publicar', 'btn-primario', '']],
-      'publicada' => [['concluir', 'Concluir', 'btn-contorno', 'Marcar como concluída?'], ['rascunho', 'Voltar a rascunho', 'btn-texto', 'Os guias deixam de ver até publicar de novo. Continuar?'],
-        ['cancelar', 'Cancelar', 'btn-texto', 'Cancelar a viagem/tour? Convites e confirmações serão cancelados.']],
+      'publicada' => [['concluir', 'Concluir', 'btn-contorno', 'Marcar como concluído?'], ['rascunho', 'Voltar a rascunho', 'btn-texto', 'Os prestadores deixam de ver até publicar de novo. Continuar?'],
+        ['cancelar', 'Cancelar', 'btn-texto', 'Cancelar? Convites e confirmações serão cancelados.']],
       'cancelada', 'concluida' => [['rascunho', 'Reabrir como rascunho', 'btn-texto', '']],
       default => [],
     };
@@ -58,11 +61,16 @@ $passos = [
   <div>
     <section class="bloco" aria-labelledby="t-horarios">
       <div class="bloco-titulo"><h2 id="t-horarios">Horários</h2></div>
-      <div class="horarios">
+      <div class="horarios<?= $servico ? ' horarios-3' : '' ?>">
         <div><span class="rotulo">Apresentação</span><strong><?= e($v['horario_apresentacao'] ?: '—') ?></strong></div>
-        <div><span class="rotulo">Saída</span><strong><?= e($v['horario_saida'] ?: '—') ?></strong></div>
-        <div><span class="rotulo">Saída do destino</span><strong><?= e($v['horario_saida_destino'] ?: '—') ?></strong></div>
-        <div><span class="rotulo">Chegada prevista</span><strong><?= e($v['previsao_chegada'] ?: '—') ?></strong></div>
+        <?php if ($servico): ?>
+          <div><span class="rotulo">Início</span><strong><?= e($v['horario_saida'] ?: '—') ?></strong></div>
+          <div><span class="rotulo">Término</span><strong><?= e($v['previsao_chegada'] ?: '—') ?></strong></div>
+        <?php else: ?>
+          <div><span class="rotulo">Saída</span><strong><?= e($v['horario_saida'] ?: '—') ?></strong></div>
+          <div><span class="rotulo">Saída do destino</span><strong><?= e($v['horario_saida_destino'] ?: '—') ?></strong></div>
+          <div><span class="rotulo">Chegada prevista</span><strong><?= e($v['previsao_chegada'] ?: '—') ?></strong></div>
+        <?php endif; ?>
       </div>
       <dl class="ficha">
         <?php if ($origens): ?>
@@ -71,9 +79,11 @@ $passos = [
         <?php endif; ?>
         <?php if ($v['ponto_encontro']): ?><dt>Ponto de encontro</dt><dd><?= e($v['ponto_encontro']) ?></dd><?php endif; ?>
         <?php if ((int) $v['com_pernoite']): ?><dt>Hospedagem</dt><dd><?= e($v['hospedagem'] ?: 'Não informada') ?></dd><?php endif; ?>
-        <dt>Veículo</dt>
-        <dd><?= $veic ? e($veic['rotulo']) . ($veic['bloqueadas'] ? '<br><span class="texto-2">Bloqueadas: ' . e(implode(', ', $veic['bloqueadas'])) . '</span>' : '') : 'Sem mapa de poltronas' ?><?= $v['transporte'] ? '<br><span class="texto-2">' . e($v['transporte']) . '</span>' : '' ?></dd>
-        <?php if ($v['cliente'] || $v['perfil_grupo']): ?><dt>Grupo</dt><dd><?= e(implode(' · ', array_filter([$v['cliente'], $v['perfil_grupo'], $v['qtd_passageiros'] ? $v['qtd_passageiros'] . ' passageiros previstos' : null]))) ?></dd><?php endif; ?>
+        <?php if (!$servico): ?>
+          <dt>Veículo</dt>
+          <dd><?= $veic ? e($veic['rotulo']) . ($veic['bloqueadas'] ? '<br><span class="texto-2">Bloqueadas: ' . e(implode(', ', $veic['bloqueadas'])) . '</span>' : '') : 'Sem mapa de poltronas' ?><?= $v['transporte'] ? '<br><span class="texto-2">' . e($v['transporte']) . '</span>' : '' ?></dd>
+        <?php endif; ?>
+        <?php if ($v['cliente'] || $v['perfil_grupo']): ?><dt><?= $servico ? 'Público' : 'Grupo' ?></dt><dd><?= e(implode(' · ', array_filter([$v['cliente'], $v['perfil_grupo'], $v['qtd_passageiros'] ? $v['qtd_passageiros'] . ($servico ? ' pessoas previstas' : ' passageiros previstos') : null]))) ?></dd><?php endif; ?>
       </dl>
     </section>
 
@@ -84,7 +94,7 @@ $passos = [
       <?php else: ?>
         <div class="tabela-rolagem">
           <table class="tabela">
-            <thead><tr><th>Data</th><th>Apresentação</th><th>Início–fim</th><th>Guias</th><th></th></tr></thead>
+            <thead><tr><th>Data</th><th>Apresentação</th><th>Início–fim</th><th>Prestadores</th><th></th></tr></thead>
             <tbody>
               <?php foreach ($diarias as $d): ?>
                 <tr>
@@ -122,11 +132,11 @@ $passos = [
     <section class="bloco" id="vagas" aria-labelledby="t-vagas">
       <div class="bloco-titulo"><h2 id="t-vagas">Vagas por função</h2><a href="/admin/funcoes" class="link-p">Gerenciar funções</a></div>
       <?php if (!$vagas): ?>
-        <p class="vazio">Nenhuma vaga definida. Diga quantos guias de cada função são necessários e o valor da diária.</p>
+        <p class="vazio">Nenhuma vaga definida. Diga quantas pessoas de cada função são necessárias e o valor <?= e(unidade_valor($v)) ?>.</p>
       <?php else: ?>
         <div class="tabela-rolagem">
           <table class="tabela">
-            <thead><tr><th>Função</th><th>Vagas</th><th>Ocupadas</th><th>Diária</th><th></th></tr></thead>
+            <thead><tr><th>Função</th><th>Vagas</th><th>Ocupadas</th><th><?= e($valorRotulo) ?></th><th></th></tr></thead>
             <tbody>
               <?php foreach ($vagas as $vg): ?>
                 <tr>
@@ -155,7 +165,7 @@ $passos = [
                 <?php foreach ($funcoes as $f): ?><option value="<?= (int) $f['id'] ?>"><?= e($f['nome']) ?></option><?php endforeach; ?>
               </select></label>
             <label class="campo"><span>Quantidade</span><input type="number" name="vagas" min="1" max="99" value="1" required></label>
-            <label class="campo"><span>Valor da diária (R$)</span><input type="text" name="valor_diaria" inputmode="decimal" placeholder="250,00" required></label>
+            <label class="campo"><span><?= e_empreitada($v) ? 'Valor fechado do serviço (R$)' : 'Valor da diária (R$)' ?></span><input type="text" name="valor_diaria" inputmode="decimal" placeholder="250,00" required></label>
           </div>
           <div class="form-rodape"><button type="submit" class="btn btn-primario btn-p">Salvar vaga</button></div>
         </form>
@@ -164,6 +174,7 @@ $passos = [
   </div>
 
   <aside>
+    <?php if (!$servico): ?>
     <section class="bloco" aria-labelledby="t-passageiros">
       <div class="bloco-titulo"><h2 id="t-passageiros">Passageiros</h2></div>
       <a class="destaque destaque-simples" href="/admin/viagens/<?= (int) $v['id'] ?>/passageiros">
@@ -176,11 +187,12 @@ $passos = [
       <p class="espaco-topo"><a href="/admin/viagens/<?= (int) $v['id'] ?>/passageiros/modelo.xlsx" class="btn btn-contorno btn-p">Baixar planilha padrão</a>
         <a href="/admin/viagens/<?= (int) $v['id'] ?>/passageiros#importar" class="btn btn-texto btn-p">Importar planilha</a></p>
     </section>
+    <?php endif; ?>
 
     <section class="bloco" id="comentarios" aria-labelledby="t-comentarios">
-      <div class="bloco-titulo"><h2 id="t-comentarios">Comentários dos guias</h2></div>
+      <div class="bloco-titulo"><h2 id="t-comentarios">Comentários dos prestadores</h2></div>
       <?php if (!$comentarios): ?>
-        <p class="vazio">Nenhum comentário durante a viagem.</p>
+        <p class="vazio">Nenhum comentário durante o trabalho.</p>
       <?php else: ?>
         <ul class="comentarios-lista">
           <?php foreach ($comentarios as $cm): ?>
@@ -207,13 +219,13 @@ $passos = [
 </div>
 
 <section class="bloco" id="equipe" aria-labelledby="t-equipe">
-  <div class="bloco-titulo"><h2 id="t-equipe">Guias escalados</h2></div>
+  <div class="bloco-titulo"><h2 id="t-equipe">Prestadores escalados</h2></div>
   <?php if (!$equipe): ?>
     <p class="vazio">Ninguém escalado ainda.</p>
   <?php else: ?>
     <div class="tabela-rolagem">
       <table class="tabela">
-        <thead><tr><th>Guia</th><th>Função</th><th>Dias</th><th>Contato</th></tr></thead>
+        <thead><tr><th>Prestador</th><th>Função</th><th>Dias</th><th>Contato</th></tr></thead>
         <tbody>
           <?php foreach ($equipe as $item): $g = $item['guia']; ?>
             <tr>
@@ -242,18 +254,18 @@ $passos = [
   <?php endif; ?>
 
   <div class="painel espaco-topo">
-    <h3 class="subtitulo">Alocar guia</h3>
+    <h3 class="subtitulo">Alocar prestador</h3>
     <?php if ($v['status'] !== 'publicada'): ?>
-      <p class="texto-2">Publique a viagem/tour para escalar guias.</p>
+      <p class="texto-2">Publique para escalar prestadores.</p>
     <?php elseif (!$vagas || !$diasFuturos): ?>
       <p class="texto-2">Cadastre as vagas por função e pelo menos um dia de trabalho a partir de hoje.</p>
     <?php elseif (!$guiasParaAlocar): ?>
-      <p class="texto-2">Nenhum guia aprovado ou pré-cadastrado ainda.</p>
+      <p class="texto-2">Nenhum prestador aprovado ou pré-cadastrado ainda.</p>
     <?php else: ?>
       <form method="post" action="/admin/viagens/<?= (int) $v['id'] ?>/convidar" class="form">
         <?= csrf_campo() ?>
         <div class="grade-campos">
-          <label class="campo campo-largo"><span>Guia</span>
+          <label class="campo campo-largo"><span>Prestador</span>
             <select name="guia_id" required>
               <?php foreach ($situacoes as $chave => $rotulo): if (empty($porSituacao[$chave])) continue; ?>
                 <optgroup label="<?= e($rotulo) ?>">
@@ -281,9 +293,10 @@ $passos = [
             <?php endforeach; ?>
           </div>
         </div>
-        <label class="opcao"><input type="checkbox" name="alocar_direto" value="1"> <span>Já combinado com o guia: alocar direto, sem pedir confirmação</span></label>
+        <?php if (e_empreitada($v)): ?><p class="texto-2">Valor fechado: o valor da vaga entra uma vez só para o prestador, no primeiro dia escolhido.</p><?php endif; ?>
+        <label class="opcao"><input type="checkbox" name="alocar_direto" value="1"> <span>Já combinado com o prestador: alocar direto, sem pedir confirmação</span></label>
         <div class="form-rodape">
-          <button type="submit" class="btn btn-primario">Escalar guia</button>
+          <button type="submit" class="btn btn-primario">Escalar prestador</button>
         </div>
       </form>
     <?php endif; ?>
@@ -291,7 +304,7 @@ $passos = [
 </section>
 
 <section class="bloco" aria-labelledby="t-relatorios">
-  <div class="bloco-titulo"><h2 id="t-relatorios">Relatórios dos guias</h2></div>
+  <div class="bloco-titulo"><h2 id="t-relatorios">Relatórios dos prestadores</h2></div>
   <?php if (!$relatorios): ?>
     <p class="vazio">Os relatórios aparecem aqui depois do último dia de trabalho.</p>
   <?php else: ?>
@@ -300,7 +313,7 @@ $passos = [
         <li>
           <span class="feed-data"><?= e(date('d/m H:i', strtotime($r['enviado_em']))) ?></span>
           <div>
-            <strong><?= e($r['guia']) ?><?= $r['qtd_passageiros'] !== null ? ' · ' . (int) $r['qtd_passageiros'] . ' passageiros' : '' ?></strong>
+            <strong><?= e($r['guia']) ?><?= $r['qtd_passageiros'] !== null ? ' · ' . (int) $r['qtd_passageiros'] . ($servico ? ' pessoas atendidas' : ' passageiros') : '' ?></strong>
             <p class="texto-longo"><?= nl2br(e($r['texto'])) ?></p>
           </div>
         </li>

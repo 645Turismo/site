@@ -1,5 +1,5 @@
 <?php
-// Viagens/Tours no Painel ADM. Fluxo da operação:
+// Viagens/Tours e Serviços no Painel ADM (mesma tabela, campo categoria). Fluxo da operação:
 // 1. cadastrar (dados do grupo, logística, roteiro) -> 2. dias de trabalho -> 3. vagas por função e valor da diária
 // -> 4. publicar -> 5. convidar guias -> 6. acompanhar confirmações e relatórios -> 7. concluir.
 
@@ -7,19 +7,27 @@ const PAPEIS_VIAGENS = ['coordenador'];
 const LIMITE_DIAS_AUTOMATICOS = 60;
 
 function adm_viagem_carregar(int $id): array {
-  return um('SELECT * FROM viagens WHERE id = ?', [$id]) ?? abortar(404, 'Viagem/tour não encontrado.');
+  return um('SELECT * FROM viagens WHERE id = ?', [$id]) ?? abortar(404, 'Trabalho não encontrado.');
 }
 
-/** Lê e valida o formulário da viagem/tour. Retorna [dados, erros, contatos extras]. */
-function adm_viagem_ler_form(?int $id = null): array {
+/** Item do menu do ADM para a categoria do trabalho. */
+function menu_categoria(string $categoria): string {
+  return $categoria === 'servico' ? 'servicos' : 'viagens';
+}
+
+/** Lê e valida o formulário da viagem/tour ou do serviço. Retorna [dados, erros, contatos extras, origens]. */
+function adm_viagem_ler_form(string $categoria, ?int $id = null): array {
+  $servico = $categoria === 'servico';
   $txt = fn(string $c, int $max) => ($v = mb_substr(entrada($c), 0, $max)) === '' ? null : $v;
   $longo = fn(string $c) => ($v = trim((string) ($_POST[$c] ?? ''))) === '' ? null : mb_substr($v, 0, 10000);
   $tel = fn(string $c) => normalizar_celular(entrada($c)) ?: null;
-  $veiculo = isset(VEICULOS[entrada('veiculo')]) ? entrada('veiculo') : null;
+  $veiculo = !$servico && isset(VEICULOS[entrada('veiculo')]) ? entrada('veiculo') : null;
   $d = [
     // Código definido pela equipe (texto livre, ex.: TR.R.20261010.1); só não pode repetir.
     'codigo' => mb_substr(preg_replace('/\s+/', ' ', entrada('codigo')), 0, 40),
     'nome' => mb_substr(entrada('nome'), 0, 200),
+    'categoria' => $categoria,
+    'modalidade' => $servico && entrada('modalidade') === 'empreitada' ? 'empreitada' : 'diaria',
     'tipo' => entrada('tipo'),
     'cliente' => $txt('cliente', 200),
     'data_inicio' => entrada('data_inicio'),
@@ -30,7 +38,7 @@ function adm_viagem_ler_form(?int $id = null): array {
     'destino' => $txt('destino', 160),
     'horario_apresentacao' => entrada('horario_apresentacao'),
     'horario_saida' => entrada('horario_saida'),
-    'horario_saida_destino' => entrada('horario_saida_destino'),
+    'horario_saida_destino' => $servico ? null : entrada('horario_saida_destino'),
     'previsao_chegada' => entrada('previsao_chegada'),
     'ponto_encontro' => $txt('ponto_encontro', 255),
     'ponto_encontro_mapa' => $txt('ponto_encontro_mapa', 500),
@@ -39,13 +47,13 @@ function adm_viagem_ler_form(?int $id = null): array {
     'lugares' => $veiculo === 'outro' || entrada('lugares') !== '' ? (entrada('lugares') === '' ? null : max(1, min(90, (int) entrada('lugares')))) : null,
     'lugares_piso_inferior' => $veiculo === 'dd_64' && entrada('lugares_piso_inferior') !== '' ? max(1, min(40, (int) entrada('lugares_piso_inferior'))) : null,
     'poltronas_bloqueadas' => null,
-    'transporte' => $txt('transporte', 200),
+    'transporte' => $servico ? null : $txt('transporte', 200),
     'coordenador_nome' => $txt('coordenador_nome', 120),
     'coordenador_telefone' => $tel('coordenador_telefone'),
-    'motorista_nome' => $txt('motorista_nome', 120),
-    'motorista_telefone' => $tel('motorista_telefone'),
-    'guia_local_nome' => $txt('guia_local_nome', 120),
-    'guia_local_telefone' => $tel('guia_local_telefone'),
+    'motorista_nome' => $servico ? null : $txt('motorista_nome', 120),
+    'motorista_telefone' => $servico ? null : $tel('motorista_telefone'),
+    'guia_local_nome' => $servico ? null : $txt('guia_local_nome', 120),
+    'guia_local_telefone' => $servico ? null : $tel('guia_local_telefone'),
     'perfil_grupo' => $txt('perfil_grupo', 120),
     'idioma_grupo' => $txt('idioma_grupo', 40),
     'qtd_passageiros' => entrada('qtd_passageiros') === '' ? null : max(0, min(9999, (int) entrada('qtd_passageiros'))),
@@ -67,7 +75,7 @@ function adm_viagem_ler_form(?int $id = null): array {
   // Origens (pontos de embarque): uma por linha, com horário de saída opcional; linhas vazias são ignoradas.
   $origens = [];
   $horarioOrigemInvalido = false;
-  foreach ((array) ($_POST['origens'] ?? []) as $i => $local) {
+  foreach ($servico ? [] : (array) ($_POST['origens'] ?? []) as $i => $local) {
     $local = mb_substr(trim(preg_replace('/\s+/', ' ', (string) $local)), 0, 160);
     $horario = trim((string) ($_POST['origens_horario'][$i] ?? ''));
     if ($local === '') {
@@ -97,14 +105,14 @@ function adm_viagem_ler_form(?int $id = null): array {
 
   $erros = [];
   if ($d['codigo'] === '') {
-    $erros[] = 'Informe o código da viagem/tour.';
+    $erros[] = 'Informe o código.';
   } elseif (valor('SELECT 1 FROM viagens WHERE codigo = ? AND id <> ?', [$d['codigo'], $id ?? 0])) {
-    $erros[] = 'Já existe uma viagem/tour com o código ' . $d['codigo'] . '.';
+    $erros[] = 'Já existe um trabalho com o código ' . $d['codigo'] . '.';
   }
   if (mb_strlen($d['nome']) < 3) {
-    $erros[] = 'Dê um nome à viagem/tour.';
+    $erros[] = 'Dê um nome ' . ($servico ? 'ao serviço.' : 'à viagem/tour.');
   }
-  if (!isset(TIPOS_VIAGEM[$d['tipo']])) {
+  if (!isset(($servico ? TIPOS_SERVICO : TIPOS_VIAGEM)[$d['tipo']])) {
     $erros[] = 'Escolha o tipo.';
   }
   if (!data_valida($d['data_inicio']) || !data_valida($d['data_fim'])) {
@@ -112,20 +120,24 @@ function adm_viagem_ler_form(?int $id = null): array {
   } elseif ($d['data_fim'] < $d['data_inicio']) {
     $erros[] = 'A data de fim não pode ser antes do início.';
   }
-  if (!$d['origem'] || !$d['destino']) {
+  if ($servico && !$d['destino']) {
+    $erros[] = 'Informe o local do serviço.';
+  } elseif (!$servico && (!$d['origem'] || !$d['destino'])) {
     $erros[] = 'Informe pelo menos uma origem e o destino.';
   }
   if ($horarioOrigemInvalido) {
     $erros[] = 'Confira os horários das origens (formato 07:30).';
   }
-  foreach (['horario_apresentacao' => 'apresentação', 'horario_saida' => 'saída', 'horario_saida_destino' => 'saída do destino',
-            'previsao_chegada' => 'previsão de chegada'] as $campo => $rotulo) {
+  $horarios = $servico
+    ? ['horario_apresentacao' => 'apresentação', 'horario_saida' => 'início', 'previsao_chegada' => 'término']
+    : ['horario_apresentacao' => 'apresentação', 'horario_saida' => 'saída', 'horario_saida_destino' => 'saída do destino', 'previsao_chegada' => 'previsão de chegada'];
+  foreach ($horarios as $campo => $rotulo) {
     if (!hora_valida($d[$campo])) {
       $erros[] = "Informe o horário de $rotulo.";
     }
   }
   if ($d['com_pernoite'] && $d['data_fim'] === $d['data_inicio']) {
-    $erros[] = 'Viagem com pernoite precisa terminar depois do dia de início.';
+    $erros[] = 'Com pernoite, a data de fim precisa ser depois do dia de início.';
   }
   if ($veiculo === 'outro' && (!$d['veiculo_descricao'] || !$d['lugares'])) {
     $erros[] = 'Para "Outro tipo" de veículo, descreva o veículo e informe a quantidade de lugares.';
@@ -154,11 +166,15 @@ function adm_viagem_salvar_contatos(int $viagemId, array $contatos): void {
   }
 }
 
-function adm_viagens(): void {
+function adm_servicos(): void {
+  adm_viagens('servico');
+}
+
+function adm_viagens(string $categoria = 'viagem'): void {
   $a = exigir_admin(PAPEIS_VIAGENS);
   $filtro = (string) ($_GET['status'] ?? 'ativas');
   $busca = trim((string) ($_GET['q'] ?? ''));
-  $where = [];
+  $where = [$categoria === 'servico' ? "v.categoria = 'servico'" : "v.categoria <> 'servico'"];
   $params = [];
   if ($filtro === 'ativas') {
     $where[] = "v.status IN ('rascunho','publicada')";
@@ -177,15 +193,16 @@ function adm_viagens(): void {
       (SELECT COALESCE(SUM(vagas), 0) FROM viagem_vagas vv WHERE vv.viagem_id = v.id) AS vagas,
       (SELECT COUNT(DISTINCT s.guia_id) FROM escalas s JOIN diarias d ON d.id = s.diaria_id
         WHERE d.viagem_id = v.id AND s.status NOT IN (\'recusado\',\'cancelado\')) AS guias
-    FROM viagens v' . ($where ? ' WHERE ' . implode(' AND ', $where) : '') . '
+    FROM viagens v WHERE ' . implode(' AND ', $where) . '
     ORDER BY CASE WHEN v.status IN (\'rascunho\',\'publicada\') THEN 0 ELSE 1 END, v.data_inicio', $params);
   foreach ($viagens as &$linha) {
-    $linha['checkin'] = viagem_resumo_checkin((int) $linha['id']);
+    $linha['checkin'] = $categoria === 'servico' ? null : viagem_resumo_checkin((int) $linha['id']);
   }
   unset($linha);
   exibir('admin/viagens', [
-    'titulo' => 'Viagens/Tours',
-    'menu' => 'viagens',
+    'titulo' => CATEGORIAS[$categoria][0],
+    'menu' => menu_categoria($categoria),
+    'categoria' => $categoria,
     'a' => $a,
     'viagens' => $viagens,
     'filtro' => $filtro,
@@ -193,14 +210,19 @@ function adm_viagens(): void {
   ], 'admin');
 }
 
-function adm_viagem_nova(): void {
+function adm_servico_nova(): void {
+  adm_viagem_nova('servico');
+}
+
+function adm_viagem_nova(string $categoria = 'viagem'): void {
   $a = exigir_admin(PAPEIS_VIAGENS);
   // Copiar viagem: o formulário já vem com os dados de outra (menos código), para trocar código e datas.
   $copia = isset($_GET['copiar']) ? um('SELECT * FROM viagens WHERE id = ?', [(int) $_GET['copiar']]) : null;
   if ($copia) {
     exibir('admin/viagem-form', [
       'titulo' => 'Copiar ' . $copia['codigo'],
-      'menu' => 'viagens',
+      'menu' => menu_categoria(categoria($copia)),
+      'categoria' => categoria($copia),
       'a' => $a,
       'v' => ['codigo' => '', 'status' => 'rascunho'] + $copia,
       'origens' => viagem_origens((int) $copia['id']),
@@ -211,13 +233,17 @@ function adm_viagem_nova(): void {
     ], 'admin');
     return;
   }
+  $servico = $categoria === 'servico';
   exibir('admin/viagem-form', [
-    'titulo' => 'Nova viagem/tour',
-    'menu' => 'viagens',
+    'titulo' => $servico ? 'Novo serviço' : 'Nova viagem/tour',
+    'menu' => menu_categoria($categoria),
+    'categoria' => $categoria,
     'a' => $a,
     'v' => [
-      'tipo' => 'excursao',
-      'veiculo' => 'onibus_46',
+      'categoria' => $categoria,
+      'modalidade' => 'diaria',
+      'tipo' => $servico ? 'evento' : 'excursao',
+      'veiculo' => $servico ? null : 'onibus_46',
       'prazo_nf_dias_uteis' => configuracao('nf_prazo_dias_uteis_padrao', '3'),
       'prazo_pagamento_dias' => configuracao('pagamento_prazo_dias_padrao', '30'),
     ],
@@ -229,7 +255,8 @@ function adm_viagem_nova(): void {
 
 function adm_viagem_criar(): void {
   $a = exigir_admin(PAPEIS_VIAGENS);
-  [$d, $erros, $contatos, $origens] = adm_viagem_ler_form();
+  $categoria = entrada('categoria') === 'servico' ? 'servico' : 'viagem';
+  [$d, $erros, $contatos, $origens] = adm_viagem_ler_form($categoria);
   $gerar = isset($_POST['gerar_diarias']);
   $copiaDe = (int) entrada('copiar_de');
   $copiaDe = $copiaDe && valor('SELECT 1 FROM viagens WHERE id = ?', [$copiaDe]) ? $copiaDe : 0;
@@ -240,7 +267,7 @@ function adm_viagem_criar(): void {
   if ($erros) {
     guardar_antigo($_POST);
     flash('erro', implode(' ', $erros));
-    redirecionar('/admin/viagens/nova' . ($copiaDe ? '?copiar=' . $copiaDe : ''));
+    redirecionar(CATEGORIAS[$categoria][2] . '/nova' . ($copiaDe ? '?copiar=' . $copiaDe : ''));
   }
 
   $id = transacao(function () use ($d, $a, $gerar, $totalDias, $contatos, $origens, $copiaDe) {
@@ -248,17 +275,19 @@ function adm_viagem_criar(): void {
     adm_viagem_salvar_contatos($id, $contatos);
     adm_viagem_salvar_origens($id, $origens);
     if ($gerar) {
-      // Um dia de trabalho por data: apresentação e saída no primeiro dia, chegada prevista no último.
+      // Um dia de trabalho por data. Viagem: apresentação e saída no primeiro dia, chegada prevista no último.
+      // Serviço: todo dia tem o mesmo expediente (apresentação, início e término).
+      $todoDia = $d['categoria'] === 'servico';
       for ($i = 0; $i < $totalDias; $i++) {
-        $primeiro = $i === 0;
-        $ultimo = $i === $totalDias - 1;
+        $primeiro = $todoDia || $i === 0;
+        $ultimo = $todoDia || $i === $totalDias - 1;
         inserir('diarias', [
           'viagem_id' => $id,
           'data' => date('Y-m-d', strtotime($d['data_inicio'] . " +$i days")),
           'horario_apresentacao' => $primeiro ? $d['horario_apresentacao'] : null,
           'hora_inicio' => $primeiro ? $d['horario_saida'] : null,
           'hora_fim' => $ultimo ? $d['previsao_chegada'] : null,
-          'pernoite' => $d['com_pernoite'] && !$ultimo ? 1 : 0,
+          'pernoite' => $d['com_pernoite'] && $i < $totalDias - 1 ? 1 : 0,
         ]);
       }
     }
@@ -272,7 +301,9 @@ function adm_viagem_criar(): void {
   });
   auditar('viagem_criada', 'viagem', $id, ['codigo' => $d['codigo'], 'copia_de' => $copiaDe ?: null]);
   limpar_antigo();
-  flash('sucesso', 'Viagem/tour ' . $d['codigo'] . ' criado como rascunho. Agora defina as vagas por função, a lista de passageiros e publique.');
+  flash('sucesso', $categoria === 'servico'
+    ? 'Serviço ' . $d['codigo'] . ' criado como rascunho. Agora defina as vagas por função e publique.'
+    : 'Viagem/tour ' . $d['codigo'] . ' criado como rascunho. Agora defina as vagas por função, a lista de passageiros e publique.');
   redirecionar("/admin/viagens/$id");
 }
 
@@ -349,7 +380,7 @@ function adm_viagem(int $id): void {
   exibir('admin/viagem', [
     'comentarios' => todos('SELECT c.*, g.nome, g.nome_social, g.codigo FROM viagem_comentarios c JOIN guias g ON g.id = c.guia_id WHERE c.viagem_id = ? ORDER BY c.id DESC', [$id]),
     'titulo' => $v['codigo'] . ' · ' . $v['nome'],
-    'menu' => 'viagens',
+    'menu' => menu_categoria(categoria($v)),
     'a' => $a,
     'v' => $v,
     'diarias' => $diarias,
@@ -375,7 +406,8 @@ function adm_viagem_editar(int $id): void {
   $v = adm_viagem_carregar($id);
   exibir('admin/viagem-form', [
     'titulo' => 'Editar ' . $v['codigo'],
-    'menu' => 'viagens',
+    'menu' => menu_categoria(categoria($v)),
+    'categoria' => categoria($v),
     'a' => $a,
     'v' => $v,
     'origens' => viagem_origens($id),
@@ -386,8 +418,8 @@ function adm_viagem_editar(int $id): void {
 
 function adm_viagem_salvar(int $id): void {
   exigir_admin(PAPEIS_VIAGENS);
-  adm_viagem_carregar($id);
-  [$d, $erros, $contatos, $origens] = adm_viagem_ler_form($id);
+  $atual = adm_viagem_carregar($id);
+  [$d, $erros, $contatos, $origens] = adm_viagem_ler_form(categoria($atual), $id);
   if (!$erros) {
     $foraDoPeriodo = valor('SELECT COUNT(*) FROM diarias WHERE viagem_id = ? AND (data < ? OR data > ?)', [$id, $d['data_inicio'], $d['data_fim']]);
     if ($foraDoPeriodo) {
@@ -440,10 +472,10 @@ function adm_viagem_status(int $id): void {
   });
   auditar('viagem_' . $destinos[$acao], 'viagem', $id);
   $mensagens = [
-    'publicar' => 'Publicada. Agora convide os guias.',
-    'concluir' => 'Viagem/tour concluído.',
-    'cancelar' => 'Viagem/tour cancelado. Convites e confirmações foram cancelados.',
-    'rascunho' => 'Voltou para rascunho: os guias deixam de vê-lo até publicar de novo.',
+    'publicar' => 'Publicado. Agora convide os prestadores.',
+    'concluir' => 'Concluído.',
+    'cancelar' => 'Cancelado. Convites e confirmações foram cancelados.',
+    'rascunho' => 'Voltou para rascunho: os prestadores deixam de vê-lo até publicar de novo.',
   ];
   flash('sucesso', $mensagens[$acao]);
   redirecionar("/admin/viagens/$id");
@@ -501,7 +533,7 @@ function adm_viagem_diaria_remover(int $id, int $diariaId): void {
 
 function adm_viagem_vaga_criar(int $id): void {
   exigir_admin(PAPEIS_VIAGENS);
-  adm_viagem_carregar($id);
+  $v = adm_viagem_carregar($id);
   $funcaoId = (int) entrada('funcao_id');
   $vagas = max(1, min(99, (int) entrada('vagas', '1')));
   $valor = ler_moeda(entrada('valor_diaria'));
@@ -510,7 +542,7 @@ function adm_viagem_vaga_criar(int $id): void {
     redirecionar("/admin/viagens/$id#vagas");
   }
   if ($valor <= 0) {
-    flash('erro', 'Informe o valor da diária.');
+    flash('erro', e_empreitada($v) ? 'Informe o valor fechado do serviço.' : 'Informe o valor da diária.');
     redirecionar("/admin/viagens/$id#vagas");
   }
   $existente = um('SELECT id FROM viagem_vagas WHERE viagem_id = ? AND funcao_id = ?', [$id, $funcaoId]);
@@ -543,7 +575,7 @@ function adm_viagem_convidar(int $id): void {
   $a = exigir_admin(PAPEIS_VIAGENS);
   $v = adm_viagem_carregar($id);
   if ($v['status'] !== 'publicada') {
-    flash('erro', 'Publique a viagem/tour antes de escalar guias.');
+    flash('erro', 'Publique antes de escalar prestadores.');
     redirecionar("/admin/viagens/$id#equipe");
   }
   $g = um("SELECT g.* FROM guias g WHERE g.id = ? AND " . SQL_GUIA_ESCALAVEL, [(int) entrada('guia_id')]);
@@ -551,7 +583,7 @@ function adm_viagem_convidar(int $id): void {
     WHERE vv.id = ? AND vv.viagem_id = ?', [(int) entrada('vaga_id'), $id]);
   $diariasIds = array_map('intval', (array) ($_POST['diarias'] ?? []));
   if (!$g || !$vaga || !$diariasIds) {
-    flash('erro', 'Escolha o guia, a função e pelo menos um dia.');
+    flash('erro', 'Escolha o prestador, a função e pelo menos um dia.');
     redirecionar("/admin/viagens/$id#equipe");
   }
 
@@ -560,6 +592,11 @@ function adm_viagem_convidar(int $id): void {
   $status = $direto ? 'confirmado' : 'convidado';
   $convidados = 0;
   $lotados = [];
+  // Valor fechado (empreitada): o valor inteiro entra uma vez só, no primeiro dia do prestador; os outros dias ficam com 0.
+  $empreitada = e_empreitada($v);
+  $valorLancado = $empreitada && valor("SELECT 1 FROM escalas s JOIN diarias d ON d.id = s.diaria_id
+    WHERE d.viagem_id = ? AND s.guia_id = ? AND s.valor > 0 AND s.status NOT IN ('recusado','cancelado')", [$id, $g['id']]);
+  sort($diariasIds);
   foreach ($diariasIds as $diariaId) {
     $d = um('SELECT * FROM diarias WHERE id = ? AND viagem_id = ? AND data >= ?', [$diariaId, $id, hoje()]);
     if (!$d) {
@@ -572,7 +609,7 @@ function adm_viagem_convidar(int $id): void {
       continue;
     }
     $existente = um('SELECT * FROM escalas WHERE diaria_id = ? AND guia_id = ?', [$diariaId, $g['id']]);
-    $dados = ['viagem_vaga_id' => $vaga['id'], 'status' => $status, 'valor' => $vaga['valor_diaria'],
+    $dados = ['viagem_vaga_id' => $vaga['id'], 'status' => $status, 'valor' => $valorLancado ? 0 : $vaga['valor_diaria'],
       'convidado_por' => $a['id'], 'convidado_em' => agora(), 'respondido_em' => $direto ? agora() : null, 'motivo_recusa' => null, 'atualizado_em' => agora()];
     if ($existente) {
       if (!in_array($existente['status'], ['recusado', 'cancelado'], true)) {
@@ -582,25 +619,26 @@ function adm_viagem_convidar(int $id): void {
     } else {
       inserir('escalas', $dados + ['diaria_id' => $diariaId, 'guia_id' => $g['id']]);
     }
+    $valorLancado = $empreitada;
     $convidados++;
   }
 
   if ($convidados) {
-    $link = url_absoluta("/guia/viagens/$id");
+    $link = url_absoluta(CATEGORIAS[categoria($v)][3] . "/$id");
     $assunto = ($direto ? 'Você foi escalado(a): ' : 'Novo convite: ') . $v['codigo'] . ' · ' . $v['nome'];
     enviar_email((string) $g['email'], $assunto,
       '<p>Olá, ' . e(primeiro_nome($g)) . '.</p>'
       . '<p>' . ($direto ? 'Você foi escalado(a) para' : 'Você foi convidado(a) para') . ' <strong>'
-      . e($v['codigo'] . ' · ' . $v['nome']) . '</strong> (' . e($v['origem'] . ' → ' . $v['destino']) . ') como ' . e($vaga['funcao']) . ', '
-      . $convidados . ' dia(s) de trabalho, ' . e(formatar_moeda($vaga['valor_diaria'])) . ' por diária.</p>'
+      . e($v['codigo'] . ' · ' . $v['nome']) . '</strong> (' . e(e_servico($v) ? $v['destino'] : $v['origem'] . ' → ' . $v['destino']) . ') como ' . e($vaga['funcao']) . ', '
+      . $convidados . ' dia(s) de trabalho, ' . e(formatar_moeda($vaga['valor_diaria'])) . ' ' . unidade_valor($v) . '.</p>'
       . '<p><a href="' . e($link) . '" style="display:inline-block;padding:12px 22px;background:#53D9B2;color:#000;text-decoration:none;font-weight:bold;border-radius:999px">' . ($direto ? 'Ver briefing' : 'Ver convite e responder') . '</a></p>');
     inserir('notificacoes', ['destinatario_tipo' => 'guia', 'destinatario_id' => $g['id'], 'titulo' => $assunto,
-      'link' => "/guia/viagens/$id", 'criado_em' => agora()]);
+      'link' => CATEGORIAS[categoria($v)][3] . "/$id", 'criado_em' => agora()]);
     auditar($direto ? 'guia_alocado' : 'guia_convidado', 'viagem', $id, ['guia_id' => $g['id'], 'vaga_id' => $vaga['id'], 'dias' => $convidados]);
   }
   $msg = $convidados
     ? ($direto ? "{$g['nome']} alocado(a) em $convidados dia(s). Já aparece como confirmado(a)." : "Convite enviado para {$g['nome']} ($convidados dia(s)).")
-    : 'Nada novo: o guia já estava escalado nesses dias.';
+    : 'Nada novo: o prestador já estava escalado nesses dias.';
   if ($lotados) {
     $msg .= ' Vaga já preenchida em: ' . implode(', ', $lotados) . '.';
   }
@@ -626,4 +664,10 @@ function adm_viagem_escala_cancelar(int $id, int $escalaId): void {
   auditar('escala_cancelada', 'viagem', $id, ['escala_id' => $escalaId]);
   flash('sucesso', 'Escala cancelada.');
   redirecionar("/admin/viagens/$id#equipe");
+}
+
+/** Consultoria ainda não tem cadastro: a aba existe e avisa que vem em breve. */
+function adm_consultoria(): void {
+  $a = exigir_admin(PAPEIS_VIAGENS);
+  exibir('comum/em-breve', ['titulo' => 'Consultoria', 'menu' => 'consultoria', 'a' => $a], 'admin');
 }

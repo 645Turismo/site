@@ -1,8 +1,8 @@
 <div class="pagina-topo">
   <div>
     <p class="sobretitulo">Equipe de campo</p>
-    <h1>Guias</h1>
-    <p>Triagem de novos cadastros e banco de guias.</p>
+    <h1>Prestadores</h1>
+    <p>Triagem de novos cadastros e banco de prestadores: guias, recepcionistas, comissários(as) de bordo e demais funções.</p>
   </div>
   <a href="/admin/guias/pre-cadastro" class="btn btn-primario">Pré-cadastrar em massa</a>
 </div>

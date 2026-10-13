@@ -5,12 +5,12 @@
 </head>
 <body class="pub">
   <header class="pub-topo">
-    <a href="/" class="marca" aria-label="645 Turismo, Área do Guia">
+    <a href="/" class="marca" aria-label="645 Turismo, Área do Prestador">
       <img src="<?= e(asset('img/logo-branco.png')) ?>" alt="645 Turismo" width="75" height="30">
-      <span class="marca-rotulo">Área do Guia</span>
+      <span class="marca-rotulo">Área do Prestador</span>
     </a>
     <nav class="pub-nav">
-      <a href="/cadastro" class="btn btn-contorno btn-p">Quero ser guia 645</a>
+      <a href="/cadastro" class="btn btn-contorno btn-p">Quero trabalhar com a 645</a>
     </nav>
   </header>
 

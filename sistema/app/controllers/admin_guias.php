@@ -64,7 +64,7 @@ function adm_guias(): void {
     $contagem[$k] = $st ? (int) valor('SELECT COUNT(*) FROM guias WHERE anonimizado_em IS NULL AND status IN (' . implode(',', array_fill(0, count($st), '?')) . ')', $st) : null;
   }
   exibir('admin/guias', [
-    'titulo' => 'Guias',
+    'titulo' => 'Prestadores',
     'menu' => 'guias',
     'a' => $a,
     'aba' => $aba,
@@ -129,13 +129,13 @@ function adm_guia_status(int $id): void {
   if ($assunto && $g['email']) {
     $corpo = match ($acao) {
       'aprovar', 'reativar' => '<p>Boas notícias: seu cadastro de guia na 645 Turismo está <strong>aprovado</strong>. A partir de agora você recebe convites para viagens e tours.</p>'
-        . '<p>Mantenha sua disponibilidade em dia na Área do Guia.</p>',
+        . '<p>Mantenha sua disponibilidade em dia na Área do Prestador.</p>',
       'pendencia' => '<p>Conferimos seu cadastro e precisamos de um ajuste:</p><p><strong>' . e($motivo) . '</strong></p>'
-        . '<p>Entre na Área do Guia, corrija em Perfil e clique em "Já corrigi, enviar para análise".</p>',
+        . '<p>Entre na Área do Prestador, corrija em Perfil e clique em "Já corrigi, enviar para análise".</p>',
       default => '<p>Agradecemos seu interesse. Neste momento seu cadastro não foi aprovado.</p><p>' . e($motivo) . '</p>',
     };
     enviar_email($g['email'], $assunto, '<p>Olá, ' . e(primeiro_nome($g)) . '.</p>' . $corpo
-      . '<p><a href="' . e(url_absoluta('/')) . '" style="display:inline-block;padding:12px 22px;background:#53D9B2;color:#000;text-decoration:none;font-weight:bold;border-radius:999px">Abrir a Área do Guia</a></p>');
+      . '<p><a href="' . e(url_absoluta('/')) . '" style="display:inline-block;padding:12px 22px;background:#53D9B2;color:#000;text-decoration:none;font-weight:bold;border-radius:999px">Abrir a Área do Prestador</a></p>');
   }
   flash('sucesso', $rotulo . ': feito.' . ($assunto ? ' O guia foi avisado por e-mail.' : ''));
   redirecionar("/admin/guias/$id");
@@ -165,7 +165,7 @@ function adm_guia_documento(int $id, int $docId): void {
   if (!$aprovar && $g['email']) {
     enviar_email($g['email'], 'Reenvie um documento',
       '<p>Olá, ' . e(primeiro_nome($g)) . '.</p><p>Precisamos que você reenvie: <strong>' . e(DOCUMENTOS_GUIA[$d['tipo']][0] ?? $d['tipo']) . '</strong>.</p>'
-      . '<p>Motivo: ' . e($motivo) . '</p><p>Envie pela Área do Guia, em Perfil → Documentos.</p>');
+      . '<p>Motivo: ' . e($motivo) . '</p><p>Envie pela Área do Prestador, em Perfil → Documentos.</p>');
   }
   flash('sucesso', $aprovar ? 'Documento aprovado.' : 'Documento devolvido; o guia foi avisado.');
   redirecionar("/admin/guias/$id#documentos");
@@ -180,7 +180,7 @@ function adm_guia_senha(int $id): void {
   }
   $token = criar_token_reset('guia', $id, 24 * 60);
   enviar_email($g['email'], 'Crie uma nova senha',
-    '<p>Olá, ' . e(primeiro_nome($g)) . '.</p><p>A equipe da 645 Turismo enviou um link para você criar uma nova senha na Área do Guia.</p>'
+    '<p>Olá, ' . e(primeiro_nome($g)) . '.</p><p>A equipe da 645 Turismo enviou um link para você criar uma nova senha na Área do Prestador.</p>'
     . '<p><a href="' . e(url_absoluta('/redefinir-senha?token=' . $token)) . '" style="display:inline-block;padding:12px 22px;background:#53D9B2;color:#000;text-decoration:none;font-weight:bold;border-radius:999px">Criar nova senha</a></p><p>O link vale por 24 horas.</p>');
   auditar('guia_link_senha_enviado', 'guia', $id);
   flash('sucesso', 'Link para nova senha enviado para ' . $g['email'] . '.');

@@ -3,10 +3,12 @@
 $todos = [
   'hoje' => ['Hoje', '/admin/hoje', 'painel', ['coordenador', 'financeiro']],
   'viagens' => ['Viagens/Tours', '/admin/viagens', 'eventos', ['coordenador'], 'Viagens'],
-  'guias' => ['Guias', '/admin/guias', 'usuarios', ['coordenador']],
+  'servicos' => ['Serviços', '/admin/servicos', 'cracha', ['coordenador']],
+  'guias' => ['Prestadores', '/admin/guias', 'usuarios', ['coordenador'], 'Pessoas'],
   'conferencia' => ['Conferência', '/admin/conferencia', 'check', ['coordenador', 'financeiro'], 'Conferir'],
   'pagamentos' => ['Pagamentos', '/admin/pagamentos', 'financeiro', ['financeiro']],
   'atendimento' => ['Atendimento', '/admin/atendimento', 'suporte', ['coordenador', 'financeiro']],
+  'consultoria' => ['Consultoria (em breve)', '/admin/consultoria', 'grafico', ['coordenador'], 'Consultoria'],
   'conteudo' => ['Conteúdo', '/admin/conteudo', 'orientacoes', ['coordenador']],
   'funcoes' => ['Funções', '/admin/funcoes', 'config', ['coordenador']],
   'equipe' => ['Equipe', '/admin/equipe', 'cadeado', []],

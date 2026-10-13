@@ -36,7 +36,7 @@ function email_layout(string $titulo, string $html): string {
   return '<!DOCTYPE html><html><body style="margin:0;background:#F2F5F3;font-family:Arial,Helvetica,sans-serif;color:#0B1A15">'
     . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px 12px">'
     . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff">'
-    . '<tr><td style="background:#000;padding:20px 28px;color:#53D9B2;font-size:12px;font-weight:bold;letter-spacing:3px;text-transform:uppercase">645 Turismo · Área do Guia</td></tr>'
+    . '<tr><td style="background:#000;padding:20px 28px;color:#53D9B2;font-size:12px;font-weight:bold;letter-spacing:3px;text-transform:uppercase">645 Turismo · Área do Prestador</td></tr>'
     . '<tr><td style="padding:28px;font-size:15px;line-height:1.6"><h1 style="margin:0 0 16px;font-size:20px;font-weight:normal">'
     . e($titulo) . '</h1>' . $html . '</td></tr>'
     . '<tr><td style="padding:16px 28px;border-top:1px solid #E3E8E5;font-size:12px;color:#6B7A74">'

@@ -2,6 +2,15 @@
 // Lista de passageiros no Painel ADM: montagem (um a um ou colando da planilha), acompanhamento ao vivo
 // do check-in/check-out feito pelos guias, revisão dos ajustes feitos pelos guias em campo.
 
+/** Viagem/tour com lista de passageiros; serviços não têm lista. */
+function adm_viagem_com_lista(int $id): array {
+  $v = adm_viagem_carregar($id);
+  if (e_servico($v)) {
+    abortar(404, 'Serviços não têm lista de passageiros.');
+  }
+  return $v;
+}
+
 function adm_passageiros_dia(array $v, ?int $diariaId): ?array {
   $dias = todos('SELECT * FROM diarias WHERE viagem_id = ? ORDER BY data', [$v['id']]);
   if (!$dias) {
@@ -23,7 +32,7 @@ function adm_passageiros_dia(array $v, ?int $diariaId): ?array {
 
 function adm_viagem_passageiros(int $id): void {
   $a = exigir_admin(PAPEIS_VIAGENS);
-  $v = adm_viagem_carregar($id);
+  $v = adm_viagem_com_lista($id);
   $dia = adm_passageiros_dia($v, isset($_GET['diaria']) ? (int) $_GET['diaria'] : null);
   exibir('comum/passageiros', [
     'titulo' => 'Passageiros · ' . $v['codigo'],
@@ -42,7 +51,7 @@ function adm_viagem_passageiros(int $id): void {
 
 function adm_passageiros_dados(int $id): void {
   exigir_admin(PAPEIS_VIAGENS);
-  $v = adm_viagem_carregar($id);
+  $v = adm_viagem_com_lista($id);
   $dia = um('SELECT * FROM diarias WHERE id = ? AND viagem_id = ?', [(int) ($_GET['diaria'] ?? 0), $id])
     ?? resposta_json(['erro' => 'Dia de trabalho inválido.'], 404);
   resposta_json(passageiros_estado($v, $dia, true));
@@ -50,7 +59,7 @@ function adm_passageiros_dados(int $id): void {
 
 function adm_passageiro_marcar(int $id, int $passageiroId): void {
   $a = exigir_admin(PAPEIS_VIAGENS);
-  $v = adm_viagem_carregar($id);
+  $v = adm_viagem_com_lista($id);
   $dia = um('SELECT * FROM diarias WHERE id = ? AND viagem_id = ?', [(int) entrada('diaria'), $id])
     ?? resposta_json(['erro' => 'Dia de trabalho inválido.'], 404);
   $erro = passageiro_marcar($id, $passageiroId, (int) $dia['id'], entrada('tipo'), entrada('desfazer') === '1', 'admin', (int) $a['id']);
@@ -62,7 +71,7 @@ function adm_passageiro_marcar(int $id, int $passageiroId): void {
 
 function adm_passageiro_criar(int $id): void {
   $a = exigir_admin(PAPEIS_VIAGENS);
-  $v = adm_viagem_carregar($id);
+  $v = adm_viagem_com_lista($id);
   [$dados, $erro] = passageiro_ler_form();
   if (!$erro) {
     [$dados, $erro] = passageiro_aplicar_regras($v, $dados, passageiros_ocupacao($id));
@@ -77,7 +86,7 @@ function adm_passageiro_criar(int $id): void {
 
 function adm_passageiro_editar(int $id, int $passageiroId): void {
   exigir_admin(PAPEIS_VIAGENS);
-  $v = adm_viagem_carregar($id);
+  $v = adm_viagem_com_lista($id);
   $p = um("SELECT * FROM passageiros WHERE id = ? AND viagem_id = ? AND status = 'ativo'", [$passageiroId, $id])
     ?? resposta_json(['erro' => 'Passageiro não encontrado.'], 404);
   [$dados, $erro] = passageiro_ler_form();
@@ -94,7 +103,7 @@ function adm_passageiro_editar(int $id, int $passageiroId): void {
 
 function adm_passageiro_incorporar(int $id, int $passageiroId): void {
   exigir_admin(PAPEIS_VIAGENS);
-  adm_viagem_carregar($id);
+  adm_viagem_com_lista($id);
   $p = um("SELECT * FROM passageiros WHERE id = ? AND viagem_id = ? AND status = 'ativo'", [$passageiroId, $id])
     ?? resposta_json(['erro' => 'Passageiro não encontrado.'], 404);
   passageiro_incorporar_ajustes($p);
@@ -108,7 +117,7 @@ function adm_passageiro_incorporar(int $id, int $passageiroId): void {
  */
 function adm_passageiros_importar(int $id): void {
   exigir_admin(PAPEIS_VIAGENS);
-  adm_viagem_carregar($id);
+  adm_viagem_com_lista($id);
   $arquivo = $_FILES['arquivo'] ?? null;
   $temArquivo = $arquivo && ($arquivo['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
   try {
@@ -135,7 +144,7 @@ function adm_passageiros_importar(int $id): void {
 /** Passo 2: prévia do que vai entrar na lista. */
 function adm_passageiros_importar_previa(int $id): void {
   $a = exigir_admin(PAPEIS_VIAGENS);
-  $v = adm_viagem_carregar($id);
+  $v = adm_viagem_com_lista($id);
   $imp = $_SESSION['importacao'][$id] ?? null;
   if (!$imp) {
     redirecionar("/admin/viagens/$id/passageiros#importar");
@@ -154,7 +163,7 @@ function adm_passageiros_importar_previa(int $id): void {
 /** Passo 3: grava os passageiros novos (os que já estão na lista são pulados). */
 function adm_passageiros_importar_confirmar(int $id): void {
   $a = exigir_admin(PAPEIS_VIAGENS);
-  $v = adm_viagem_carregar($id);
+  $v = adm_viagem_com_lista($id);
   $imp = $_SESSION['importacao'][$id] ?? null;
   if (!$imp) {
     flash('erro', 'A leitura da planilha expirou. Envie o arquivo de novo.');
@@ -185,7 +194,7 @@ function adm_passageiros_importar_confirmar(int $id): void {
  */
 function adm_passageiros_modelo_xlsx(?int $viagemId = null): void {
   exigir_admin(PAPEIS_VIAGENS);
-  $v = $viagemId ? adm_viagem_carregar($viagemId) : null;
+  $v = $viagemId ? adm_viagem_com_lista($viagemId) : null;
   $linhas = [array_map(fn($c) => CAMPOS_PASSAGEIRO[$c][0], ORDEM_PLANILHA)];
   $layout = $v ? veiculo_layout($v) : null;
   if ($layout) {
@@ -222,7 +231,7 @@ function adm_passageiros_modelo(): void {
 
 function adm_passageiro_remover(int $id, int $passageiroId): void {
   exigir_admin(PAPEIS_VIAGENS);
-  adm_viagem_carregar($id);
+  adm_viagem_com_lista($id);
   um("SELECT id FROM passageiros WHERE id = ? AND viagem_id = ? AND status = 'ativo'", [$passageiroId, $id])
     ?? resposta_json(['erro' => 'Passageiro não encontrado.'], 404);
   if (valor('SELECT 1 FROM passageiro_registros WHERE passageiro_id = ? AND (checkin_em IS NOT NULL OR checkout_em IS NOT NULL)', [$passageiroId])) {
@@ -239,7 +248,7 @@ function adm_passageiro_remover(int $id, int $passageiroId): void {
 /** Esvazia a lista de passageiros da viagem de uma vez (para subir uma lista nova). */
 function adm_passageiros_limpar(int $id): void {
   exigir_admin(PAPEIS_VIAGENS);
-  adm_viagem_carregar($id);
+  adm_viagem_com_lista($id);
   if (entrada('confirmacao') !== 'LIMPAR') {
     flash('erro', 'Para limpar a lista, digite LIMPAR no campo de confirmação.');
     redirecionar("/admin/viagens/$id/passageiros#limpar");

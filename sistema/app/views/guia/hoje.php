@@ -33,7 +33,7 @@
         <p class="rotulo mono"><?= e($proxima['codigo']) ?><?= $proxima['data'] === hoje() ? ' · hoje' : '' ?></p>
         <h3><?= e($proxima['nome']) ?></h3>
       </div>
-      <p class="destaque-info"><?= e($proxima['origem'] . ' → ' . $proxima['destino']) ?><br>
+      <p class="destaque-info"><?= e($proxima['origem'] ? $proxima['origem'] . ' → ' . $proxima['destino'] : (string) $proxima['destino']) ?><br>
         <?php if ($proxima['horario_apresentacao']): ?>Apresentação às <b><?= e($proxima['horario_apresentacao']) ?></b><?php endif; ?>
         <?php if ($proxima['ponto_encontro']): ?> · <?= e($proxima['ponto_encontro']) ?><?php endif; ?>
       </p>

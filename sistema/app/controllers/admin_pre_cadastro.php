@@ -269,12 +269,12 @@ function pre_cadastro_enviar_acesso(array $g): bool {
   atualizar('guias', ['senha_hash' => hash_senha($senha), 'trocar_senha' => 1, 'senha_temporaria_expira' => $expira,
     'atualizado_em' => agora()], 'id = ?', [$g['id']]);
   $completar = $g['status'] === 'pre_cadastro';
-  return enviar_email((string) $g['email'], 'Seu acesso à Área do Guia da 645 Turismo',
+  return enviar_email((string) $g['email'], 'Seu acesso à Área do Prestador da 645 Turismo',
     '<p>Olá, ' . e(primeiro_nome($g)) . '.</p>'
-    . '<p>A equipe da 645 Turismo ' . ($completar ? 'criou seu pré-cadastro' : 'gerou um novo acesso para você') . ' na Área do Guia, onde você recebe convites, vê a lista de passageiros e acompanha seus pagamentos.</p>'
+    . '<p>A equipe da 645 Turismo ' . ($completar ? 'criou seu pré-cadastro' : 'gerou um novo acesso para você') . ' na Área do Prestador, onde você recebe convites, consulta o briefing dos trabalhos e acompanha seus pagamentos.</p>'
     . '<p><strong>Login:</strong> seu CPF (' . e(mascarar_cpf($g['cpf'])) . ')<br><strong>Senha temporária:</strong> <span style="font-family:monospace;font-size:18px;letter-spacing:1px">' . e($senha) . '</span></p>'
     . '<p>No primeiro acesso você cria sua própria senha' . ($completar ? ' e completa seu cadastro (dados, atuação e dados para pagamento)' : '') . '. A senha temporária vale por ' . PRE_CADASTRO_VALIDADE_DIAS . ' dias.</p>'
-    . '<p><a href="' . e(url_absoluta('/')) . '" style="display:inline-block;padding:12px 22px;background:#53D9B2;color:#000;text-decoration:none;font-weight:bold;border-radius:999px">Entrar na Área do Guia</a></p>'
+    . '<p><a href="' . e(url_absoluta('/')) . '" style="display:inline-block;padding:12px 22px;background:#53D9B2;color:#000;text-decoration:none;font-weight:bold;border-radius:999px">Entrar na Área do Prestador</a></p>'
     . '<p style="color:#666;font-size:13px">Se você não esperava este e-mail, ignore-o.</p>');
 }
 

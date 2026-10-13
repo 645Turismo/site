@@ -60,7 +60,7 @@ function lembretes_embarque_processar(): int {
     if (($primeiro['data'] ?? '') < hoje()) {
       continue;
     }
-    $l = um('SELECT v.id, v.codigo, v.nome, v.data_inicio, v.horario_saida, v.horario_apresentacao, v.ponto_encontro,
+    $l = um('SELECT v.id, v.codigo, v.nome, v.categoria, v.destino, v.data_inicio, v.horario_saida, v.horario_apresentacao, v.ponto_encontro,
         v.coordenador_nome, v.coordenador_telefone, d.data, d.horario_apresentacao AS dia_apresentacao, d.hora_inicio
       FROM viagens v JOIN diarias d ON d.viagem_id = v.id WHERE v.id = ? AND d.data = ? ORDER BY d.id LIMIT 1',
       [$base['viagem_id'], $base['data']]);
@@ -91,7 +91,13 @@ function lembrete_embarque_enviar(array $v, array $g, string $embarque, array $o
   $quando = formatar_data(substr($embarque, 0, 10)) . ' às ' . substr($embarque, 11, 5);
   $locais = array_filter(array_map(fn($o) => trim((string) $o['local']) . ($o['horario'] ? ' (' . $o['horario'] . ')' : ''), $origens));
   $onde = $locais ? implode(' · ', $locais) : (string) $v['ponto_encontro'];
-  $link = url_absoluta('/guia/viagens/' . (int) $v['id']);
+  // Serviço (recepção, bordo, eventos): sem embarque nem lista de passageiros; o lembrete fala do local e do início.
+  $servico = e_servico($v);
+  if ($servico) {
+    $onde = trim(implode(' · ', array_filter([(string) $v['destino'], (string) $v['ponto_encontro']])));
+  }
+  $caminho = CATEGORIAS[categoria($v)][3] . '/' . (int) $v['id'];
+  $link = url_absoluta($caminho);
 
   if ($v['coordenador_telefone']) {
     $contato = '<p>Ficou com alguma dúvida ou está faltando alguma informação? Fale com a coordenação'
@@ -102,15 +108,15 @@ function lembrete_embarque_enviar(array $v, array $g, string $embarque, array $o
       . ($v['coordenador_nome'] ? ', <strong>' . e($v['coordenador_nome']) . '</strong>,' : '') . ' ou abra um chamado no Suporte do portal.</p>';
   }
 
-  $assunto = 'Lembrete de embarque: ' . $v['codigo'] . ' · ' . $v['nome'];
+  $assunto = ($servico ? 'Lembrete do serviço: ' : 'Lembrete de embarque: ') . $v['codigo'] . ' · ' . $v['nome'];
   enviar_email((string) $g['email'], $assunto,
     '<p>Olá, ' . e($nome) . '.</p>'
-    . '<p>Sua viagem <strong>' . e($v['codigo'] . ' · ' . $v['nome']) . '</strong> começa em <strong>' . e($quando) . '</strong>'
-    . ($onde !== '' ? '. Embarque: ' . e($onde) : '') . '.</p>'
-    . '<p>Antes de sair, confira no portal as informações da viagem: horários, pontos de embarque, roteiro, lista de passageiros e materiais.</p>'
-    . '<p><a href="' . e($link) . '" style="display:inline-block;padding:12px 22px;background:#53D9B2;color:#000;text-decoration:none;font-weight:bold;border-radius:999px">Ver a viagem no portal</a></p>'
+    . '<p>' . ($servico ? 'Seu serviço' : 'Sua viagem') . ' <strong>' . e($v['codigo'] . ' · ' . $v['nome']) . '</strong> começa em <strong>' . e($quando) . '</strong>'
+    . ($onde !== '' ? ($servico ? '. Local: ' : '. Embarque: ') . e($onde) : '') . '.</p>'
+    . '<p>Antes de sair, confira no portal as informações ' . ($servico ? 'do serviço: horários, local, programação, uniforme e materiais.' : 'da viagem: horários, pontos de embarque, roteiro, lista de passageiros e materiais.') . '</p>'
+    . '<p><a href="' . e($link) . '" style="display:inline-block;padding:12px 22px;background:#53D9B2;color:#000;text-decoration:none;font-weight:bold;border-radius:999px">' . ($servico ? 'Ver o serviço no portal' : 'Ver a viagem no portal') . '</a></p>'
     . $contato
-    . '<p>Boa viagem!</p>');
+    . '<p>' . ($servico ? 'Bom trabalho!' : 'Boa viagem!') . '</p>');
   inserir('notificacoes', ['destinatario_tipo' => 'guia', 'destinatario_id' => $g['id'], 'titulo' => $assunto,
-    'link' => '/guia/viagens/' . (int) $v['id'], 'criado_em' => agora()]);
+    'link' => $caminho, 'criado_em' => agora()]);
 }

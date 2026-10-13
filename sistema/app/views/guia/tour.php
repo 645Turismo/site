@@ -1,8 +1,8 @@
 <?php
 $passos = [
-  ['Bem-vindo à Área do Guia', 'Aqui fica tudo o que envolve seu trabalho com a 645 Turismo, do convite ao pagamento. Em Hoje você vê o próximo trabalho e o que falta resolver.'],
-  ['Viagens/Tours', 'Os convites chegam aqui e por e-mail. Ao aceitar, você libera o briefing completo: ponto de encontro, horário de apresentação, roteiro e contatos.'],
-  ['Relatório', 'No último dia de trabalho, escreva o relatório: como foi o grupo, ocorrências e passageiros atendidos. Ele libera a etapa da nota fiscal.'],
+  ['Bem-vindo à Área do Prestador', 'Aqui fica tudo o que envolve seu trabalho com a 645 Turismo, do convite ao pagamento. Em Hoje você vê o próximo trabalho e o que falta resolver.'],
+  ['Viagens/Tours e Serviços', 'Os convites chegam aqui e por e-mail, separados entre viagens/tours e serviços (recepção, bordo, eventos). Ao aceitar, você libera o briefing completo: ponto de encontro, horário de apresentação, roteiro e contatos.'],
+  ['Relatório', 'No último dia de trabalho, escreva o relatório no Pós-viagem: como foi o trabalho, ocorrências e pessoas atendidas. Ele libera a etapa da nota fiscal.'],
   ['Disponibilidade', 'Marque os dias e períodos em que pode trabalhar. A equipe usa essa agenda para montar as escalas.'],
   ['Recebimentos e ajuda', 'Acompanhe diárias e pagamentos em Recebimentos. Imprevisto ou dúvida? Fale com a equipe pela Ajuda.'],
 ];

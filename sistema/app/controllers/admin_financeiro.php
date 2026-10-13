@@ -56,7 +56,7 @@ function adm_conferencia_decidir(int $id): void {
     $html = null; // relatório aprovado não precisa de aviso
   } else {
     $html = '<p>Seu(sua) ' . $rotulo . ' de <strong>' . e($e['codigo'] . ' · ' . $e['viagem']) . '</strong> foi devolvido(a) para ajuste.</p><p>Motivo: ' . e($motivo) . '</p>'
-      . '<p>Corrija e envie de novo pela Área do Guia' . ($e['tipo'] === 'nf' ? ', em Recebimentos' : ', na viagem/tour') . '.</p>';
+      . '<p>Corrija e envie de novo pela Área do Prestador' . ($e['tipo'] === 'nf' ? ', em Recebimentos' : ', na viagem/tour') . '.</p>';
   }
   if ($html && $e['email']) {
     enviar_email($e['email'], ucfirst($rotulo) . ($aprovar ? ' aprovada' : ' devolvida') . ': ' . $e['codigo'], '<p>Olá, ' . e(primeiro_nome($e)) . '.</p>' . $html);
@@ -147,7 +147,7 @@ function adm_pagamento_registrar(): void {
   if ($g && $g['email']) {
     enviar_email($g['email'], 'Pagamento realizado: ' . $v['codigo'],
       '<p>Olá, ' . e(primeiro_nome($g)) . '.</p><p>Pagamos <strong>' . e(formatar_moeda($total)) . '</strong> referente a <strong>' . e($v['codigo'] . ' · ' . $v['nome'])
-      . '</strong> em ' . e(formatar_data($pagoEm)) . '.</p><p>O comprovante fica disponível em Recebimentos, na Área do Guia.</p>');
+      . '</strong> em ' . e(formatar_data($pagoEm)) . '.</p><p>O comprovante fica disponível em Recebimentos, na Área do Prestador.</p>');
   }
   flash('sucesso', 'Pagamento de ' . formatar_moeda($total) . ' registrado. O guia foi avisado.');
   redirecionar('/admin/pagamentos');

@@ -1,6 +1,6 @@
 <?php
-// Área do Guia. O fluxo segue a rotina do guia:
-// Hoje (o que vem pela frente e o que falta resolver) -> Viagens/Tours (convite, briefing, relatório)
+// Área do Prestador (guias, recepcionistas, comissários...). O fluxo segue a rotina de trabalho:
+// Hoje (o que vem pela frente e o que falta resolver) -> Viagens/Tours e Serviços (convite, briefing, relatório)
 // -> Disponibilidade -> Recebimentos -> Perfil -> Ajuda.
 
 function guia_raiz(): void {
@@ -76,9 +76,20 @@ function guia_hoje(): void {
   ], 'guia');
 }
 
-function guia_viagens(): void {
+function guia_servicos(): void {
+  guia_viagens('servico');
+}
+
+/** Consultoria ainda não tem cadastro: a aba existe e avisa que vem em breve. */
+function guia_consultoria(): void {
+  $g = exigir_guia();
+  exibir('comum/em-breve', ['titulo' => 'Consultoria', 'menu' => 'consultoria', 'p' => $g], 'guia');
+}
+
+function guia_viagens(string $categoria = 'viagem'): void {
   $g = exigir_guia();
   $hoje = hoje();
+  $servico = $categoria === 'servico';
   $assumidas = "('" . implode("','", ESCALAS_ASSUMIDAS) . "')";
   $linhas = todos("SELECT v.id, v.codigo, v.nome, v.tipo, v.cliente, v.origem, v.destino, v.status AS viagem_status,
         MIN(d.data) AS primeira, MAX(d.data) AS ultima, COUNT(s.id) AS diarias,
@@ -91,6 +102,7 @@ function guia_viagens(): void {
       LEFT JOIN viagem_vagas vv ON vv.id = s.viagem_vaga_id
       LEFT JOIN funcoes f ON f.id = vv.funcao_id
       WHERE s.guia_id = ? AND v.status IN ('publicada','concluida') AND s.status <> 'cancelado'
+        AND " . ($servico ? "v.categoria = 'servico'" : "v.categoria <> 'servico'") . "
       GROUP BY v.id, v.codigo, v.nome, v.tipo, v.cliente, v.origem, v.destino, v.status
       ORDER BY MIN(d.data)", [$hoje, $g['id']]);
 
@@ -110,8 +122,9 @@ function guia_viagens(): void {
     $aba = $grupos['convites'] ? 'convites' : 'proximas';
   }
   exibir('guia/viagens', [
-    'titulo' => 'Viagens/Tours',
-    'menu' => 'viagens',
+    'titulo' => CATEGORIAS[$categoria][0],
+    'menu' => $servico ? 'servicos' : 'viagens',
+    'categoria' => $categoria,
     'p' => $g,
     'grupos' => $grupos,
     'aba' => $aba,
@@ -128,7 +141,7 @@ function guia_carregar_viagem(array $g, int $id): array {
       WHERE d.viagem_id = ? AND s.guia_id = ? AND s.status <> 'cancelado'
       ORDER BY d.data, d.horario_apresentacao", [$id, $g['id']]) : [];
   if (!$v || !$escalas) {
-    abortar(404, 'Viagem/tour não encontrado.');
+    abortar(404, 'Trabalho não encontrado.');
   }
   return [$v, $escalas];
 }
@@ -145,7 +158,7 @@ function guia_viagem(int $id): void {
 
   exibir('guia/viagem', [
     'titulo' => $v['nome'],
-    'menu' => 'viagens',
+    'menu' => e_servico($v) ? 'servicos' : 'viagens',
     'p' => $g,
     'v' => $v,
     'escalas' => $escalas,
@@ -181,7 +194,7 @@ function guia_viagem_responder(int $id): void {
   $ids = array_column(todos("SELECT s.id FROM escalas s JOIN diarias d ON d.id = s.diaria_id
       WHERE d.viagem_id = ? AND s.guia_id = ? AND s.status = 'convidado' AND d.data >= ?", [$id, $g['id'], hoje()]), 'id');
   if (!$ids) {
-    flash('aviso', 'Não há convite pendente nesta viagem/tour.');
+    flash('aviso', 'Não há convite pendente aqui.');
     redirecionar("/guia/viagens/$id");
   }
   $novo = $decisao === 'aceitar' ? 'confirmado' : 'recusado';
@@ -243,6 +256,9 @@ function guia_viagem_relatorio(int $id): void {
 /** Dias de trabalho assumidos pelo guia na viagem; só quem confirmou presença acessa a lista. */
 function guia_dias_da_lista(array $g, int $viagemId): array {
   [$v, $escalas] = guia_carregar_viagem($g, $viagemId);
+  if (e_servico($v)) {
+    abortar(404, 'Serviços não têm lista de passageiros.');
+  }
   $dias = [];
   foreach ($escalas as $s) {
     if (in_array($s['status'], ESCALAS_ASSUMIDAS, true)) {
@@ -365,6 +381,6 @@ function guia_tour_visto(): void {
 
 function guia_sair(): void {
   sair_guia();
-  flash('sucesso', 'Você saiu da Área do Guia.');
+  flash('sucesso', 'Você saiu da Área do Prestador.');
   redirecionar('/');
 }

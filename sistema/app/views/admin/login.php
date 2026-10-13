@@ -18,6 +18,6 @@
     <button type="submit" class="btn btn-primario btn-bloco"><?= icone('cadeado') ?> Entrar no painel</button>
   </form>
   <div class="painel-acesso-rodape">
-    <a href="/" class="link-sublinhado">Voltar para a Área do Guia</a>
+    <a href="/" class="link-sublinhado">Voltar para a Área do Prestador</a>
   </div>
 </section>

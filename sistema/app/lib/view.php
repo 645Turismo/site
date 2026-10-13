@@ -27,6 +27,8 @@ function icone(string $nome, string $classe = 'ic'): string {
     'usuario' => '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>',
     'usuarios' => '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.5c1.9.8 3 2.8 3 5.5"/>',
     'eventos' => '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/>',
+    'cracha' => '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M10 2.5h4v3h-4z"/><circle cx="12" cy="11" r="2.5"/><path d="M8 17.5c.6-1.8 2.1-2.8 4-2.8s3.4 1 4 2.8"/>',
+    'grafico' => '<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-6"/><path d="M16 8h4v4"/>',
     'financeiro' => '<path d="M12 2v20"/><path d="M17 6.5c0-1.9-2.2-3-5-3s-5 1.3-5 3.3S9 9.8 12 10.5s5 1.6 5 3.7-2.2 3.3-5 3.3-5-1.1-5-3"/>',
     'suporte' => '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="m5.6 5.6 3.9 3.9M14.5 14.5l3.9 3.9M18.4 5.6l-3.9 3.9M9.5 14.5l-3.9 3.9"/>',
     'orientacoes' => '<path d="M2 5h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z"/><path d="M22 5h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/>',

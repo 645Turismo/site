@@ -6,7 +6,7 @@ $passos = $emiteNf ? ['relatorio' => 'Relatório', 'nf' => 'Nota fiscal'] : ['re
   <div>
     <p class="sobretitulo">Depois da viagem</p>
     <h1>Pós-viagem</h1>
-    <p>Em cada viagem que você terminou: faça o relatório<?= $emiteNf ? ' e envie a nota fiscal' : '' ?>. É isso que libera o seu pagamento.</p>
+    <p>Em cada viagem, tour ou serviço que você terminou: faça o relatório<?= $emiteNf ? ' e envie a nota fiscal' : '' ?>. É isso que libera o seu pagamento.</p>
   </div>
 </div>
 
@@ -16,7 +16,7 @@ $passos = $emiteNf ? ['relatorio' => 'Relatório', 'nf' => 'Nota fiscal'] : ['re
 </nav>
 
 <?php if (!$lista): ?>
-  <p class="vazio"><?= $aba === 'pendentes' ? 'Nada pendente. Quando uma viagem sua terminar, ela aparece aqui.' : 'Nenhuma viagem enviada ainda.' ?></p>
+  <p class="vazio"><?= $aba === 'pendentes' ? 'Nada pendente. Quando um trabalho seu terminar, ele aparece aqui.' : 'Nada enviado ainda.' ?></p>
 <?php endif; ?>
 
 <ul class="lista-financeiro">
@@ -47,8 +47,8 @@ $passos = $emiteNf ? ['relatorio' => 'Relatório', 'nf' => 'Nota fiscal'] : ['re
           <?= csrf_campo() ?>
           <label class="campo"><span>Relatório: como foi o trabalho?</span>
             <textarea name="texto" rows="7" maxlength="5000" required
-              placeholder="Pontualidade do grupo e do transporte, roteiro cumprido ou alterado, ocorrências (atrasos, saúde, perdas), feedback dos passageiros e sugestões."><?= e(antigo('texto', $rel['texto'] ?? '')) ?></textarea></label>
-          <label class="campo campo-curto"><span>Passageiros atendidos</span>
+              placeholder="<?= e_servico($v) ? 'Horários cumpridos, programação, ocorrências (atrasos, saúde, perdas), atendimento ao público, feedback do cliente e sugestões.' : 'Pontualidade do grupo e do transporte, roteiro cumprido ou alterado, ocorrências (atrasos, saúde, perdas), feedback dos passageiros e sugestões.' ?>"><?= e(antigo('texto', $rel['texto'] ?? '')) ?></textarea></label>
+          <label class="campo campo-curto"><span><?= e_servico($v) ? 'Pessoas atendidas' : 'Passageiros atendidos' ?></span>
             <input type="number" name="qtd_passageiros" min="0" max="9999" inputmode="numeric" value="<?= e((string) ($rel['qtd_passageiros'] ?? $v['qtd_passageiros'] ?? '')) ?>"></label>
           <div class="form-rodape"><button type="submit" class="btn btn-primario">Enviar relatório</button></div>
         </form>
@@ -56,7 +56,7 @@ $passos = $emiteNf ? ['relatorio' => 'Relatório', 'nf' => 'Nota fiscal'] : ['re
         <details class="adicionar">
           <summary>Ver relatório enviado<?= $rel['status'] === 'aprovado' ? ' (conferido pela equipe)' : '' ?></summary>
           <div class="texto-longo"><?= nl2br(e($rel['texto'])) ?></div>
-          <p class="texto-2">Passageiros: <?= e($rel['qtd_passageiros'] ?? '—') ?> · enviado em <?= e(formatar_data_hora($rel['enviado_em'])) ?></p>
+          <p class="texto-2"><?= e_servico($v) ? 'Pessoas atendidas' : 'Passageiros' ?>: <?= e($rel['qtd_passageiros'] ?? '—') ?> · enviado em <?= e(formatar_data_hora($rel['enviado_em'])) ?></p>
           <?php if ($rel['status'] === 'enviado'): ?>
             <form method="post" action="/guia/viagens/<?= (int) $v['id'] ?>/relatorio" class="form">
               <?= csrf_campo() ?>

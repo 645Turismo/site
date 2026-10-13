@@ -12,6 +12,55 @@ const TIPOS_VIAGEM = [
   'outro' => 'Outro',
 ];
 
+// Categorias de trabalho: [menu, nome no singular, caminho no ADM, caminho na área do prestador].
+// Consultoria ainda não tem cadastro (aparece como "Em breve").
+const CATEGORIAS = [
+  'viagem' => ['Viagens/Tours', 'viagem/tour', '/admin/viagens', '/guia/viagens'],
+  'servico' => ['Serviços', 'serviço', '/admin/servicos', '/guia/servicos'],
+];
+
+const TIPOS_SERVICO = [
+  'evento' => 'Evento',
+  'recepcao' => 'Recepção / credenciamento',
+  'bordo' => 'Serviço de bordo',
+  'receptivo' => 'Receptivo / transfer',
+  'corporativo' => 'Corporativo',
+  'feira' => 'Feira / congresso',
+  'outro' => 'Outro',
+];
+
+// Forma de pagamento do serviço: por dia trabalhado ou valor fechado pelo serviço inteiro (empreitada).
+const MODALIDADES = [
+  'diaria' => 'Por diária',
+  'empreitada' => 'Valor fechado (empreitada)',
+];
+
+function categoria(array $v): string {
+  return ($v['categoria'] ?? 'viagem') === 'servico' ? 'servico' : 'viagem';
+}
+
+function e_servico(array $v): bool {
+  return categoria($v) === 'servico';
+}
+
+/** Nome do trabalho no singular: "viagem/tour" ou "serviço". */
+function nome_trabalho(array $v): string {
+  return CATEGORIAS[categoria($v)][1];
+}
+
+function tipo_trabalho(array $v): string {
+  return (e_servico($v) ? TIPOS_SERVICO : TIPOS_VIAGEM)[$v['tipo']] ?? '';
+}
+
+function e_empreitada(array $v): bool {
+  return e_servico($v) && ($v['modalidade'] ?? 'diaria') === 'empreitada';
+}
+
+/** Como o valor da vaga é cobrado: "por diária" ou "pelo serviço (valor fechado)". */
+function unidade_valor(array $v): string {
+  return e_empreitada($v) ? 'pelo serviço (valor fechado)' : 'por diária';
+}
+
 // [rótulo, selo]
 const STATUS_VIAGEM = [
   'rascunho' => ['Rascunho', 'neutro'],

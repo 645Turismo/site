@@ -4,13 +4,13 @@ $cnpj = formatar_cnpj(configuracao('empresa_cnpj', '48925512000195'));
 $contato = email_equipe();
 ?>
 <article class="legal">
-  <p class="sobretitulo">Área do Guia · 645 Turismo</p>
+  <p class="sobretitulo">Área do Prestador · 645 Turismo</p>
   <h1 class="cadastro-titulo"><?= e($titulo) ?></h1>
   <p class="texto-2">Versão de <?= e(date('m/Y')) ?>. <?= e($empresa) ?>, CNPJ <?= e($cnpj) ?>.</p>
 
   <?php if ($documento === 'termos'): ?>
-    <h2>1. O que é a Área do Guia</h2>
-    <p>Sistema da 645 Turismo para credenciar guias e profissionais de turismo, enviar convites para viagens e tours, compartilhar briefing e lista de passageiros, receber relatórios e notas fiscais e acompanhar pagamentos.</p>
+    <h2>1. O que é a Área do Prestador</h2>
+    <p>Sistema da 645 Turismo para credenciar guias, recepcionistas, comissários(as) de bordo e demais prestadores, enviar convites para viagens, tours e serviços, compartilhar briefing e lista de passageiros, receber relatórios e notas fiscais e acompanhar pagamentos.</p>
     <h2>2. Cadastro</h2>
     <p>Você se compromete a informar dados verdadeiros e mantê-los atualizados, incluindo documentos, Cadastur e dados para pagamento. O cadastro passa por análise e pode ser aprovado, devolvido para ajuste ou recusado.</p>
     <h2>3. Acesso</h2>

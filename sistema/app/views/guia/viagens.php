@@ -1,15 +1,17 @@
 <?php
+$servico = $categoria === 'servico';
 $abas = [
   'convites' => ['Convites', 'Nenhum convite aguardando resposta.'],
-  'proximas' => ['Confirmadas', 'Nenhuma viagem/tour confirmado pela frente.'],
+  'proximas' => ['Confirmadas', $servico ? 'Nenhum serviço confirmado pela frente.' : 'Nenhuma viagem/tour confirmado pela frente.'],
   'realizadas' => ['Realizadas', 'Seu histórico aparece aqui depois do primeiro trabalho.'],
 ];
+$base = CATEGORIAS[$categoria][3];
 ?>
 <div class="pagina-topo">
   <div>
     <p class="sobretitulo">Seus trabalhos</p>
-    <h1>Viagens/Tours</h1>
-    <p>Responda convites, consulte o briefing e envie o relatório depois do trabalho.</p>
+    <h1><?= e(CATEGORIAS[$categoria][0]) ?></h1>
+    <p><?= $servico ? 'Recepção, serviço de bordo, eventos e outros trabalhos. ' : '' ?>Responda convites, consulte o briefing e envie o relatório depois do trabalho.</p>
   </div>
 </div>
 
@@ -27,7 +29,7 @@ $abas = [
   <ul class="lista-viagens">
     <?php foreach ($grupos[$aba] as $v): ?>
       <li>
-        <a href="/guia/viagens/<?= (int) $v['id'] ?>">
+        <a href="<?= e($base) ?>/<?= (int) $v['id'] ?>">
           <span class="lv-data">
             <strong><?= e(date('d', strtotime($v['primeira']))) ?></strong>
             <?= e(mes_curto($v['primeira'])) ?>
@@ -37,7 +39,7 @@ $abas = [
             <strong><?= e($v['nome']) ?></strong>
             <small>
               <?= $v['primeira'] === $v['ultima'] ? e(formatar_data($v['primeira'])) : e(formatar_data($v['primeira']) . ' a ' . formatar_data($v['ultima'])) ?>
-              · <?= (int) $v['diarias'] ?> diária(s)
+              · <?= (int) $v['diarias'] ?> dia(s) de trabalho
             </small>
           </span>
           <span class="lv-status">

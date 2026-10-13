@@ -5,7 +5,7 @@ $colunas = array_map(fn($c) => $c[0] . ($c[1] ? ' *' : ''), PRE_CADASTRO_COLUNAS
 ?>
 <div class="pagina-topo">
   <div>
-    <p class="sobretitulo">Guias</p>
+    <p class="sobretitulo">Prestadores</p>
     <h1>Pré-cadastro em massa</h1>
     <p>Suba a planilha padrão. Cada guia recebe por e-mail uma senha temporária, troca a senha no primeiro acesso e completa o cadastro.</p>
   </div>

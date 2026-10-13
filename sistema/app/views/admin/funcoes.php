@@ -11,7 +11,7 @@
     <div class="bloco-titulo"><h2 id="t-lista">Cadastradas</h2></div>
     <div class="tabela-rolagem">
       <table class="tabela">
-        <thead><tr><th>Função</th><th>Exige</th><th>Guias</th><th></th></tr></thead>
+        <thead><tr><th>Função</th><th>Exige</th><th>Prestadores</th><th></th></tr></thead>
         <tbody>
           <?php foreach ($funcoes as $f): ?>
             <tr class="<?= (int) $f['ativo'] ? '' : 'inativo' ?>">

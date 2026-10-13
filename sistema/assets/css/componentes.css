@@ -378,3 +378,7 @@
   .lp-simples td.col-nome .tag-pax { align-self: flex-start; }
 }
 .lp-simples tr.lp-detalhe .marcacao { width: auto; min-width: 120px; margin-top: 0; }
+
+/* Serviço: 3 horários (apresentação, início, término). No celular o último ocupa a linha inteira. */
+.horarios > div:last-child:nth-child(odd) { grid-column: 1 / -1; }
+@media (min-width: 700px) { .horarios-3 { grid-template-columns: repeat(3, 1fr); } .horarios-3 > div:last-child:nth-child(odd) { grid-column: auto; } }

@@ -50,11 +50,14 @@ return [
   ['GET', '/instalar', 'instalar_form'],
   ['POST', '/instalar', 'instalar_executar'],
 
-  // Área do Guia, na ordem do trabalho: hoje -> viagens/tours -> disponibilidade -> recebimentos
+  // Área do Prestador, na ordem do trabalho: hoje -> viagens/tours e serviços -> disponibilidade -> recebimentos
   ['GET', '/guia', 'guia_raiz'],
   ['GET', '/guia/hoje', 'guia_hoje'],
   ['GET', '/guia/viagens', 'guia_viagens'],
   ['GET', '/guia/viagens/{id}', 'guia_viagem'],
+  ['GET', '/guia/servicos', 'guia_servicos'],
+  ['GET', '/guia/servicos/{id}', 'guia_viagem'],
+  ['GET', '/guia/consultoria', 'guia_consultoria'],
   ['POST', '/guia/viagens/{id}/responder', 'guia_viagem_responder'],
   ['POST', '/guia/viagens/{id}/relatorio', 'guia_viagem_relatorio'],
   ['POST', '/guia/viagens/{id}/comentarios', 'guia_viagem_comentar'],
@@ -95,6 +98,9 @@ return [
 
   ['GET', '/admin/viagens', 'adm_viagens'],
   ['GET', '/admin/viagens/nova', 'adm_viagem_nova'],
+  ['GET', '/admin/servicos', 'adm_servicos'],
+  ['GET', '/admin/servicos/nova', 'adm_servico_nova'],
+  ['GET', '/admin/consultoria', 'adm_consultoria'],
   ['POST', '/admin/viagens/nova', 'adm_viagem_criar'],
   ['GET', '/admin/viagens/{id}', 'adm_viagem'],
   ['GET', '/admin/viagens/{id}/editar', 'adm_viagem_editar'],

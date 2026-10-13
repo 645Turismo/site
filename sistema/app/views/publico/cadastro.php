@@ -16,7 +16,7 @@ if ($preCadastro) {
 ?>
 <div class="cadastro">
 <?php $etapas = etapas_cadastro(); $posicao = array_search($etapa, array_keys($etapas), true) + 1; ?>
-  <p class="sobretitulo">Cadastro de guia · etapa <?= $posicao ?> de <?= count($etapas) ?></p>
+  <p class="sobretitulo">Cadastro de prestador · etapa <?= $posicao ?> de <?= count($etapas) ?></p>
   <h1 class="cadastro-titulo"><?= e($etapas[$etapa]) ?></h1>
   <p class="pub-lead"><?= e($textos[$etapa]) ?></p>
 
@@ -43,7 +43,7 @@ if ($preCadastro) {
     } else { ?>
       <fieldset>
         <legend><span>01</span> <?= $preCadastro ? 'Termos' : 'Senha de acesso' ?></legend>
-        <p class="texto-2">Seu código de guia <?= $preCadastro ? 'é' : 'será' ?> <strong class="amarelo mono"><?= e($g['codigo'] ?? '') ?></strong>.</p>
+        <p class="texto-2">Seu código de prestador <?= $preCadastro ? 'é' : 'será' ?> <strong class="amarelo mono"><?= e($g['codigo'] ?? '') ?></strong>.</p>
         <?php if (!$preCadastro): ?>
         <div class="grade-campos">
           <label class="campo"><span>Senha *</span>

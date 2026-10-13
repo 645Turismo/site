@@ -503,6 +503,7 @@ function adm_viagem_diaria_criar(int $id): void {
   inserir('diarias', array_map(fn($h) => $h ?: null, $horas) + [
     'viagem_id' => $id,
     'data' => $data,
+    'situacao' => isset(SITUACOES_DIA[entrada('situacao')]) ? entrada('situacao') : 'trabalho',
     'pernoite' => isset($_POST['pernoite']) ? 1 : 0,
     'observacao' => mb_substr(entrada('observacao'), 0, 255) ?: null,
   ]);
@@ -514,6 +515,42 @@ function adm_viagem_diaria_criar(int $id): void {
   ], 'id = ?', [$id]);
   auditar('diaria_criada', 'viagem', $id, ['data' => $data]);
   flash('sucesso', 'Dia de trabalho adicionado.');
+  redirecionar("/admin/viagens/$id#dias");
+}
+
+/** Salva de uma vez os horários, a situação (trabalho, sem trabalho, sobreaviso) e o pernoite de cada dia. */
+function adm_viagem_diarias_salvar(int $id): void {
+  exigir_admin(PAPEIS_VIAGENS);
+  adm_viagem_carregar($id);
+  $dias = (array) ($_POST['dia'] ?? []);
+  $existentes = array_column(todos('SELECT id, data FROM diarias WHERE viagem_id = ?', [$id]), 'data', 'id');
+  $novos = [];
+  foreach ($dias as $diariaId => $campos) {
+    $diariaId = (int) $diariaId;
+    if (!isset($existentes[$diariaId]) || !is_array($campos)) {
+      continue;
+    }
+    $linha = [];
+    foreach (['horario_apresentacao', 'hora_inicio', 'hora_fim'] as $c) {
+      $h = trim((string) ($campos[$c] ?? ''));
+      if ($h !== '' && !hora_valida($h)) {
+        flash('erro', 'Confira os horários de ' . formatar_data($existentes[$diariaId]) . ' (formato 08:30). Nada foi salvo.');
+        redirecionar("/admin/viagens/$id#dias");
+      }
+      $linha[$c] = $h ?: null;
+    }
+    $situacao = (string) ($campos['situacao'] ?? 'trabalho');
+    $linha['situacao'] = isset(SITUACOES_DIA[$situacao]) ? $situacao : 'trabalho';
+    $linha['pernoite'] = !empty($campos['pernoite']) ? 1 : 0;
+    $novos[$diariaId] = $linha;
+  }
+  transacao(function () use ($novos) {
+    foreach ($novos as $diariaId => $linha) {
+      atualizar('diarias', $linha, 'id = ?', [$diariaId]);
+    }
+  });
+  auditar('diarias_salvas', 'viagem', $id, ['dias' => count($novos)]);
+  flash('sucesso', 'Horários e situação dos dias salvos.');
   redirecionar("/admin/viagens/$id#dias");
 }
 
@@ -537,11 +574,15 @@ function adm_viagem_vaga_criar(int $id): void {
   $funcaoId = (int) entrada('funcao_id');
   $vagas = max(1, min(99, (int) entrada('vagas', '1')));
   $valor = ler_moeda(entrada('valor_diaria'));
-  if (!valor('SELECT 1 FROM funcoes WHERE id = ? AND ativo = 1', [$funcaoId])) {
+  $funcao = um('SELECT * FROM funcoes WHERE id = ? AND ativo = 1', [$funcaoId]);
+  if (!$funcao) {
     flash('erro', 'Escolha uma função ativa.');
     redirecionar("/admin/viagens/$id#vagas");
   }
-  if ($valor <= 0) {
+  // Funções sem custo (ex.: coordenação) podem ficar com valor zero.
+  if ($valor <= 0 && (int) ($funcao['sem_custo'] ?? 0)) {
+    $valor = 0.0;
+  } elseif ($valor <= 0) {
     flash('erro', e_empreitada($v) ? 'Informe o valor fechado do serviço.' : 'Informe o valor da diária.');
     redirecionar("/admin/viagens/$id#vagas");
   }
@@ -630,7 +671,7 @@ function adm_viagem_convidar(int $id): void {
       '<p>Olá, ' . e(primeiro_nome($g)) . '.</p>'
       . '<p>' . ($direto ? 'Você foi escalado(a) para' : 'Você foi convidado(a) para') . ' <strong>'
       . e($v['codigo'] . ' · ' . $v['nome']) . '</strong> (' . e(e_servico($v) ? $v['destino'] : $v['origem'] . ' → ' . $v['destino']) . ') como ' . e($vaga['funcao']) . ', '
-      . $convidados . ' dia(s) de trabalho, ' . e(formatar_moeda($vaga['valor_diaria'])) . ' ' . unidade_valor($v) . '.</p>'
+      . $convidados . ' dia(s) de trabalho' . ((float) $vaga['valor_diaria'] > 0 ? ', ' . e(formatar_moeda($vaga['valor_diaria'])) . ' ' . unidade_valor($v) : ', sem custo (sem diária nem valor fechado)') . '.</p>'
       . '<p><a href="' . e($link) . '" style="display:inline-block;padding:12px 22px;background:#53D9B2;color:#000;text-decoration:none;font-weight:bold;border-radius:999px">' . ($direto ? 'Ver briefing' : 'Ver convite e responder') . '</a></p>');
     inserir('notificacoes', ['destinatario_tipo' => 'guia', 'destinatario_id' => $g['id'], 'titulo' => $assunto,
       'link' => CATEGORIAS[categoria($v)][3] . "/$id", 'criado_em' => agora()]);

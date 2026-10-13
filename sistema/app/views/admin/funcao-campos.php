@@ -7,3 +7,4 @@
   <input type="number" name="ordem" min="0" max="999" value="<?= e(antigo('ordem', (string) ($f['ordem'] ?? '0'))) ?>"></label>
 <label class="opcao"><input type="checkbox" name="exige_cadastur" value="1" <?= (int) ($f['exige_cadastur'] ?? 0) ? 'checked' : '' ?>> <span>Exige Cadastur de guia</span></label>
 <label class="opcao"><input type="checkbox" name="exige_idioma" value="1" <?= (int) ($f['exige_idioma'] ?? 0) ? 'checked' : '' ?>> <span>Exige idioma estrangeiro</span></label>
+<label class="opcao"><input type="checkbox" name="sem_custo" value="1" <?= (int) ($f['sem_custo'] ?? 0) ? 'checked' : '' ?>> <span>Pode ser alocada sem custo (sem diária nem valor fechado), como a coordenação</span></label>

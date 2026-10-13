@@ -46,7 +46,7 @@ $grupo = array_filter([$v['cliente'], $v['perfil_grupo'], $v['idioma_grupo'] ? '
       </p>
       <ul class="convite-dias">
         <?php foreach ($convites as $c): ?>
-          <li><?= e(data_extenso($c['data'])) ?><?= $c['horario_apresentacao'] ? ' · apresentação ' . e($c['horario_apresentacao']) : '' ?><?= (int) $c['pernoite'] ? ' · com pernoite' : '' ?></li>
+          <li><?= e(data_extenso($c['data'])) ?><?= ($c['situacao'] ?? 'trabalho') !== 'trabalho' ? ' · ' . e(SITUACOES_DIA[$c['situacao']][0]) : '' ?><?= $c['horario_apresentacao'] ? ' · apresentação ' . e($c['horario_apresentacao']) : '' ?><?= (int) $c['pernoite'] ? ' · com pernoite' : '' ?></li>
         <?php endforeach; ?>
       </ul>
     </div>
@@ -134,7 +134,9 @@ $grupo = array_filter([$v['cliente'], $v['perfil_grupo'], $v['idioma_grupo'] ? '
           <li>
             <span class="feed-data"><?= e(dia_semana_curto($s['data'])) ?> <?= e(date('d/m', strtotime($s['data']))) ?></span>
             <div>
-              <strong><?= $s['horario_apresentacao'] ? 'Apresentação ' . e($s['horario_apresentacao']) : 'Horário a confirmar' ?></strong>
+              <?php $sit = $s['situacao'] ?? 'trabalho'; ?>
+              <strong><?= $sit === 'folga' ? 'Sem trabalho no dia' : ($s['horario_apresentacao'] ? 'Apresentação ' . e($s['horario_apresentacao']) : 'Horário a confirmar') ?></strong>
+              <?php if ($sit === 'sobreaviso'): ?><span class="selo selo-aviso">Sobreaviso</span><?php endif; ?>
               <p><?= e(trim(($s['hora_inicio'] ? 'Início ' . $s['hora_inicio'] . ($s['hora_fim'] ? ' · término ' . $s['hora_fim'] : '') : ($s['hora_fim'] ? 'Término ' . $s['hora_fim'] : '')) . ((int) $s['pernoite'] ? ' · pernoite' : '') . ($s['observacao'] ? ' · ' . $s['observacao'] : ''), ' ·')) ?></p>
             </div>
             <?= selo(STATUS_ESCALA, $s['status']) ?>

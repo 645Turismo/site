@@ -92,26 +92,36 @@ $passos = array_values(array_filter($passos));
       <?php if (!$diarias): ?>
         <p class="vazio">Nenhum dia cadastrado.</p>
       <?php else: ?>
-        <div class="tabela-rolagem">
-          <table class="tabela">
-            <thead><tr><th>Data</th><th>Apresentação</th><th>Início–fim</th><th>Prestadores</th><th></th></tr></thead>
-            <tbody>
-              <?php foreach ($diarias as $d): ?>
-                <tr>
-                  <td><strong><?= e(dia_semana_curto($d['data']) . ' ' . formatar_data($d['data'])) ?></strong><?= (int) $d['pernoite'] ? ' <span class="selo selo-info">pernoite</span>' : '' ?></td>
-                  <td><?= e($d['horario_apresentacao'] ?: '—') ?></td>
-                  <td><?= e(($d['hora_inicio'] ?: '—') . ' – ' . ($d['hora_fim'] ?: '—')) ?></td>
-                  <td><?= (int) $d['confirmados'] ?> confirmado(s)<?= (int) $d['pendentes'] ? ' · ' . (int) $d['pendentes'] . ' pendente(s)' : '' ?></td>
-                  <td class="acoes">
-                    <form method="post" action="/admin/viagens/<?= (int) $v['id'] ?>/diarias/<?= (int) $d['id'] ?>/remover" data-confirmar="Remover o dia <?= e(formatar_data($d['data'])) ?>?">
-                      <?= csrf_campo() ?><button type="submit" class="btn btn-texto btn-p">Remover</button>
-                    </form>
-                  </td>
-                </tr>
-              <?php endforeach; ?>
-            </tbody>
-          </table>
-        </div>
+        <p class="texto-2">Ajuste os horários de cada dia e marque os dias sem trabalho ou de sobreaviso. Depois clique em "Salvar dias".</p>
+        <form method="post" action="/admin/viagens/<?= (int) $v['id'] ?>/diarias/salvar" id="form-dias" data-dias><?= csrf_campo() ?></form>
+        <?php if (count($diarias) > 1): ?>
+          <p><button type="button" class="btn btn-contorno btn-p" data-replicar-horarios>Replicar horários do 1º dia para todos</button></p>
+        <?php endif; ?>
+        <ul class="dias-lista">
+          <?php foreach ($diarias as $d): $n = 'dia[' . (int) $d['id'] . ']'; $sit = $d['situacao'] ?? 'trabalho'; ?>
+            <li class="dia-cartao<?= $sit === 'folga' ? ' dia-folga' : '' ?>" data-dia>
+              <div class="dia-cabeca">
+                <strong><?= e(dia_semana_curto($d['data']) . ' ' . formatar_data($d['data'])) ?></strong>
+                <span class="texto-2"><?= (int) $d['confirmados'] ?> confirmado(s)<?= (int) $d['pendentes'] ? ' · ' . (int) $d['pendentes'] . ' pendente(s)' : '' ?></span>
+                <form method="post" action="/admin/viagens/<?= (int) $v['id'] ?>/diarias/<?= (int) $d['id'] ?>/remover" data-confirmar="Remover o dia <?= e(formatar_data($d['data'])) ?>?">
+                  <?= csrf_campo() ?><button type="submit" class="btn btn-texto btn-p">Remover</button>
+                </form>
+              </div>
+              <div class="dia-campos">
+                <label class="campo"><span>Situação</span><select name="<?= $n ?>[situacao]" form="form-dias" data-situacao>
+                  <?php foreach (SITUACOES_DIA as $chave => [$rotulo]): ?>
+                    <option value="<?= e($chave) ?>" <?= $sit === $chave ? 'selected' : '' ?>><?= e($rotulo) ?></option>
+                  <?php endforeach; ?>
+                </select></label>
+                <label class="campo"><span>Apresentação</span><input type="time" name="<?= $n ?>[horario_apresentacao]" value="<?= e((string) $d['horario_apresentacao']) ?>" form="form-dias" data-hora="apresentacao"></label>
+                <label class="campo"><span>Início</span><input type="time" name="<?= $n ?>[hora_inicio]" value="<?= e((string) $d['hora_inicio']) ?>" form="form-dias" data-hora="inicio"></label>
+                <label class="campo"><span>Término</span><input type="time" name="<?= $n ?>[hora_fim]" value="<?= e((string) $d['hora_fim']) ?>" form="form-dias" data-hora="fim"></label>
+              </div>
+              <label class="opcao"><input type="checkbox" name="<?= $n ?>[pernoite]" value="1" form="form-dias" <?= (int) $d['pernoite'] ? 'checked' : '' ?>> <span>Pernoite</span></label>
+            </li>
+          <?php endforeach; ?>
+        </ul>
+        <div class="form-rodape"><button type="submit" form="form-dias" class="btn btn-primario btn-p">Salvar dias</button></div>
       <?php endif; ?>
       <details class="adicionar">
         <summary>Adicionar dia de trabalho</summary>
@@ -121,7 +131,10 @@ $passos = array_values(array_filter($passos));
             <label class="campo"><span>Data</span><input type="date" name="data" required></label>
             <label class="campo"><span>Apresentação</span><input type="time" name="horario_apresentacao" value="<?= e($v['horario_apresentacao']) ?>"></label>
             <label class="campo"><span>Início</span><input type="time" name="hora_inicio" value="<?= e($v['horario_saida']) ?>"></label>
-            <label class="campo"><span>Fim</span><input type="time" name="hora_fim" value="<?= e($v['previsao_chegada']) ?>"></label>
+            <label class="campo"><span>Término</span><input type="time" name="hora_fim" value="<?= e($v['previsao_chegada']) ?>"></label>
+            <label class="campo"><span>Situação</span><select name="situacao">
+              <?php foreach (SITUACOES_DIA as $chave => [$rotulo]): ?><option value="<?= e($chave) ?>"><?= e($rotulo) ?></option><?php endforeach; ?>
+            </select></label>
           </div>
           <label class="opcao"><input type="checkbox" name="pernoite" value="1"> <span>Com pernoite</span></label>
           <div class="form-rodape"><button type="submit" class="btn btn-primario btn-p">Adicionar dia</button></div>
@@ -143,7 +156,7 @@ $passos = array_values(array_filter($passos));
                   <td><strong><?= e($vg['funcao']) ?></strong></td>
                   <td><?= (int) $vg['vagas'] ?></td>
                   <td><?= (int) $vg['ocupadas'] ?></td>
-                  <td><?= e(formatar_moeda($vg['valor_diaria'])) ?></td>
+                  <td><?= (float) $vg['valor_diaria'] > 0 ? e(formatar_moeda($vg['valor_diaria'])) : 'Sem custo' ?></td>
                   <td class="acoes">
                     <form method="post" action="/admin/viagens/<?= (int) $v['id'] ?>/vagas/<?= (int) $vg['id'] ?>/remover" data-confirmar="Remover a vaga de <?= e($vg['funcao']) ?>?">
                       <?= csrf_campo() ?><button type="submit" class="btn btn-texto btn-p">Remover</button>
@@ -165,8 +178,9 @@ $passos = array_values(array_filter($passos));
                 <?php foreach ($funcoes as $f): ?><option value="<?= (int) $f['id'] ?>"><?= e($f['nome']) ?></option><?php endforeach; ?>
               </select></label>
             <label class="campo"><span>Quantidade</span><input type="number" name="vagas" min="1" max="99" value="1" required></label>
-            <label class="campo"><span><?= e_empreitada($v) ? 'Valor fechado do serviço (R$)' : 'Valor da diária (R$)' ?></span><input type="text" name="valor_diaria" inputmode="decimal" placeholder="250,00" required></label>
+            <label class="campo"><span><?= e_empreitada($v) ? 'Valor fechado do serviço (R$)' : 'Valor da diária (R$)' ?></span><input type="text" name="valor_diaria" inputmode="decimal" placeholder="250,00"></label>
           </div>
+          <p class="texto-2">Funções sem custo, como Coordenador(a), podem ficar sem valor.</p>
           <div class="form-rodape"><button type="submit" class="btn btn-primario btn-p">Salvar vaga</button></div>
         </form>
       </details>
@@ -281,7 +295,7 @@ $passos = array_values(array_filter($passos));
           <label class="campo"><span>Função</span>
             <select name="vaga_id" required>
               <?php foreach ($vagas as $vg): ?>
-                <option value="<?= (int) $vg['id'] ?>"><?= e($vg['funcao'] . ' · ' . formatar_moeda($vg['valor_diaria'])) ?> (<?= (int) $vg['ocupadas'] ?>/<?= (int) $vg['vagas'] ?>)</option>
+                <option value="<?= (int) $vg['id'] ?>"><?= e($vg['funcao'] . ' · ' . ((float) $vg['valor_diaria'] > 0 ? formatar_moeda($vg['valor_diaria']) : 'sem custo')) ?> (<?= (int) $vg['ocupadas'] ?>/<?= (int) $vg['vagas'] ?>)</option>
               <?php endforeach; ?>
             </select></label>
         </div>

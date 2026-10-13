@@ -61,6 +61,13 @@ function unidade_valor(array $v): string {
   return e_empreitada($v) ? 'pelo serviço (valor fechado)' : 'por diária';
 }
 
+// Situação de cada dia de trabalho: [rótulo, selo]. Folga = dia sem trabalho dentro do período (ex.: viagem com pernoite).
+const SITUACOES_DIA = [
+  'trabalho' => ['Dia de trabalho', 'sucesso'],
+  'folga' => ['Sem trabalho no dia', 'neutro'],
+  'sobreaviso' => ['Sobreaviso', 'aviso'],
+];
+
 // [rótulo, selo]
 const STATUS_VIAGEM = [
   'rascunho' => ['Rascunho', 'neutro'],

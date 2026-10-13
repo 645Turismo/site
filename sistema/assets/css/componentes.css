@@ -382,3 +382,16 @@
 /* Serviço: 3 horários (apresentação, início, término). No celular o último ocupa a linha inteira. */
 .horarios > div:last-child:nth-child(odd) { grid-column: 1 / -1; }
 @media (min-width: 700px) { .horarios-3 { grid-template-columns: repeat(3, 1fr); } .horarios-3 > div:last-child:nth-child(odd) { grid-column: auto; } }
+
+/* Dias de trabalho editáveis no ADM: um cartão por dia com situação, horários e pernoite. */
+.dias-lista { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 12px; }
+.dia-cartao { padding: 14px 16px; border: 1px solid var(--linha-forte); background: var(--painel); }
+.dia-cabeca { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-bottom: 10px; }
+.dia-cabeca strong { margin-right: auto; }
+.dia-cabeca form { margin: 0; }
+.dia-cartao { container-type: inline-size; }
+.dia-campos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 10px; }
+.dia-campos .campo:first-child { grid-column: 1 / -1; max-width: 300px; }
+@container (max-width: 330px) { .dia-campos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.dia-campos .campo { margin: 0; min-width: 0; }
+.dia-folga .dia-campos .campo:not(:first-child), .dia-folga > .opcao { opacity: 0.5; }

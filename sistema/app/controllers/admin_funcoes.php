@@ -8,6 +8,7 @@ function adm_funcao_ler(): array {
     'descricao' => mb_substr(entrada('descricao'), 0, 255) ?: null,
     'exige_cadastur' => isset($_POST['exige_cadastur']) ? 1 : 0,
     'exige_idioma' => isset($_POST['exige_idioma']) ? 1 : 0,
+    'sem_custo' => isset($_POST['sem_custo']) ? 1 : 0,
     'ordem' => max(0, min(999, (int) entrada('ordem', '0'))),
   ];
 }

@@ -35,6 +35,35 @@
     formatar();
   });
 
+  // Dias de trabalho: "Replicar para todos os dias" copia os horários do primeiro dia para os demais
+  // (menos os marcados como "Sem trabalho no dia"). Só salva quando clicar em "Salvar dias".
+  document.querySelectorAll('[data-replicar-horarios]').forEach(function (botao) {
+    botao.addEventListener('click', function () {
+      var linhas = Array.prototype.slice.call(document.querySelectorAll('[data-dia]'));
+      if (!linhas.length) {
+        return;
+      }
+      var origem = {};
+      linhas[0].querySelectorAll('[data-hora]').forEach(function (c) { origem[c.getAttribute('data-hora')] = c.value; });
+      var copiados = 0;
+      linhas.slice(1).forEach(function (linha) {
+        var sit = linha.querySelector('[data-situacao]');
+        if (sit && sit.value === 'folga') {
+          return;
+        }
+        linha.querySelectorAll('[data-hora]').forEach(function (c) { c.value = origem[c.getAttribute('data-hora')] || ''; });
+        copiados++;
+      });
+      botao.textContent = copiados ? 'Copiado para ' + copiados + ' dia(s). Clique em Salvar dias' : 'Nenhum outro dia de trabalho';
+    });
+  });
+  // Dia sem trabalho fica esmaecido.
+  document.querySelectorAll('[data-dia] [data-situacao]').forEach(function (sel) {
+    sel.addEventListener('change', function () {
+      sel.closest('[data-dia]').classList.toggle('dia-folga', sel.value === 'folga');
+    });
+  });
+
   // CEP: preenche rua, bairro, cidade e estado (ViaCEP)
   document.querySelectorAll('[data-cep]').forEach(function (campo) {
     campo.addEventListener('blur', function () {

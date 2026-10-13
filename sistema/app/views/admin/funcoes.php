@@ -17,7 +17,7 @@
             <tr class="<?= (int) $f['ativo'] ? '' : 'inativo' ?>">
               <td><strong><?= e($f['nome']) ?></strong><?= (int) $f['ativo'] ? '' : ' <span class="selo selo-neutro">Inativa</span>' ?>
                 <?php if ($f['descricao']): ?><br><span class="texto-2"><?= e($f['descricao']) ?></span><?php endif; ?></td>
-              <td class="texto-2"><?= e(implode(', ', array_filter([(int) $f['exige_cadastur'] ? 'Cadastur' : null, (int) $f['exige_idioma'] ? 'Idioma' : null])) ?: '—') ?></td>
+              <td class="texto-2"><?= e(implode(', ', array_filter([(int) $f['exige_cadastur'] ? 'Cadastur' : null, (int) $f['exige_idioma'] ? 'Idioma' : null, (int) ($f['sem_custo'] ?? 0) ? 'Sem custo' : null])) ?: '—') ?></td>
               <td><?= (int) $f['guias'] ?></td>
               <td class="acoes">
                 <a href="/admin/funcoes/<?= (int) $f['id'] ?>" class="btn btn-texto btn-p">Editar</a>

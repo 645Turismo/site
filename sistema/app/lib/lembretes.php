@@ -49,14 +49,14 @@ function lembretes_embarque_processar(): int {
   $ate = date('Y-m-d', strtotime('+2 days'));
   $linhas = todos("SELECT s.guia_id, d.viagem_id, MIN(d.data) AS data
     FROM escalas s JOIN diarias d ON d.id = s.diaria_id JOIN viagens v ON v.id = d.viagem_id
-    WHERE s.status IN ('confirmado', 'em_campo') AND v.status = 'publicada' AND d.data BETWEEN ? AND ?
+    WHERE s.status IN ('confirmado', 'em_campo') AND v.status = 'publicada' AND d.situacao <> 'folga' AND d.data BETWEEN ? AND ?
       AND NOT EXISTS (SELECT 1 FROM lembretes_embarque le WHERE le.viagem_id = d.viagem_id AND le.guia_id = s.guia_id)
     GROUP BY s.guia_id, d.viagem_id", [hoje(), $ate]);
   $enviados = 0;
   foreach ($linhas as $base) {
     // Primeiro dia do guia (já contando dias anteriores a hoje, para não lembrar no meio da viagem).
     $primeiro = um("SELECT MIN(d.data) AS data FROM escalas s JOIN diarias d ON d.id = s.diaria_id
-      WHERE s.guia_id = ? AND d.viagem_id = ? AND s.status IN ('confirmado', 'em_campo')", [$base['guia_id'], $base['viagem_id']]);
+      WHERE s.guia_id = ? AND d.viagem_id = ? AND s.status IN ('confirmado', 'em_campo') AND d.situacao <> 'folga'", [$base['guia_id'], $base['viagem_id']]);
     if (($primeiro['data'] ?? '') < hoje()) {
       continue;
     }

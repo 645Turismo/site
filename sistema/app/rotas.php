@@ -107,6 +107,7 @@ return [
   ['POST', '/admin/viagens/{id}/editar', 'adm_viagem_salvar'],
   ['POST', '/admin/viagens/{id}/status', 'adm_viagem_status'],
   ['POST', '/admin/viagens/{id}/diarias', 'adm_viagem_diaria_criar'],
+  ['POST', '/admin/viagens/{id}/diarias/salvar', 'adm_viagem_diarias_salvar'],
   ['POST', '/admin/viagens/{id}/diarias/{d}/remover', 'adm_viagem_diaria_remover'],
   ['POST', '/admin/viagens/{id}/vagas', 'adm_viagem_vaga_criar'],
   ['POST', '/admin/viagens/{id}/vagas/{v}/remover', 'adm_viagem_vaga_remover'],

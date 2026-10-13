@@ -134,7 +134,7 @@ function guia_viagens(string $categoria = 'viagem'): void {
 /** Carrega a viagem/tour e as escalas do guia nela; 404 se o guia não estiver envolvido. */
 function guia_carregar_viagem(array $g, int $id): array {
   $v = um("SELECT * FROM viagens WHERE id = ? AND status IN ('publicada','concluida')", [$id]);
-  $escalas = $v ? todos("SELECT s.*, d.data, d.horario_apresentacao, d.hora_inicio, d.hora_fim, d.pernoite, d.observacao,
+  $escalas = $v ? todos("SELECT s.*, d.data, d.horario_apresentacao, d.hora_inicio, d.hora_fim, d.pernoite, d.observacao, d.situacao,
         f.nome AS funcao
       FROM escalas s JOIN diarias d ON d.id = s.diaria_id
       LEFT JOIN viagem_vagas vv ON vv.id = s.viagem_vaga_id LEFT JOIN funcoes f ON f.id = vv.funcao_id
@@ -240,14 +240,16 @@ function guia_viagem_relatorio(int $id): void {
     ]);
   }
   // Com o relatório entregue, as diárias realizadas seguem para a nota fiscal; quem não emite nota vai direto para pagamento.
+  // Alocação sem custo (ex.: coordenação): não há nota nem pagamento; o trabalho fica concluído com o relatório.
+  $semCusto = array_sum(array_map(fn($s) => (float) $s['valor'], $assumidas)) <= 0;
   $emiteNf = (int) ($g['emite_nf'] ?? 1) === 1;
   foreach ($assumidas as $s) {
     if (in_array($s['status'], ['confirmado', 'em_campo', 'realizada'], true) && $s['data'] <= hoje()) {
-      atualizar('escalas', ['status' => $emiteNf ? 'aguardando_nf' : 'a_pagar', 'atualizado_em' => agora()], 'id = ?', [$s['id']]);
+      atualizar('escalas', ['status' => $semCusto ? 'paga' : ($emiteNf ? 'aguardando_nf' : 'a_pagar'), 'atualizado_em' => agora()], 'id = ?', [$s['id']]);
     }
   }
   auditar('relatorio_enviado', 'viagem', $id);
-  flash('sucesso', $emiteNf ? 'Relatório enviado. Obrigado! O próximo passo é a nota fiscal.' : 'Relatório enviado. Obrigado! O pagamento segue para programação.');
+  flash('sucesso', $semCusto ? 'Relatório enviado. Obrigado!' : ($emiteNf ? 'Relatório enviado. Obrigado! O próximo passo é a nota fiscal.' : 'Relatório enviado. Obrigado! O pagamento segue para programação.'));
   redirecionar("/guia/pos-viagem#viagem-$id");
 }
 

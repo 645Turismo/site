@@ -179,7 +179,8 @@
 .lp-tabela-rolagem { border: 1px solid var(--linha-forte); }
 .lp-tabela { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0; font-size: 13px; }
 /* Larguras fixas por coluna (somam 100%): a tabela cabe sempre na tela, sem rolagem lateral. */
-.lp-tabela thead th:nth-child(1) { width: 5%; } .lp-tabela thead th:nth-child(2) { width: 14%; }
+.lp-tabela thead th:nth-child(1) { width: 7%; } .lp-tabela thead th:nth-child(2) { width: 12%; }
+.lp-tabela thead th.col-n { font-size: 10.5px; padding-left: 2px; padding-right: 2px; }
 .lp-tabela thead th:nth-child(3), .lp-tabela thead th:nth-child(4) { width: 8%; }
 .lp-tabela thead th:nth-child(5) { width: 7.5%; } .lp-tabela thead th:nth-child(6) { width: 10.5%; } .lp-tabela thead th:nth-child(7) { width: 8.5%; }
 .lp-tabela thead th:nth-child(8) { width: 6%; } .lp-tabela thead th:nth-child(9) { width: 10%; } .lp-tabela thead th:nth-child(10) { width: 9%; }

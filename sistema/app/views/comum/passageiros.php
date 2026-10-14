@@ -40,7 +40,7 @@ $urlIncluir = $admin ? $base : $base . '/incluir';
       <div><span class="rotulo">Check-in</span><strong><b data-tot="checkin">–</b><small>/<span data-tot="total">–</span></small></strong></div>
       <div><span class="rotulo">Check-out</span><strong><b data-tot="checkout">–</b></strong></div>
       <div><span class="rotulo">No-show</span><strong class="vermelho"><b data-tot="noshow">–</b></strong></div>
-      <div><span class="rotulo">Ajustes do guia</span><strong class="amarelo"><b data-tot="ajustados">–</b></strong></div>
+      <div><span class="rotulo">Ajustes em campo</span><strong class="amarelo"><b data-tot="ajustados">–</b></strong></div>
     </div>
     <p class="lp-status" data-status><span class="ponto"></span> Carregando lista…</p>
   </div>
@@ -59,11 +59,11 @@ $urlIncluir = $admin ? $base : $base . '/incluir';
         <option value="checkin">Com check-in</option>
         <option value="checkout">Com check-out</option>
         <option value="noshow">No-show</option>
-        <option value="ajustados">Ajustados pelo guia</option>
+        <option value="ajustados">Ajustados em campo</option>
       </select>
       <button type="button" class="btn btn-contorno btn-p" data-incluir-abrir>+ Incluir passageiro</button>
     </div>
-    <p class="lp-legenda">Guia ou staff (observação com "Guia" ou "Staff") aparece na lista, mas não entra na contagem de check-in.<br><span class="marca-guia"></span> Em amarelo: informação ajustada ou incluída pelo guia<?= $admin ? ' (o original aparece ao passar o mouse ou no editar)' : '. A coordenação é avisada por e-mail' ?>.</p>
+    <p class="lp-legenda">Guia ou staff (observação com "Guia" ou "Staff") aparece na lista, mas não entra na contagem de check-in.<br><span class="marca-guia"></span> Em amarelo: informação ajustada ou incluída em campo<?= $admin ? ' (o original aparece ao passar o mouse ou no editar)' : '. A coordenação é avisada por e-mail' ?>.</p>
     <div class="lp-tabela-rolagem">
       <?php if (!$admin): ?>
       <!-- Guia: lista enxuta para o embarque; o resto fica em "Mais detalhes". -->
@@ -168,7 +168,7 @@ $urlIncluir = $admin ? $base : $base . '/incluir';
       <div class="form-rodape">
         <?php if ($admin): ?>
           <button type="button" class="btn btn-texto" data-remover hidden>Remover da lista</button>
-          <button type="button" class="btn btn-contorno btn-p" data-incorporar hidden>Incorporar ajustes do guia</button>
+          <button type="button" class="btn btn-contorno btn-p" data-incorporar hidden>Incorporar ajustes de campo</button>
         <?php endif; ?>
         <button type="button" class="btn btn-texto" data-fechar>Cancelar</button>
         <button type="submit" class="btn btn-primario" data-salvar>Salvar</button>

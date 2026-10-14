@@ -36,7 +36,7 @@ $statusDoc = ['enviado' => ['Para conferir', 'aviso'], 'aprovado' => ['Aprovado'
           <summary class="btn btn-contorno btn-p"><?= e($rotulo) ?></summary>
           <form method="post" action="/admin/guias/<?= (int) $g['id'] ?>/status" class="form">
             <?= csrf_campo() ?><input type="hidden" name="acao" value="<?= e($acao) ?>">
-            <label class="campo"><span>Motivo (o guia vê)</span><textarea name="motivo" rows="3" required></textarea></label>
+            <label class="campo"><span>Motivo (o prestador vê)</span><textarea name="motivo" rows="3" required></textarea></label>
             <button type="submit" class="btn btn-primario btn-p">Confirmar: <?= e(mb_strtolower($rotulo)) ?></button>
           </form>
         </details>
@@ -102,7 +102,7 @@ $statusDoc = ['enviado' => ['Para conferir', 'aviso'], 'aprovado' => ['Aprovado'
                     <form method="post" action="/admin/guias/<?= (int) $g['id'] ?>/documentos/<?= (int) $d['id'] ?>" class="form"><?= csrf_campo() ?>
                       <input type="hidden" name="decisao" value="reprovar">
                       <label class="campo"><span>Motivo</span><input type="text" name="motivo" maxlength="500" required placeholder="Ex.: foto ilegível"></label>
-                      <button type="submit" class="btn btn-contorno btn-p">Devolver ao guia</button></form>
+                      <button type="submit" class="btn btn-contorno btn-p">Devolver ao prestador</button></form>
                   </details>
                 <?php endif; ?>
               </div>
@@ -185,7 +185,7 @@ $statusDoc = ['enviado' => ['Para conferir', 'aviso'], 'aprovado' => ['Aprovado'
       </form>
     <?php endif; ?>
     <?php if (!in_array($g['status'], ['rascunho', 'pre_cadastro'], true)): ?>
-    <form method="post" action="/admin/guias/<?= (int) $g['id'] ?>/senha" class="inline-form" data-confirmar="Enviar ao guia um link para criar nova senha?">
+    <form method="post" action="/admin/guias/<?= (int) $g['id'] ?>/senha" class="inline-form" data-confirmar="Enviar ao prestador um link para criar nova senha?">
       <?= csrf_campo() ?><button type="submit" class="btn btn-texto btn-p">Enviar link de nova senha</button>
     </form>
     <?php endif; ?>

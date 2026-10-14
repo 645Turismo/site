@@ -195,7 +195,7 @@ $passos = array_values(array_filter($passos));
         <div class="destaque-data"><strong><?= (int) $passageiros['total'] ?></strong><span><?= $veic ? 'de ' . (int) $veic['lugares'] : 'na lista' ?></span></div>
         <div>
           <h3>Lista e mapa do carro</h3>
-          <p class="destaque-info"><?= $passageiros['ajustados'] ? '<span class="amarelo">' . (int) $passageiros['ajustados'] . ' com ajuste do guia</span> · ' : '' ?>check-in ao vivo, importação da planilha</p>
+          <p class="destaque-info"><?= $passageiros['ajustados'] ? '<span class="amarelo">' . (int) $passageiros['ajustados'] . ' com ajuste em campo</span> · ' : '' ?>check-in ao vivo, importação da planilha</p>
         </div>
       </a>
       <p class="espaco-topo"><a href="/admin/viagens/<?= (int) $v['id'] ?>/passageiros/modelo.xlsx" class="btn btn-contorno btn-p">Baixar planilha padrão</a>

@@ -6,7 +6,7 @@ $statusEnvio = ['enviado' => ['Para conferir', 'aviso'], 'aprovado' => ['Aprovad
   <div>
     <p class="sobretitulo">Depois do trabalho</p>
     <h1>Conferência</h1>
-    <p>Relatórios das viagens e notas fiscais dos guias. A nota aprovada libera o pagamento.</p>
+    <p>Relatórios dos trabalhos e notas fiscais dos prestadores. A nota aprovada libera o pagamento.</p>
   </div>
 </div>
 
@@ -50,10 +50,10 @@ $statusEnvio = ['enviado' => ['Para conferir', 'aviso'], 'aprovado' => ['Aprovad
           <div class="conferencia-acoes">
             <form method="post" action="/admin/conferencia/<?= (int) $e['id'] ?>" class="inline-form"><?= csrf_campo() ?>
               <input type="hidden" name="decisao" value="aprovar"><button type="submit" class="btn btn-primario btn-p">Aprovar</button></form>
-            <details class="acao-motivo"><summary class="btn btn-texto btn-p">Devolver ao guia</summary>
+            <details class="acao-motivo"><summary class="btn btn-texto btn-p">Devolver ao prestador</summary>
               <form method="post" action="/admin/conferencia/<?= (int) $e['id'] ?>" class="form"><?= csrf_campo() ?>
                 <input type="hidden" name="decisao" value="devolver">
-                <label class="campo"><span>Motivo (o guia vê)</span><textarea name="motivo" rows="2" required></textarea></label>
+                <label class="campo"><span>Motivo (o prestador vê)</span><textarea name="motivo" rows="2" required></textarea></label>
                 <button type="submit" class="btn btn-contorno btn-p">Devolver</button></form>
             </details>
           </div>

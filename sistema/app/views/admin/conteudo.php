@@ -6,9 +6,9 @@ $rotuloConteudo = ['faq' => 'Resposta', 'guia_pratico' => 'Explicação', 'video
 ?>
 <div class="pagina-topo">
   <div>
-    <p class="sobretitulo">Ajuda dos guias</p>
+    <p class="sobretitulo">Ajuda dos prestadores</p>
     <h1>Conteúdo</h1>
-    <p>O que os guias encontram na Ajuda. Mudanças aparecem na hora.</p>
+    <p>O que os prestadores encontram na Ajuda. Mudanças aparecem na hora.</p>
   </div>
 </div>
 

@@ -2,7 +2,7 @@
   <div>
     <p class="sobretitulo">Cadastros</p>
     <h1>Funções</h1>
-    <p>As funções que os guias exercem nas viagens/tours. Aparecem no cadastro dos guias e na definição de vagas.</p>
+    <p>As funções que os prestadores exercem nas viagens, tours e serviços. Aparecem no cadastro dos prestadores e na definição de vagas.</p>
   </div>
 </div>
 

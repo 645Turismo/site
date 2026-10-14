@@ -1,11 +1,11 @@
 <?php
-$abas = ['abertos' => 'Aguardando resposta', 'andamento' => 'Em andamento', 'resolvidos' => 'Resolvidos', 'recados' => 'Recados para os guias'];
+$abas = ['abertos' => 'Aguardando resposta', 'andamento' => 'Em andamento', 'resolvidos' => 'Resolvidos', 'recados' => 'Recados para os prestadores'];
 ?>
 <div class="pagina-topo">
   <div>
     <p class="sobretitulo">Comunicação</p>
     <h1>Atendimento</h1>
-    <p>Chamados dos guias (urgentes primeiro) e recados exibidos na tela inicial deles.</p>
+    <p>Chamados dos prestadores (urgentes primeiro) e recados exibidos na tela inicial deles.</p>
   </div>
 </div>
 
@@ -43,7 +43,7 @@ $abas = ['abertos' => 'Aguardando resposta', 'andamento' => 'Em andamento', 'res
       <?php else: ?>
         <ul class="feed feed-simples">
           <?php foreach ($avisos as $av):
-            $publico = match ($av['publico']) { 'funcao' => 'Função: ' . ($av['funcao'] ?? '—'), 'viagem' => 'Viagem: ' . ($av['codigo'] ?? '—'), default => 'Todos os guias' };
+            $publico = match ($av['publico']) { 'funcao' => 'Função: ' . ($av['funcao'] ?? '—'), 'viagem' => 'Viagem: ' . ($av['codigo'] ?? '—'), default => 'Todos os prestadores' };
             $periodo = $av['inicio'] || $av['fim'] ? ' · ' . trim(($av['inicio'] ? 'de ' . formatar_data($av['inicio']) : '') . ' ' . ($av['fim'] ? 'até ' . formatar_data($av['fim']) : '')) : ''; ?>
             <li class="<?= (int) $av['ativo'] ? '' : 'inativo' ?>">
               <span class="feed-data"><?= e(date('d/m', strtotime($av['criado_em']))) ?></span>
@@ -72,9 +72,9 @@ $abas = ['abertos' => 'Aguardando resposta', 'andamento' => 'Em andamento', 'res
         <label class="campo"><span>Mensagem</span><textarea name="mensagem" rows="4" maxlength="3000" required><?= e(antigo('mensagem')) ?></textarea></label>
         <label class="campo"><span>Para quem</span>
           <select name="publico" data-publico-aviso>
-            <option value="todos">Todos os guias</option>
-            <option value="funcao">Guias de uma função</option>
-            <option value="viagem">Guias de uma viagem/tour</option>
+            <option value="todos">Todos os prestadores</option>
+            <option value="funcao">Prestadores de uma função</option>
+            <option value="viagem">Prestadores de um trabalho</option>
           </select></label>
         <label class="campo" data-publico="funcao" hidden><span>Função</span>
           <select name="funcao_id"><?php foreach ($funcoes as $f): ?><option value="<?= (int) $f['id'] ?>"><?= e($f['nome']) ?></option><?php endforeach; ?></select></label>

@@ -15,7 +15,7 @@ $statusVisao = $admin ? STATUS_CHAMADO_ADM : STATUS_CHAMADO;
 </div>
 
 <?php if ($admin && $c['celular']): ?>
-  <p class="texto-2">Contato do guia: <a href="<?= e(link_whatsapp($c['celular'])) ?>" target="_blank" rel="noopener noreferrer">WhatsApp <?= e(formatar_celular($c['celular'])) ?></a>
+  <p class="texto-2">Contato do prestador: <a href="<?= e(link_whatsapp($c['celular'])) ?>" target="_blank" rel="noopener noreferrer">WhatsApp <?= e(formatar_celular($c['celular'])) ?></a>
     <?= $c['viagem'] ? ' · Viagem/tour: <a href="/admin/viagens/' . (int) $c['viagem_id'] . '">' . e($c['codigo'] . ' · ' . $c['viagem']) . '</a>' : '' ?></p>
 <?php endif; ?>
 
@@ -48,7 +48,7 @@ $statusVisao = $admin ? STATUS_CHAMADO_ADM : STATUS_CHAMADO;
     <?php if ($admin): ?>
       <label class="campo"><span>Depois de enviar</span>
         <select name="status">
-          <option value="respondido">Aguardar o guia</option>
+          <option value="respondido">Aguardar o prestador</option>
           <option value="aguardando_confirmacao">Pedir confirmação de que resolveu</option>
           <option value="resolvido">Encerrar como resolvido</option>
         </select></label>

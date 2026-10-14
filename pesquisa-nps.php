@@ -138,6 +138,16 @@ if (!$autenticado) {
           </sc-for>
         </select>
       </label>
+      <sc-if value="{{ temTipo }}" hint-placeholder-val="{{ true }}">
+        <label style="display:block;background:#05100C;padding:18px 20px">
+          <span style="display:block;margin-bottom:9px;font-size:10.5px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:#53D9B2">Tipo de serviço</span>
+          <select onChange="{{ mudarTipo }}" value="{{ tipoAtual }}" style="width:100%;border:none;background:#05100C;color:#F2F5F3;outline:none;padding:0">
+            <sc-for list="{{ opcoesTipo }}" as="o" hint-placeholder-count="3">
+              <option value="{{ o.valor }}">{{ o.rotulo }}</option>
+            </sc-for>
+          </select>
+        </label>
+      </sc-if>
       <label style="display:block;background:#000;padding:18px 20px">
         <span style="display:block;margin-bottom:9px;font-size:10.5px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:rgba(242,245,243,0.5)">Ano</span>
         <select onChange="{{ mudarAno }}" value="{{ anoAtual }}" style="width:100%;border:none;background:#000;color:#F2F5F3;outline:none;padding:0">
@@ -287,6 +297,10 @@ if (!$autenticado) {
             <p style="margin:0;font-size:14px;line-height:1.6;color:rgba(242,245,243,0.65)">Escolhe qual pergunta de recomendação (0 a 10) alimenta o NPS e os indicadores: Geral, Guiamento e Transporte, Restaurante ou Trem da República. Cada opção usa a coluna correspondente identificada na planilha — veja abaixo qual coluna foi associada a cada uma.</p>
           </div>
           <div style="background:#000;padding:20px 22px">
+            <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#fff">Tipo de serviço</p>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:rgba(242,245,243,0.65)">Mostra apenas as respostas de viagens Regulares ou Privativas, recalculando NPS e indicadores. Só aparece quando a pesquisa tem a pergunta de tipo de serviço; respostas sem essa informação ficam como "Não informado".</p>
+          </div>
+          <div style="background:#000;padding:20px 22px">
             <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#fff">Ano, Mês e Data específica</p>
             <p style="margin:0;font-size:14px;line-height:1.6;color:rgba(242,245,243,0.65)">Restringem o período das respostas consideradas, com base na data de cada resposta. São independentes do segmento escolhido.</p>
           </div>
@@ -312,13 +326,17 @@ if (!$autenticado) {
             <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(242,245,243,0.5)">Data da resposta</p>
             <p style="{{ colunaDataStyle }}">{{ colunaDataTexto }}</p>
           </div>
+          <div style="background:#000;padding:20px 22px">
+            <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(242,245,243,0.5)">Tipo de serviço (Regular ou Privativo)</p>
+            <p style="{{ colunaTipoStyle }}">{{ colunaTipoTexto }}</p>
+          </div>
         </div>
       </div>
 
       <div>
         <p style="margin:0 0 16px;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#53D9B2">Exportação</p>
         <h2 style="margin:0 0 18px;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(24px,3.4vw,36px);line-height:1.15;color:#fff">Como exportar os dados filtrados</h2>
-        <p style="margin:0;max-width:74ch;font-size:15px;line-height:1.75;color:rgba(242,245,243,0.72)">No painel, o botão "Exportar XLSX" exporta exatamente as respostas visíveis com os filtros atuais (segmento, ano, mês, data e tipo de NPS), com uma linha por resposta (data, nota, perfil e comentário).</p>
+        <p style="margin:0;max-width:74ch;font-size:15px;line-height:1.75;color:rgba(242,245,243,0.72)">No painel, o botão "Exportar XLSX" exporta exatamente as respostas visíveis com os filtros atuais (segmento, ano, mês, data e tipo de NPS), com uma linha por resposta (data, segmento, tipo de serviço, nota, perfil e comentário).</p>
       </div>
 
     </section>
@@ -327,7 +345,7 @@ if (!$autenticado) {
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;planilhaId&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;10_QFiQnAMqfrchpYoWjtFfqxIC2Qys4p9X5SeLGgIng&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Dados&quot;},&quot;gid&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;951152274&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Dados&quot;}}">
 class Component extends DCLogic {
-  state = { linhas: [], cab: [], colunasNota: {}, colunasTexto: {}, iData: -1, status: 'carregando', aba: 'painel', segmento: 'geral', ano: 'todos', mes: 'todos', data: 'todas', perfil: 'todos', limite: 3, ultimaAtualizacao: null };
+  state = { linhas: [], cab: [], colunasNota: {}, colunasTexto: {}, iData: -1, colunasTipo: [], tipo: 'todos', status: 'carregando', aba: 'painel', segmento: 'geral', ano: 'todos', mes: 'todos', data: 'todas', perfil: 'todos', limite: 3, ultimaAtualizacao: null };
 
   perfilDe(nota) { return nota >= 9 ? 'promotor' : (nota <= 6 ? 'detrator' : 'neutro'); }
 
@@ -396,6 +414,30 @@ class Component extends DCLogic {
     if (iGeral !== undefined) { colunasNota.geral = iGeral; usados.add(iGeral); }
 
     return colunasNota;
+  }
+
+  detectarColunasTipo(cab, corpo, excluir) {
+    const cols = [];
+    for (let i = 0; i < cab.length; i++) {
+      if (excluir.has(i)) continue;
+      let ok = 0, total = 0;
+      corpo.forEach(l => {
+        const v = String(l[i] || '').trim();
+        if (!v) return;
+        total++;
+        if (v.length <= 40 && /regular|privativ/i.test(v)) ok++;
+      });
+      if (total > 0 && ok / total > 0.7) cols.push(i);
+    }
+    return cols;
+  }
+
+  normalizarTipo(v) {
+    const s = String(v || '').trim();
+    if (!s) return 'Não informado';
+    if (/privativ/i.test(s)) return 'Privativo';
+    if (/regular/i.test(s)) return 'Regular';
+    return s;
   }
 
   detectarColunasTexto(cab, corpo, colunasNota, iData) {
@@ -507,7 +549,7 @@ class Component extends DCLogic {
     const corpo = bruto.slice(1);
 
     const colunasNota = this.detectarColunasNota(cab, corpo);
-    if (Object.keys(colunasNota).length === 0) { this.setState({ status: 'vazio', cab, colunasNota: {}, colunasTexto: {} }); return; }
+    if (Object.keys(colunasNota).length === 0) { this.setState({ status: 'vazio', cab, colunasNota: {}, colunasTexto: {}, colunasTipo: [] }); return; }
 
     const acha = (re, filtro) => {
       for (let i = 0; i < cab.length; i++) if (re.test(cab[i]) && (!filtro || filtro(i))) return i;
@@ -529,6 +571,8 @@ class Component extends DCLogic {
     if (iData < 0) iData = 0;
 
     const colunasTexto = this.detectarColunasTexto(cab, corpo, colunasNota, iData);
+    const reservadas = new Set([iData, ...Object.values(colunasNota), ...Object.values(colunasTexto)]);
+    const colunasTipo = this.detectarColunasTipo(cab, corpo, reservadas);
 
     const linhas = corpo.map(l => {
       const notas = {};
@@ -542,11 +586,12 @@ class Component extends DCLogic {
       Object.keys(colunasTexto).forEach(k => {
         textos[k] = String(l[colunasTexto[k]] || '').trim();
       });
-      return { data: this.parseData(l[iData]), notas, textos };
+      const tipoBruto = colunasTipo.map(i => String(l[i] || '').trim()).find(v => v) || '';
+      return { data: this.parseData(l[iData]), notas, textos, tipo: this.normalizarTipo(tipoBruto) };
     }).filter(r => Object.keys(r.notas).length > 0);
 
     this.setState({
-      linhas, cab, colunasNota, colunasTexto, iData,
+      linhas, cab, colunasNota, colunasTexto, colunasTipo, iData,
       status: linhas.length ? (origem === 'planilha' ? 'ok' : 'colado') : 'vazio',
       limite: 3
     });
@@ -565,12 +610,17 @@ class Component extends DCLogic {
   }
 
   renderVals() {
-    const { linhas, cab, colunasNota, colunasTexto, iData, status, aba, segmento, ano, mes, data, perfil, limite, ultimaAtualizacao } = this.state;
+    const { linhas, cab, colunasNota, colunasTexto, colunasTipo, iData, status, aba, segmento, tipo, ano, mes, data, perfil, limite, ultimaAtualizacao } = this.state;
     const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-    const comSeg = linhas
+    const comSegTodos = linhas
       .filter(l => l.notas[segmento] !== undefined)
-      .map(l => ({ data: l.data, nota: l.notas[segmento], texto: l.textos[segmento] || l.textos.geral || '' }));
+      .map(l => ({ data: l.data, nota: l.notas[segmento], texto: l.textos[segmento] || l.textos.geral || '', tipo: l.tipo }));
+    const comSeg = tipo === 'todos' ? comSegTodos : comSegTodos.filter(l => l.tipo === tipo);
+    const ordemTipo = (t) => t === 'Regular' ? 0 : (t === 'Privativo' ? 1 : (t === 'Não informado' ? 3 : 2));
+    const tiposDisp = [...new Set(linhas.map(l => l.tipo))].sort((a, b) => ordemTipo(a) - ordemTipo(b));
+    const temTipo = colunasTipo.length > 0;
+    const sufixoTipo = tipo !== 'todos' ? ' · ' + tipo : '';
 
     let f = comSeg;
     if (ano !== 'todos') f = f.filter(l => l.data && String(l.data.getFullYear()) === ano);
@@ -647,6 +697,10 @@ class Component extends DCLogic {
     const colunaDataTexto = colunaDataEncontrada ? this.normalizarTrem(cab[iData]) : 'Não identificada nesta planilha.';
     const colunaDataStyle = 'margin:0;font-size:14.5px;line-height:1.6;color:' + (colunaDataEncontrada ? 'rgba(242,245,243,0.85)' : 'rgba(242,245,243,0.4)') + (colunaDataEncontrada ? '' : ';font-style:italic');
 
+    const colunaTipoEncontrada = dadosCarregados && colunasTipo.length > 0;
+    const colunaTipoTexto = colunaTipoEncontrada ? this.normalizarTrem(cab[colunasTipo[0]]) : 'Ainda não identificada: adicione a pergunta de tipo de serviço (Regular ou Privativo) na pesquisa.';
+    const colunaTipoStyle = 'margin:0;font-size:14.5px;line-height:1.6;color:' + (colunaTipoEncontrada ? 'rgba(242,245,243,0.85)' : 'rgba(242,245,243,0.4)') + (colunaTipoEncontrada ? '' : ';font-style:italic');
+
     const abaPainel = aba !== 'metodologia';
     const abaMetodologia = aba === 'metodologia';
 
@@ -655,6 +709,7 @@ class Component extends DCLogic {
       const linhasExport = f.map(l => ({
         Data: this.fmt(l.data),
         Segmento: this.rotuloSegmento(segmento),
+        'Tipo de serviço': l.tipo || 'Não informado',
         Nota: l.nota,
         Perfil: this.perfilDe(l.nota) === 'promotor' ? 'Promotor' : (this.perfilDe(l.nota) === 'detrator' ? 'Detrator' : 'Neutro'),
         Comentario: this.normalizarTrem(l.texto) || ''
@@ -687,10 +742,16 @@ class Component extends DCLogic {
       opcoesSegmento: this.segmentosDef().map(d => ({ valor: d.chave, rotulo: d.rotulo })),
       segmentoAtual: segmento,
       mudarSegmento: (e) => this.setState({ segmento: e.target.value, limite: 3 }),
+      temTipo,
+      opcoesTipo: [{ valor: 'todos', rotulo: 'Todos os tipos' }].concat(tiposDisp.map(t => ({ valor: t, rotulo: t }))),
+      tipoAtual: tipo,
+      mudarTipo: (e) => this.setState({ tipo: e.target.value, limite: 3 }),
 
       perguntas,
       colunaDataTexto,
       colunaDataStyle,
+      colunaTipoTexto,
+      colunaTipoStyle,
 
       exportarXlsx,
       contadorExport: f.length + (f.length === 1 ? ' resposta no filtro atual' : ' respostas no filtro atual'),
@@ -706,7 +767,7 @@ class Component extends DCLogic {
       mudarData: (e) => this.setState({ data: e.target.value, limite: 3 }),
       perfilAtual: perfil,
       mudarPerfil: (e) => this.setState({ perfil: e.target.value, limite: 3 }),
-      limparFiltros: () => this.setState({ ano: 'todos', mes: 'todos', data: 'todas', perfil: 'todos', limite: 3 }),
+      limparFiltros: () => this.setState({ tipo: 'todos', ano: 'todos', mes: 'todos', data: 'todas', perfil: 'todos', limite: 3 }),
 
       nps: nps === null ? '—' : nps,
       npsClassificacao: nps === null ? 'Sem respostas no filtro'
@@ -714,7 +775,7 @@ class Component extends DCLogic {
         : nps >= 50 ? 'Zona de qualidade'
         : nps >= 0 ? 'Zona de aperfeiçoamento' : 'Zona crítica',
       totalRespostas: perfil === 'todos' ? total : f.length + ' de ' + total,
-      periodoTexto: perfil === 'todos' ? rotuloPeriodo : rotuloPeriodo + ' · ' + ({ promotor: 'promotores', neutro: 'neutros', detrator: 'detratores' })[perfil],
+      periodoTexto: (perfil === 'todos' ? rotuloPeriodo : rotuloPeriodo + ' · ' + ({ promotor: 'promotores', neutro: 'neutros', detrator: 'detratores' })[perfil]) + sufixoTipo,
       pctPromotores: pct(i => i.nota >= 9),
       pctNeutros: pct(i => i.nota === 7 || i.nota === 8),
       pctDetratores: pct(i => i.nota <= 6),

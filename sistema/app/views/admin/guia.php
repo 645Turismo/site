@@ -73,7 +73,7 @@ $statusDoc = ['enviado' => ['Para conferir', 'aviso'], 'aprovado' => ['Aprovado'
         <dt>Idiomas</dt><dd><?= e(implode(', ', $idiomas) ?: 'Só português') ?></dd>
         <dt>Especialidades</dt><dd><?= e($g['especialidades'] ?: '—') ?></dd>
         <dt>Pernoite</dt><dd><?= (int) $g['aceita_pernoite'] ? 'Aceita' : 'Não aceita' ?></dd>
-        <dt>Cadastur</dt><dd><?= e(implode(' · ', array_filter([$g['cadastur_numero'], $g['cadastur_uf'], $g['cadastur_categorias'], $g['cadastur_validade'] ? 'validade ' . formatar_data($g['cadastur_validade']) : null])) ?: '—') ?>
+        <dt>Cadastur</dt><dd><?= e(implode(' · ', array_filter([$g['cadastur_numero'], $g['cadastur_uf'], implode(', ', cadastur_categorias($g['cadastur_categorias'])), $g['cadastur_validade'] ? 'validade ' . formatar_data($g['cadastur_validade']) : null])) ?: '—') ?>
           <?php if ($g['cadastur_validade'] && $g['cadastur_validade'] < hoje()): ?><br><span class="vermelho">Vencido</span><?php endif; ?></dd>
         <?php if ($g['apresentacao']): ?><dt>Apresentação</dt><dd class="texto-longo"><?= nl2br(e($g['apresentacao'])) ?></dd><?php endif; ?>
       </dl>

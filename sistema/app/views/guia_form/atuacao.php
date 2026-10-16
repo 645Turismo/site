@@ -3,7 +3,7 @@
 $val = fn(string $c) => antigo($c, (string) ($g[$c] ?? ''));
 $funcoesMarcadas = array_map('intval', antigo_lista('funcoes', $x['funcoes']));
 $especialidades = antigo_lista('especialidades', array_filter(array_map('trim', explode(',', (string) ($g['especialidades'] ?? '')))));
-$categorias = antigo_lista('cadastur_categorias', array_filter(array_map('trim', explode(',', (string) ($g['cadastur_categorias'] ?? '')))));
+$categorias = antigo_lista('cadastur_categorias', cadastur_categorias($g['cadastur_categorias'] ?? null));
 $idiomas = [];
 if (isset($_SESSION['antigo']['idioma'])) {
   foreach ((array) $_SESSION['antigo']['idioma'] as $i => $idioma) {
@@ -42,10 +42,10 @@ while (count($idiomas) < 3) {
         <?php foreach (UFS as $uf): ?><option <?= $val('cadastur_uf') === $uf ? 'selected' : '' ?>><?= $uf ?></option><?php endforeach; ?>
       </select></label>
     <label class="campo"><span>Validade</span><input type="date" name="cadastur_validade" value="<?= e($val('cadastur_validade')) ?>"></label>
-    <div class="campo campo-largo"><span>Categorias</span>
-      <div class="opcoes-linha">
-        <?php foreach (CATEGORIAS_CADASTUR as $c): ?>
-          <label class="opcao"><input type="checkbox" name="cadastur_categorias[]" value="<?= e($c) ?>" <?= in_array($c, $categorias, true) ? 'checked' : '' ?>> <span><?= e($c) ?></span></label>
+    <div class="campo campo-largo"><span>Categorias (Portaria MTur nº 37/2021)</span>
+      <div class="opcoes-coluna">
+        <?php foreach (CATEGORIAS_CADASTUR as $c => $descricao): ?>
+          <label class="opcao"><input type="checkbox" name="cadastur_categorias[]" value="<?= e($c) ?>" <?= in_array($c, $categorias, true) ? 'checked' : '' ?>> <span><b><?= e($c) ?></b><small class="texto-2 opcao-descricao"><?= e($descricao) ?></small></span></label>
         <?php endforeach; ?>
       </div>
     </div>

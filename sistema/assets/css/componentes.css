@@ -396,3 +396,7 @@
 @container (max-width: 330px) { .dia-campos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .dia-campos .campo { margin: 0; min-width: 0; }
 .dia-folga .dia-campos .campo:not(:first-child), .dia-folga > .opcao { opacity: 0.5; }
+
+/* Opções empilhadas, com uma linha de explicação embaixo do rótulo (ex.: categorias do Cadastur). */
+.opcoes-coluna { display: flex; flex-direction: column; gap: 12px; }
+.opcao .opcao-descricao { display: block; margin-top: 2px; font-size: 13px; line-height: 1.4; }

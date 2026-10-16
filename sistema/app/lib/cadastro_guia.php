@@ -22,7 +22,31 @@ const DOCUMENTOS_GUIA = [
   'certificado' => ['Certificados e cursos (primeiros socorros, especializações)', false],
 ];
 
-const CATEGORIAS_CADASTUR = ['Regional', 'Nacional', 'América do Sul', 'Internacional', 'Especializado em atrativo turístico'];
+// Categorias do Guia de Turismo no Cadastur (Portaria MTur nº 37, de 11/11/2021, art. 3º): rótulo => o que cobre.
+// A Excursão Nacional já inclui os países da América do Sul; o Especializado em Atrativo exige ser Guia Regional (art. 4º).
+const CATEGORIAS_CADASTUR = [
+  'Guia Regional' => 'Roteiros locais ou intermunicipais dentro de um estado',
+  'Guia de Excursão Nacional' => 'Excursões em todo o Brasil e nos países da América do Sul',
+  'Guia de Excursão Internacional' => 'Excursões nos demais países',
+  'Guia Especializado em Atrativo Turístico' => 'Atrativo natural ou cultural do estado onde fez a formação (exige Guia Regional)',
+];
+
+/** Lê as categorias gravadas (inclusive os nomes antigos) no padrão da Portaria 37/2021, sem repetir. */
+function cadastur_categorias(?string $gravadas): array {
+  $antigos = [
+    'regional' => 'Guia Regional', 'nacional' => 'Guia de Excursão Nacional', 'américa do sul' => 'Guia de Excursão Nacional',
+    'internacional' => 'Guia de Excursão Internacional', 'especializado em atrativo turístico' => 'Guia Especializado em Atrativo Turístico',
+  ];
+  $lidas = [];
+  foreach (explode(',', (string) $gravadas) as $c) {
+    $c = trim($c);
+    $c = $antigos[mb_strtolower($c)] ?? $c;
+    if (isset(CATEGORIAS_CADASTUR[$c])) {
+      $lidas[$c] = true;
+    }
+  }
+  return array_values(array_intersect(array_keys(CATEGORIAS_CADASTUR), array_keys($lidas)));
+}
 const NIVEIS_IDIOMA = ['intermediario' => 'Intermediário', 'fluente' => 'Fluente', 'nativo' => 'Nativo'];
 const IDIOMAS_SUGERIDOS = ['Inglês', 'Espanhol', 'Francês', 'Italiano', 'Alemão', 'Japonês', 'Mandarim', 'Libras'];
 const GENEROS = ['Feminino', 'Masculino', 'Não binário', 'Prefiro não informar'];
@@ -139,7 +163,7 @@ function guia_ler_atuacao(): array {
     }
   }
   $especialidades = array_values(array_intersect((array) ($_POST['especialidades'] ?? []), ESPECIALIDADES));
-  $categorias = array_values(array_intersect((array) ($_POST['cadastur_categorias'] ?? []), CATEGORIAS_CADASTUR));
+  $categorias = array_values(array_intersect(array_keys(CATEGORIAS_CADASTUR), (array) ($_POST['cadastur_categorias'] ?? [])));
   $d = [
     'apresentacao' => mb_substr(trim((string) ($_POST['apresentacao'] ?? '')), 0, 1500) ?: null,
     'especialidades' => $especialidades ? implode(', ', $especialidades) : null,
@@ -157,6 +181,9 @@ function guia_ler_atuacao(): array {
   $exigeIdioma = (bool) array_filter($catalogo['funcoes'], fn($f) => in_array((int) $f['id'], $funcoes, true) && (int) $f['exige_idioma']);
   if ($exigeCadastur && (!$d['cadastur_numero'] || !$d['cadastur_uf'])) {
     $erros[] = 'As funções de guia exigem Cadastur: informe o número e o estado.';
+  }
+  if (in_array('Guia Especializado em Atrativo Turístico', $categorias, true) && !in_array('Guia Regional', $categorias, true)) {
+    $erros[] = 'Pela Portaria MTur 37/2021, o Guia Especializado em Atrativo Turístico precisa ser também Guia Regional.';
   }
   if ($exigeIdioma && !$idiomas) {
     $erros[] = 'Para guia bilíngue, informe pelo menos um idioma.';

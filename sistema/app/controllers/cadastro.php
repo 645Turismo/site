@@ -143,7 +143,7 @@ function pub_cadastro_salvar(int $etapa): void {
 
 function cadastro_concluir(array $g, ?string $senha): never {
   atualizar('guias', ($senha !== null ? ['senha_hash' => hash_senha($senha)] : []) + [
-    'termos_aceitos_em' => agora(), 'status' => 'em_analise', 'cadastro_etapa' => 5, 'atualizado_em' => agora(),
+    'termos_aceitos_em' => agora(), 'termos_versao' => POLITICA_VERSAO, 'status' => 'em_analise', 'cadastro_etapa' => 5, 'atualizado_em' => agora(),
   ], 'id = ?', [$g['id']]);
   auditar('cadastro_concluido', 'guia', (int) $g['id'], null, 'guia', (int) $g['id']);
   enviar_email((string) $g['email'], 'Recebemos seu cadastro',

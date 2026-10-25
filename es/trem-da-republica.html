@@ -48,6 +48,10 @@
     return;
   }
 
+  var consent = null;
+  try { consent = JSON.parse(localStorage.getItem('cookie_consent_645') || 'null'); } catch (e) {}
+  if (!consent || !consent.geo) { attachClickTracking(); return; }
+
   document.documentElement.style.visibility = 'hidden';
   var settled = false;
   var timer = setTimeout(function () { if (!settled) { settled = true; finish(null, true); } }, 1200);
@@ -68,13 +72,7 @@
   });
 })();
 </script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-RBH1J54BYW"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-RBH1J54BYW');
-</script>
+<script src="/consent.js" defer></script>
 <title>Trem da República — Paseo en Tren Histórico en Itu y Salto | 645 Turismo</title>
 <meta name="description" content="Trem da República: paseo en tren histórico entre Itu y Salto con locomotora y vagones restaurados. Transporte desde São Paulo, guía especializado y almuerzo incluidos con 645 Turismo." />
 <link rel="canonical" href="https://645turismo.com.br/es/trem-da-republica" />
@@ -286,6 +284,8 @@
         <a href="/es/" style="font-size:14px;color:rgba(242,245,243,0.75)" style-hover="color:#53D9B2">Inicio</a>
         <a href="{{ whatsappLink }}" target="_blank" rel="noopener" style="font-size:14px;color:rgba(242,245,243,0.75)" style-hover="color:#53D9B2">WhatsApp</a>
         <a href="{{ instagramLink }}" target="_blank" rel="noopener" style="font-size:14px;color:rgba(242,245,243,0.75)" style-hover="color:#53D9B2">@645turismo</a>
+        <a href="/es/privacidade" style="font-size:14px;color:rgba(242,245,243,0.75)" style-hover="color:#53D9B2">Política de Privacidad</a>
+        <a href="#" data-cookie-prefs style="font-size:14px;color:rgba(242,245,243,0.75)" style-hover="color:#53D9B2">Preferencias de cookies</a>
         <span style="font-size:14px;color:rgba(242,245,243,0.75)">www.645turismo.com.br</span>
       </div>
     </div>

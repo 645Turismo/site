@@ -48,6 +48,10 @@
     return;
   }
 
+  var consent = null;
+  try { consent = JSON.parse(localStorage.getItem('cookie_consent_645') || 'null'); } catch (e) {}
+  if (!consent || !consent.geo) { attachClickTracking(); return; }
+
   document.documentElement.style.visibility = 'hidden';
   var settled = false;
   var timer = setTimeout(function () { if (!settled) { settled = true; finish(null, true); } }, 1200);
@@ -68,13 +72,7 @@
   });
 })();
 </script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-RBH1J54BYW"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-RBH1J54BYW');
-</script>
+<script src="/consent.js" defer></script>
 <title>645 Turismo — Travel Agency</title>
 <meta name="description" content="Travel agency registered with the Brazilian Ministry of Tourism (Cadastur 48.925.512/0001-95). Tours, charter transport, training and consulting for individuals, companies and institutions." />
 <link rel="canonical" href="https://645turismo.com.br/en/" />
@@ -391,6 +389,10 @@
         <span style="display:block;margin-bottom:9px;font-size:10.5px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:rgba(242,245,243,0.5)">Message</span>
         <textarea name="mensagem" rows="4" placeholder="Destination, dates and number of people" style="width:100%;border:none;background:transparent;color:#F2F5F3;line-height:1.6;outline:none;padding:0;resize:vertical"></textarea>
       </label>
+      <label style="display:flex;gap:12px;align-items:flex-start;background:#000;padding:18px 22px;cursor:pointer">
+        <input type="checkbox" name="consentimento" value="Yes" required="true" style="margin-top:3px;width:18px;height:18px;flex:0 0 auto;accent-color:#53D9B2" />
+        <span style="font-size:12.5px;line-height:1.55;color:rgba(242,245,243,0.6)">I have read and agree to the <a href="/en/privacidade" target="_blank" rel="noopener" style="color:#53D9B2;text-decoration:underline">Privacy Policy</a> and authorize 645 Turismo to use my data to respond to this contact.</span>
+      </label>
       <div style="background:#000;padding:22px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px">
         <p style="margin:0;font-size:12.5px;line-height:1.5;color:rgba(242,245,243,0.45);max-width:30ch">{{ formNota }}</p>
         <button type="submit" disabled="{{ bloqueado }}" style="{{ botaoStyle }}" style-hover="background:#FADA28">{{ botaoLabel }}</button>
@@ -416,6 +418,8 @@
         <a href="{{ whatsappLink }}" target="_blank" rel="noopener" style="font-size:14px;color:rgba(242,245,243,0.75)" style-hover="color:#53D9B2">{{ whatsappLabel }}</a>
         <a href="{{ instagramLink }}" target="_blank" rel="noopener" style="font-size:14px;color:rgba(242,245,243,0.75)" style-hover="color:#53D9B2">@645turismo</a>
         <a href="trabalhe-conosco" style="font-size:14px;color:rgba(242,245,243,0.75)" style-hover="color:#53D9B2">Careers</a>
+        <a href="/en/privacidade" style="font-size:14px;color:rgba(242,245,243,0.75)" style-hover="color:#53D9B2">Privacy Policy</a>
+        <a href="#" data-cookie-prefs style="font-size:14px;color:rgba(242,245,243,0.75)" style-hover="color:#53D9B2">Cookie preferences</a>
         <span style="font-size:14px;color:rgba(242,245,243,0.75)">www.645turismo.com.br</span>
       </div>
     </div>

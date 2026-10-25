@@ -222,3 +222,18 @@ function adm_guia_excluir_incompleto(int $id): void {
   flash('sucesso', 'Cadastro de ' . ($g['nome_social'] ?: $g['nome']) . ' excluído. A pessoa pode se cadastrar de novo com o mesmo CPF.');
   redirecionar('/admin/guias?aba=' . ($g['status'] === 'rascunho' ? 'rascunhos' : 'pre'));
 }
+
+/** Anonimiza o prestador (pedido de eliminação, LGPD art. 18 VI), mantendo só os registros que a lei manda guardar. */
+function adm_guia_anonimizar(int $id): void {
+  exigir_admin(['coordenador']);
+  $g = um('SELECT id, codigo, status FROM guias WHERE id = ?', [$id]) ?? abortar(404);
+  if ($motivo = lgpd_impedimento_anonimizar($id)) {
+    flash('erro', $motivo);
+    redirecionar("/admin/guias/$id");
+  }
+  lgpd_anonimizar_guia($id);
+  // A auditoria guarda só o código e o status, sem dados pessoais.
+  auditar('guia_anonimizado', 'guia', $id, ['codigo' => $g['codigo'], 'status_anterior' => $g['status']]);
+  flash('sucesso', 'Dados do prestador ' . $g['codigo'] . ' anonimizados. Escalas, relatórios, notas fiscais e pagamentos ficam guardados sem identificar a pessoa.');
+  redirecionar('/admin/guias?aba=inativos');
+}

@@ -23,6 +23,7 @@ function tarefas_agendadas(): void {
   } catch (Throwable $e) {
     error_log('Lembretes de embarque: ' . $e->getMessage());
   }
+  lgpd_retencao_agendada();
 }
 
 /** Horário de embarque do guia: primeiro dia dele na viagem, no horário mais cedo informado. */

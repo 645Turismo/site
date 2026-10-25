@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+(function () {
+  function currentLang() {
+    var p = location.pathname;
+    if (p === '/en' || p.indexOf('/en/') === 0) return 'en';
+    if (p === '/es' || p.indexOf('/es/') === 0) return 'es';
+    return 'pt';
+  }
+  function pathWithLang(lang) {
+    var p = location.pathname.replace(/^\/(en|es)(\/|$)/, '/');
+    if (lang === 'pt') return p || '/';
+    return '/' + lang + p;
+  }
+  var here = currentLang();
+  var saved = null;
+  try { saved = localStorage.getItem('site_lang'); } catch (e) {}
+
+  function attachClickTracking() {
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('[data-lang-link]');
+      if (a) { try { localStorage.setItem('site_lang', a.getAttribute('data-lang-link')); } catch (err) {} }
+    });
+  }
+
+  if (saved) { attachClickTracking(); return; }
+
+  function finish(wanted, restore) {
+    var finalLang = (here === 'pt') ? (wanted || 'pt') : here;
+    try { localStorage.setItem('site_lang', finalLang); } catch (e) {}
+    if (here === 'pt' && finalLang !== 'pt') {
+      location.replace(pathWithLang(finalLang));
+      return;
+    }
+    if (restore) document.documentElement.style.visibility = '';
+    attachClickTracking();
+  }
+
+  var navLang = ((navigator.language || navigator.userLanguage || '') + '').toLowerCase();
+  var browserWanted = navLang.indexOf('en') === 0 ? 'en' : (navLang.indexOf('es') === 0 ? 'es' : null);
+
+  if (here !== 'pt' || browserWanted || typeof fetch !== 'function') {
+    finish(browserWanted, false);
+    return;
+  }
+
+  var consent = null;
+  try { consent = JSON.parse(localStorage.getItem('cookie_consent_645') || 'null'); } catch (e) {}
+  if (!consent || !consent.geo) { attachClickTracking(); return; }
+
+  document.documentElement.style.visibility = 'hidden';
+  var settled = false;
+  var timer = setTimeout(function () { if (!settled) { settled = true; finish(null, true); } }, 1200);
+  fetch('https://ipapi.co/json/').then(function (r) { return r.json(); }).then(function (data) {
+    if (settled) return;
+    settled = true;
+    clearTimeout(timer);
+    var cc = ((data && data.country_code) || '').toUpperCase();
+    var ES_COUNTRIES = ['AR','MX','CO','CL','PE','VE','EC','GT','CU','BO','DO','HN','PY','SV','NI','CR','PA','UY','ES','GQ'];
+    var EN_COUNTRIES = ['US','GB','CA','AU','NZ','IE'];
+    var geoWanted = ES_COUNTRIES.indexOf(cc) >= 0 ? 'es' : (EN_COUNTRIES.indexOf(cc) >= 0 ? 'en' : null);
+    finish(geoWanted, true);
+  }).catch(function () {
+    if (settled) return;
+    settled = true;
+    clearTimeout(timer);
+    finish(null, true);
+  });
+})();
+</script>
+<script src="/consent.js" defer></script>
+<title>Política de Privacidade e Cookies — 645 Turismo</title>
+<meta name="description" content="Como a 645 Turismo trata dados pessoais e usa cookies neste site, conforme a LGPD (Lei 13.709/2018), e como exercer seus direitos." />
+<link rel="canonical" href="https://645turismo.com.br/privacidade" />
+<link rel="alternate" hreflang="pt-BR" href="https://645turismo.com.br/privacidade" />
+<link rel="alternate" hreflang="en" href="https://645turismo.com.br/en/privacidade" />
+<link rel="alternate" hreflang="es" href="https://645turismo.com.br/es/privacidade" />
+<link rel="alternate" hreflang="x-default" href="https://645turismo.com.br/privacidade" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="645 Turismo" />
+<meta property="og:title" content="Política de Privacidade e Cookies — 645 Turismo" />
+<meta property="og:description" content="Como a 645 Turismo trata dados pessoais e usa cookies neste site, conforme a LGPD (Lei 13.709/2018), e como exercer seus direitos." />
+<meta property="og:url" content="https://645turismo.com.br/privacidade" />
+<meta property="og:locale" content="pt_BR" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300;6..72,400&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: #000; color: #F2F5F3; font-family: Montserrat, system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  * { box-sizing: border-box; }
+  a { color: #53D9B2; text-decoration: none; } a:hover { color: #FADA28; }
+  img { display: block; max-width: 100%; }
+  header { position: sticky; top: 0; z-index: 50; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 24px; padding: 14px clamp(18px,4vw,40px); background: rgba(0,0,0,0.72); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(242,245,243,0.1); }
+  nav { display: flex; flex-wrap: wrap; align-items: center; gap: 10px clamp(16px,2.4vw,30px); }
+  nav a.nl { font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #F2F5F3; }
+  nav a.nl:hover { color: #53D9B2; }
+  .lang { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; }
+  .lang a { color: rgba(242,245,243,0.5); } .lang a:hover, .lang a.on { color: #53D9B2; } .lang span { color: rgba(242,245,243,0.25); }
+  main { max-width: 860px; margin: 0 auto; padding: clamp(48px,7vw,90px) clamp(18px,4vw,40px) 0; }
+  .eyebrow { margin: 0 0 20px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; color: #53D9B2; }
+  h1 { margin: 0; font-family: Newsreader, Georgia, serif; font-weight: 400; font-size: clamp(34px,5.6vw,60px); line-height: 1.04; letter-spacing: -0.02em; color: #fff; text-wrap: balance; }
+  .upd { margin: 18px 0 0; font-size: 13px; color: rgba(242,245,243,0.5); }
+  .intro { margin: 26px 0 0; font-size: 16px; line-height: 1.75; color: rgba(242,245,243,0.78); }
+  h2 { margin: 48px 0 14px; font-family: Newsreader, Georgia, serif; font-weight: 400; font-size: clamp(24px,3vw,32px); line-height: 1.15; color: #fff; }
+  main p, main li { font-size: 15.5px; line-height: 1.75; color: rgba(242,245,243,0.72); }
+  main ul { padding-left: 20px; } main li { margin: 0 0 10px; }
+  main strong { color: #F2F5F3; }
+  code { font-family: ui-monospace, Menlo, monospace; font-size: 13px; background: rgba(242,245,243,0.08); padding: 1px 6px; border-radius: 3px; color: #F2F5F3; }
+  .tw { overflow-x: auto; }
+  table.tab { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 13.5px; }
+  .tab th, .tab td { text-align: left; vertical-align: top; padding: 12px 14px; border: 1px solid rgba(242,245,243,0.14); line-height: 1.55; color: rgba(242,245,243,0.78); }
+  .tab th { background: #05100C; color: #fff; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+  .btn { display: inline-flex; align-items: center; margin-top: 8px; padding: 14px 26px; border-radius: 999px; border: 1px solid rgba(242,245,243,0.45); background: transparent; color: #F2F5F3; font: 700 12px/1 Montserrat, system-ui, sans-serif; letter-spacing: 0.1em; text-transform: uppercase; min-height: 44px; cursor: pointer; }
+  .btn:hover { border-color: #53D9B2; color: #53D9B2; }
+  footer { margin-top: clamp(64px,8vw,100px); border-top: 1px solid rgba(242,245,243,0.12); padding: 34px clamp(18px,4vw,40px) 44px; }
+  footer .fl { max-width: 1320px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 14px 30px; align-items: center; justify-content: space-between; }
+  footer .links { display: flex; flex-wrap: wrap; gap: 14px 30px; }
+  footer a { font-size: 14px; color: rgba(242,245,243,0.75); } footer a:hover { color: #53D9B2; }
+  footer .small { max-width: 1320px; margin: 22px auto 0; font-size: 11.5px; color: rgba(242,245,243,0.38); }
+</style>
+</head>
+<body>
+<header>
+  <a href="/" style="display:block"><img src="assets/logo-branco.png" alt="645 Turismo" style="height:30px;width:auto" /></a>
+  <nav>
+    <a class="nl" href="/">Início</a>
+    <div class="lang">
+      <a href="/privacidade" data-lang-link="pt" class="on">PT</a><span>/</span>
+      <a href="/en/privacidade" data-lang-link="en">EN</a><span>/</span>
+      <a href="/es/privacidade" data-lang-link="es">ES</a>
+    </div>
+  </nav>
+</header>
+<main>
+  <p class="eyebrow">Privacidade e LGPD</p>
+  <h1>Política de Privacidade e Cookies</h1>
+  <p class="upd">Última atualização: 25/10/2026</p>
+  <p class="intro">Esta política explica, de forma direta, quais dados pessoais a 645 Turismo trata neste site (645turismo.com.br), para quê, por quanto tempo e quais são os seus direitos, conforme a Lei Geral de Proteção de Dados (Lei 13.709/2018, a LGPD).</p>
+<h2 id="s1">1. Quem é responsável</h2>
+<p><strong>Controladora:</strong> 645 TURISMO CONSULTORIA E SERVICOS LTDA, CNPJ 48.925.512/0001-95 (645 Turismo).</p>
+<p><strong>Encarregado pelo tratamento de dados pessoais (art. 41 da LGPD) e canal para pedidos de titulares:</strong> <a href="mailto:contato@645turismo.com.br">contato@645turismo.com.br</a>.</p>
+<p>A Área do Prestador (sistema.645turismo.com.br), onde guias e prestadores se cadastram, tem política própria: <a href="https://sistema.645turismo.com.br/privacidade" target="_blank" rel="noopener">sistema.645turismo.com.br/privacidade</a>.</p>
+<h2 id="s2">2. Quais dados tratamos, para quê e em que base legal</h2>
+<ul>
+<li><strong>Contato pelo formulário do site:</strong> nome, WhatsApp/telefone, e-mail, tipo de atendimento e mensagem. Usamos para responder seu pedido de orçamento ou informação. Base legal: seu consentimento (art. 7, I) e procedimentos preliminares a pedido seu (art. 7, V). O formulário é enviado por meio do serviço Web3Forms, que entrega a mensagem ao nosso e-mail.</li>
+<li><strong>Contato por WhatsApp:</strong> ao clicar nos botões de WhatsApp você sai do site e fala diretamente com a 645; recebemos seu número e o que você escrever. A conversa também é regida pelas políticas do WhatsApp.</li>
+<li><strong>Estatísticas de uso (Google Analytics 4):</strong> páginas visitadas, tempo no site, tipo de aparelho e navegador, país/cidade aproximados e identificadores de cookie. <strong>Só com o seu consentimento</strong> (art. 7, I), para entender quais conteúdos são úteis e melhorar o site. Os sinais de publicidade do Google ficam desligados.</li>
+<li><strong>Idioma por localização:</strong> se você aceitar, consultamos seu endereço IP no serviço ipapi.co apenas para descobrir o país e sugerir inglês ou espanhol. Não guardamos o IP; só a escolha de idioma, no seu navegador. Base legal: consentimento (art. 7, I).</li>
+<li><strong>Fontes de letra (Google Fonts) e registros do servidor:</strong> para exibir o site, seu navegador pede as fontes ao Google (que recebe seu IP) e o servidor de hospedagem registra IP, data e páginas acessadas por segurança. Base legal: legítimo interesse (art. 7, IX) em manter o site funcionando e seguro.</li>
+<li><strong>Pesquisa de satisfação após a viagem:</strong> notas, comentários e, se você quiser, um meio de contato. Usamos para melhorar os passeios e responder quem pediu retorno. Base legal: legítimo interesse (art. 7, IX). O painel de resultados é restrito à equipe.</li>
+<li><strong>Viagens e passageiros:</strong> dados informados na compra (nome, documento, data de nascimento, telefone e observações) são usados para montar listas de embarque e operar a viagem, e compartilhados apenas com guias e equipe escalados. Base legal: execução de contrato (art. 7, V) e obrigações legais (art. 7, II).</li>
+</ul>
+<p>Não vendemos seus dados, não fazemos perfis para publicidade e não tomamos decisões automatizadas sobre você.</p>
+<h2 id="cookies">3. Cookies e armazenamento local</h2>
+<p>Cookies são pequenos arquivos que o navegador guarda. Usamos também o armazenamento local do navegador. <strong>Sem o seu consentimento, só rodam os itens essenciais</strong>. Você escolhe no aviso que aparece na primeira visita, e pode mudar a qualquer momento em “Preferências de cookies”, no rodapé de qualquer página. A escolha vale por 12 meses.</p>
+<div class="tw"><table class="tab"><thead><tr><th>Nome</th><th>Para quê</th><th>Categoria</th><th>Duração</th></tr></thead><tbody>
+<tr><td><code>cookie_consent_645</code></td><td>Guarda a sua escolha sobre cookies</td><td>Essencial</td><td>12 meses</td></tr>
+<tr><td><code>site_lang</code></td><td>Lembra o idioma escolhido</td><td>Essencial (preferência)</td><td>Até você apagar</td></tr>
+<tr><td><code>_ga</code>, <code>_ga_RBH1J54BYW</code></td><td>Google Analytics: distingue visitantes e sessões para estatísticas</td><td>Estatísticas (só com consentimento)</td><td>Até 2 anos</td></tr>
+</tbody></table></div>
+<p>Ao recusar as estatísticas, o Google Analytics não é carregado e seus cookies são apagados. Você também pode bloquear ou apagar cookies nas configurações do navegador.</p>
+<h2 id="s4">4. Com quem compartilhamos e transferência internacional</h2>
+<p>Compartilhamos dados apenas com quem precisa para prestar o serviço: nossa equipe, guias e prestadores escalados (para viagens), instituições financeiras (pagamentos), autoridades quando a lei exigir e fornecedores de tecnologia que atuam em nosso nome:</p>
+<ul>
+<li><strong>Locaweb</strong> (Brasil): hospedagem do site e do sistema.</li>
+<li><strong>Web3Forms</strong> (EUA): entrega as mensagens do formulário de contato.</li>
+<li><strong>Google</strong> (EUA): Google Analytics (se você consentir) e Google Fonts.</li>
+<li><strong>ipapi.co</strong> (EUA): descobre o país pelo IP (se você consentir).</li>
+</ul>
+<p>Alguns desses fornecedores ficam fora do Brasil, o que caracteriza transferência internacional de dados (art. 33 da LGPD). Ela ocorre com base no seu consentimento (art. 33, VIII) ou, no caso do formulário, para executar o atendimento que você pediu, e os fornecedores adotam salvaguardas contratuais próprias.</p>
+<h2 id="s5">5. Por quanto tempo guardamos</h2>
+<ul>
+<li><strong>Mensagens de contato:</strong> pelo tempo necessário ao atendimento e por até 12 meses depois do último contato, exceto se virar um contrato (aí valem os prazos abaixo).</li>
+<li><strong>Dados de passageiros:</strong> apagados ou anonimizados 180 dias depois do fim da viagem; registros de venda e fiscais são guardados pelos prazos legais (em geral 5 anos).</li>
+<li><strong>Estatísticas do Google Analytics:</strong> conforme a configuração da conta, por até 14 meses.</li>
+<li><strong>Pesquisa de satisfação:</strong> enquanto forem úteis para melhorar o serviço, preferencialmente de forma agregada.</li>
+<li><strong>Escolha de cookies e idioma:</strong> no seu navegador, até expirar ou você apagar.</li>
+</ul>
+<h2 id="s6">6. Seus direitos (art. 18 da LGPD)</h2>
+<p>Você pode, a qualquer momento: confirmar se tratamos seus dados; acessar uma cópia; corrigir dados incompletos ou desatualizados; pedir anonimização, bloqueio ou eliminação de dados desnecessários ou tratados fora da lei; pedir portabilidade; saber com quem compartilhamos; revogar consentimentos (nas “Preferências de cookies” ou por e-mail); e se opor a tratamentos feitos com base em legítimo interesse.</p>
+<p>Para exercer qualquer direito, escreva para <a href="mailto:contato@645turismo.com.br">contato@645turismo.com.br</a>. Respondemos em até <strong>15 dias</strong>. Se achar que seus direitos não foram respeitados, você pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD): <a href="https://www.gov.br/anpd" target="_blank" rel="noopener">gov.br/anpd</a>.</p>
+<h2 id="s7">7. Como protegemos seus dados</h2>
+<p>Usamos conexão criptografada (HTTPS), acesso restrito por login e por necessidade, registro de acessos a dados sensíveis, retenção limitada e fornecedores que adotam medidas de segurança. Se ocorrer um incidente que possa causar risco ou dano relevante, comunicaremos você e a ANPD, conforme a lei.</p>
+<h2 id="s8">8. Crianças e adolescentes</h2>
+<p>Este site não é dirigido a menores de 18 anos e não coleta intencionalmente dados deles. Reservas e contatos devem ser feitos por responsáveis. Se identificarmos dados de uma criança fornecidos sem autorização do responsável, vamos apagá-los.</p>
+<h2 id="s9">9. Mudanças nesta política</h2>
+<p>Podemos atualizar este texto para refletir mudanças no site ou na lei. Mudanças relevantes serão destacadas nesta página, com a data da última atualização no topo. Se a mudança exigir novo consentimento, o aviso de cookies será exibido novamente.</p>
+  <p style="margin-top:32px"><button type="button" class="btn" data-cookie-prefs>Preferências de cookies</button></p>
+</main>
+<footer>
+  <div class="fl">
+    <a href="/" style="display:block"><img src="assets/logo-branco.png" alt="645 Turismo" style="height:32px;width:auto" /></a>
+    <div class="links">
+      <a href="/">Início</a>
+      <a href="#" data-cookie-prefs>Preferências de cookies</a>
+      <span style="font-size:14px;color:rgba(242,245,243,0.75)">www.645turismo.com.br</span>
+    </div>
+  </div>
+  <p class="small">645 Turismo — Ministério do Turismo — Cadastur 48.925.512/0001-95</p>
+</footer>
+</body>
+</html>

@@ -7,6 +7,7 @@ const ABAS_PERFIL = [
   'documentos' => 'Documentos',
   'recebimento' => 'Recebimento',
   'senha' => 'Senha',
+  'privacidade' => 'Privacidade',
 ];
 
 /** Abas em uso (sem Documentos enquanto o envio estiver desligado). */
@@ -140,4 +141,67 @@ function guia_perfil_reenviar(): void {
     . '<p><a href="' . e(url_absoluta('/admin/guias/' . (int) $g['id'])) . '">Abrir ficha no Painel ADM</a></p>');
   flash('sucesso', 'Cadastro reenviado para análise.');
   redirecionar('/guia/hoje');
+}
+
+// ---------- Privacidade (LGPD): cópia dos dados, pedidos ao titular e revogação ----------
+
+const PEDIDOS_PRIVACIDADE = [
+  'acesso' => 'Acesso aos meus dados',
+  'correcao' => 'Correção de dados',
+  'exclusao' => 'Exclusão ou anonimização dos meus dados',
+  'portabilidade' => 'Portabilidade dos meus dados',
+  'informacoes' => 'Informações sobre uso e compartilhamento',
+];
+
+/** Baixa uma cópia dos dados do próprio prestador (JSON). */
+function guia_perfil_privacidade_baixar(): void {
+  $g = exigir_guia();
+  auditar('lgpd_copia_dados', 'guia', (int) $g['id']);
+  header('Content-Type: application/json; charset=utf-8');
+  header('Content-Disposition: attachment; filename="meus-dados-645turismo.json"');
+  header('Cache-Control: no-store');
+  echo json_encode(lgpd_exportar_guia((int) $g['id']), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+  exit;
+}
+
+/** Pedido do titular: vira um chamado para a equipe, que responde pelo próprio sistema. */
+function guia_perfil_privacidade_solicitar(): void {
+  $g = exigir_guia();
+  $tipo = entrada('tipo');
+  if (!isset(PEDIDOS_PRIVACIDADE[$tipo])) {
+    flash('erro', 'Escolha o tipo de pedido.');
+    redirecionar('/guia/perfil?aba=privacidade');
+  }
+  $detalhe = mb_substr(trim((string) ($_POST['detalhe'] ?? '')), 0, 2000);
+  $titulo = 'Privacidade (LGPD): ' . PEDIDOS_PRIVACIDADE[$tipo];
+  $motivo = valor("SELECT id FROM chamado_motivos WHERE nome LIKE 'Privacidade (LGPD)%'");
+  $mensagem = 'Pedido do titular de dados: ' . PEDIDOS_PRIVACIDADE[$tipo] . '.' . ($detalhe !== '' ? "\n\n" . $detalhe : '');
+  $id = transacao(function () use ($g, $titulo, $motivo, $mensagem) {
+    $id = inserir('chamados', [
+      'guia_id' => $g['id'], 'titulo' => $titulo, 'motivo_id' => $motivo ?: null, 'urgente' => 0,
+      'status' => 'aberto', 'criado_em' => agora(), 'atualizado_em' => agora(),
+    ]);
+    inserir('chamado_mensagens', ['chamado_id' => $id, 'autor_tipo' => 'guia', 'autor_id' => $g['id'],
+      'mensagem' => $mensagem, 'criado_em' => agora()]);
+    return $id;
+  });
+  auditar('lgpd_pedido_titular', 'chamado', $id, ['tipo' => $tipo]);
+  enviar_email(email_equipe(), 'Pedido de privacidade (LGPD) de ' . primeiro_nome($g),
+    '<p><strong>' . e($g['nome']) . '</strong> (código ' . e($g['codigo']) . ') fez um pedido como titular de dados: <strong>' . e(PEDIDOS_PRIVACIDADE[$tipo]) . '</strong>.</p>'
+    . ($detalhe !== '' ? '<p>' . nl2br(e($detalhe)) . '</p>' : '')
+    . '<p>O prazo para responder é de 15 dias. <a href="' . e(url_absoluta('/admin/atendimento/' . $id)) . '">Responder no Painel ADM</a></p>');
+  flash('sucesso', 'Pedido recebido. Respondemos pelo chamado em até 15 dias.');
+  redirecionar('/guia/ajuda/chamados/' . $id);
+}
+
+/** Revoga a autorização para dados de saúde: apaga os campos de saúde do cadastro. */
+function guia_perfil_privacidade_revogar_saude(): void {
+  $g = exigir_guia();
+  atualizar('guias', [
+    'pcd' => 0, 'pcd_descricao' => null, 'restricao_alimentar' => null, 'doencas_preexistentes' => null,
+    'consentimento_saude_em' => null, 'atualizado_em' => agora(),
+  ], 'id = ?', [$g['id']]);
+  auditar('lgpd_saude_revogada', 'guia', (int) $g['id']);
+  flash('sucesso', 'Autorização revogada. Seus dados de saúde foram apagados do cadastro.');
+  redirecionar('/guia/perfil?aba=privacidade');
 }

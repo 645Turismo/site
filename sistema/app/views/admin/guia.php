@@ -189,5 +189,11 @@ $statusDoc = ['enviado' => ['Para conferir', 'aviso'], 'aprovado' => ['Aprovado'
       <?= csrf_campo() ?><button type="submit" class="btn btn-texto btn-p">Enviar link de nova senha</button>
     </form>
     <?php endif; ?>
+    <?php if (!in_array($g['status'], ['rascunho', 'pre_cadastro'], true) && empty($g['anonimizado_em'])): ?>
+    <form method="post" action="/admin/guias/<?= (int) $g['id'] ?>/anonimizar" class="inline-form"
+          data-confirmar="Anonimizar os dados de <?= e($g['nome_social'] ?: $g['nome']) ?> (pedido de exclusão, LGPD)? Nome, CPF, contatos, endereço, saúde, documentos, foto e dados bancários serão apagados e o acesso encerrado. Escalas, relatórios, notas fiscais e pagamentos ficam guardados sem identificar a pessoa. Não dá para desfazer.">
+      <?= csrf_campo() ?><button type="submit" class="btn btn-texto btn-p vermelho">Anonimizar dados (LGPD)</button>
+    </form>
+    <?php endif; ?>
   </aside>
 </div>

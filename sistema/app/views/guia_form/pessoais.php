@@ -45,6 +45,14 @@ $val = fn(string $c) => antigo($c, (string) ($g[$c] ?? ''));
     <label class="campo campo-largo"><span>Doença preexistente ou cuidado de saúde</span>
       <input type="text" name="doencas_preexistentes" maxlength="500" value="<?= e($val('doencas_preexistentes')) ?>" placeholder="Ex.: diabetes, pressão alta, alergia a frutos do mar. Deixe em branco se não tiver.">
       <small class="texto-2">Só a equipe da 645 vê. Ajuda a cuidar de você durante as viagens.</small></label>
+    <div class="campo campo-largo">
+      <?php if (!empty($g['consentimento_saude_em'])): ?>
+        <small class="texto-2">Autorização para tratar seus dados de saúde registrada em <?= e(formatar_data(substr((string) $g['consentimento_saude_em'], 0, 10))) ?>. Você pode revogar em Perfil → Privacidade.</small>
+      <?php else: ?>
+        <label class="opcao"><input type="checkbox" name="consentimento_saude" value="1" <?= antigo('consentimento_saude', '') ? 'checked' : '' ?>>
+          <span><strong>Autorização para dados de saúde.</strong> Se você preencheu deficiência, restrição alimentar ou doença acima: autorizo a 645 Turismo a tratar essas informações, que são dados pessoais sensíveis, somente para cuidar de mim e adaptar a operação das viagens e tours, com acesso restrito à equipe. Posso revogar quando quiser em Perfil → Privacidade. Se não preencher nada, não precisa marcar. <a href="/privacidade#saude" target="_blank">Saiba mais</a></span></label>
+      <?php endif; ?>
+    </div>
   </div>
 </fieldset>
 

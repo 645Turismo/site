@@ -270,6 +270,10 @@ function guia_dias_da_lista(array $g, int $viagemId): array {
   if (!$dias) {
     abortar(403, 'A lista de passageiros fica disponível depois que você confirma presença.');
   }
+  // Minimização de dados (LGPD): depois do dia seguinte ao fim da viagem o guia não vê mais os dados dos passageiros.
+  if (hoje() > date('Y-m-d', strtotime($v['data_fim'] . ' +1 day'))) {
+    abortar(403, 'A lista de passageiros foi encerrada: por proteção de dados, ela só fica disponível até o dia seguinte ao fim da viagem.');
+  }
   return [$v, $dias];
 }
 

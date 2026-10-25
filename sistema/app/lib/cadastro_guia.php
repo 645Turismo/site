@@ -142,6 +142,17 @@ function guia_ler_pessoais(bool $comCpf, ?int $guiaId): array {
   if (!$d['cidade'] || !$d['uf']) {
     $erros[] = 'Informe a cidade e o estado onde você mora.';
   }
+  // Dados de saúde são sensíveis (LGPD art. 11): exigem autorização específica e destacada.
+  if (lgpd_informou_dado_sensivel($d)) {
+    $jaAutorizou = $guiaId ? (bool) valor('SELECT consentimento_saude_em FROM guias WHERE id = ?', [$guiaId]) : false;
+    if (!empty($_POST['consentimento_saude'])) {
+      if (!$jaAutorizou) {
+        $d['consentimento_saude_em'] = agora();
+      }
+    } elseif (!$jaAutorizou) {
+      $erros[] = 'Para registrar informações de saúde (deficiência, restrição alimentar ou doença), marque a autorização específica logo abaixo desses campos.';
+    }
+  }
   return [$d, $erros];
 }
 

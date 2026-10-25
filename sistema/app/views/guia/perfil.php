@@ -28,6 +28,11 @@ $acoes = ['dados' => 'pessoais', 'atuacao' => 'atuacao', 'documentos' => 'docume
   <?php endforeach; ?>
 </nav>
 
+<?php if ($aba === 'privacidade'): ?>
+<div class="form form-secoes">
+  <?php require RAIZ . '/app/views/guia_form/privacidade.php'; ?>
+</div>
+<?php else: ?>
 <form method="post" action="/guia/perfil/<?= e($acoes[$aba]) ?>" class="form form-secoes" enctype="multipart/form-data" novalidate>
   <?= csrf_campo() ?>
   <?php if ($aba === 'dados'): ?>
@@ -54,3 +59,4 @@ $acoes = ['dados' => 'pessoais', 'atuacao' => 'atuacao', 'documentos' => 'docume
     <button type="submit" class="btn btn-primario"><?= $aba === 'documentos' ? 'Enviar documentos' : 'Salvar' ?></button>
   </div>
 </form>
+<?php endif; ?>

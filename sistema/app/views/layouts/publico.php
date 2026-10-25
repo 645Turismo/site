@@ -22,9 +22,12 @@
   <footer class="pub-rodape">
     <span>© <?= date('Y') ?> 645 Turismo · Cadastur 48.925.512/0001-95</span>
     <span class="pub-rodape-links">
+      <a href="/privacidade">Privacidade</a>
+      <a href="/termos">Termos</a>
       <a href="https://645turismo.com.br" rel="noopener">645turismo.com.br</a>
       <a href="/admin">Acesso ADM</a>
     </span>
+    <span class="pub-rodape-aviso">Este sistema usa apenas cookies essenciais (sessão e segurança), sem rastreamento. <a href="/privacidade#cookies">Saiba mais</a></span>
   </footer>
   <script src="<?= e(asset('js/app.js')) ?>"></script>
 </body>

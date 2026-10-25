@@ -52,3 +52,4 @@ require RAIZ . '/app/lib/arquivos.php';
 require RAIZ . '/app/lib/cadastro_guia.php';
 require RAIZ . '/app/lib/migracao.php';
 require RAIZ . '/app/lib/lembretes.php';
+require RAIZ . '/app/lib/lgpd.php';

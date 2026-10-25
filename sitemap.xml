@@ -81,4 +81,31 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://645turismo.com.br/es/trem-da-republica" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://645turismo.com.br/trem-da-republica" />
   </url>
+  <url>
+    <loc>https://645turismo.com.br/privacidade</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://645turismo.com.br/privacidade" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://645turismo.com.br/en/privacidade" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://645turismo.com.br/es/privacidade" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://645turismo.com.br/privacidade" />
+  </url>
+  <url>
+    <loc>https://645turismo.com.br/en/privacidade</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://645turismo.com.br/privacidade" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://645turismo.com.br/en/privacidade" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://645turismo.com.br/es/privacidade" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://645turismo.com.br/privacidade" />
+  </url>
+  <url>
+    <loc>https://645turismo.com.br/es/privacidade</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://645turismo.com.br/privacidade" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://645turismo.com.br/en/privacidade" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://645turismo.com.br/es/privacidade" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://645turismo.com.br/privacidade" />
+  </url>
 </urlset>

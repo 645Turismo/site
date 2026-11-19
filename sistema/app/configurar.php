@@ -123,7 +123,7 @@ function configurar_executar(string $arquivoConfig): void {
       'usuario' => $dados['smtp_usuario'] ?? '',
       'senha' => (string) ($_POST['smtp_senha'] ?? ''),
       'remetente' => $dados['smtp_usuario'] ?? '',
-      'remetente_nome' => '645 Turismo',
+      'remetente_nome' => '645 Turismo | Operacional',
     ],
     // O mesmo código libera a página /instalar, que cria as tabelas e o primeiro ADM.
     'setup_token' => $codigo,

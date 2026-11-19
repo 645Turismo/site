@@ -27,7 +27,7 @@ return [
     'usuario' => 'nao-responda@645turismo.com.br',
     'senha' => '',
     'remetente' => 'nao-responda@645turismo.com.br',
-    'remetente_nome' => '645 Turismo',
+    'remetente_nome' => '645 Turismo | Operacional',
   ],
 
   // Código que libera a página /instalar (cria as tabelas e o primeiro ADM).

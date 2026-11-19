@@ -195,7 +195,7 @@ function smtp_enviar(string $para, string $assunto, string $html, string $texto,
     $fronteira = 'b' . bin2hex(random_bytes(12));
     $cabecalhos = [
       'Date: ' . date('r'),
-      'From: =?UTF-8?B?' . base64_encode($c['remetente_nome']) . '?= <' . $c['remetente'] . '>',
+      'From: =?UTF-8?B?' . base64_encode(configuracao('email_remetente_nome', $c['remetente_nome']) ?: $c['remetente_nome']) . '?= <' . $c['remetente'] . '>',
       'To: <' . $para . '>',
       'Subject: =?UTF-8?B?' . base64_encode($assunto) . '?=',
       'Message-ID: <' . bin2hex(random_bytes(16)) . '@' . substr(strrchr($c['remetente'], '@'), 1) . '>',

@@ -144,6 +144,7 @@ function lgpd_retencao_processar(): array {
   q('DELETE FROM login_tentativas WHERE criado_em < ?', [$dias(RETENCAO_TOKENS_DIAS)]);
   q('DELETE FROM password_resets WHERE criado_em < ?', [$dias(RETENCAO_TOKENS_DIAS)]);
   q('DELETE FROM emails_enviados WHERE criado_em < ?', [$dias(RETENCAO_EMAILS_DIAS)]);
+  q('DELETE FROM emails_pendentes WHERE criado_em < ?', [$dias(3)]);
   q('DELETE FROM auditoria WHERE criado_em < ?', [$dias(RETENCAO_AUDITORIA_DIAS)]);
   return $feito;
 }

@@ -7,6 +7,7 @@ const LEMBRETE_HORAS_ANTES = 12;
 
 /** Roda no fim da requisição, depois que a página já foi entregue ao navegador. */
 function tarefas_agendadas(): void {
+  email_reenvio_agendado();
   $marca = RAIZ . '/storage/logs/.lembretes';
   if (is_file($marca) && time() - (int) filemtime($marca) < 600) {
     return;

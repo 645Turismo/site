@@ -154,6 +154,25 @@
     });
   });
 
+  // Arquivos anexados: copia para a memória assim que escolhido. Evita o erro ERR_UPLOAD_FILE_CHANGED do Chrome
+  // quando o original (WhatsApp, Drive, câmera) muda ou some entre a escolha e o envio.
+  document.querySelectorAll('input[type="file"]').forEach(function (campo) {
+    campo.addEventListener('change', function () {
+      if (!campo.files || !campo.files.length || !window.DataTransfer || !window.File) return;
+      var originais = Array.prototype.slice.call(campo.files);
+      Promise.all(originais.map(function (f) {
+        return f.arrayBuffer().then(function (buf) { return new File([buf], f.name, { type: f.type, lastModified: f.lastModified }); });
+      })).then(function (copias) {
+        var dt = new DataTransfer();
+        copias.forEach(function (c) { dt.items.add(c); });
+        campo.files = dt.files;
+      }).catch(function () {
+        campo.value = '';
+        window.alert('Não foi possível ler o arquivo. Salve-o na memória do aparelho (Downloads ou Galeria) e escolha de novo.');
+      });
+    });
+  });
+
   // Mantém o item ativo do menu visível no celular
   var ativo = document.querySelector('.app-nav a.ativo');
   if (ativo && ativo.scrollIntoView) {

@@ -7,3 +7,4 @@ if (PHP_SAPI !== 'cli') {
 require dirname(__DIR__) . '/app/bootstrap.php';
 migracoes_automaticas();
 echo 'Lembretes enviados: ' . lembretes_embarque_processar() . PHP_EOL;
+echo 'E-mails reenviados (fila do erro 451): ' . emails_reenviar_pendentes() . PHP_EOL;

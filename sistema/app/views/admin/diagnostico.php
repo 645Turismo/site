@@ -48,7 +48,8 @@
               <td><?= e(formatar_data_hora($em['criado_em'])) ?></td>
               <td><?= e($em['para']) ?></td>
               <td><?= e($em['assunto']) ?></td>
-              <td><?php if ($em['status'] === 'enviado'): ?><span class="selo selo-sucesso">Aceito pelo servidor</span>
+              <td><?php if ($em['status'] === 'enviado'): ?><span class="selo selo-sucesso">Aceito pelo servidor</span><?php if ($em['erro']): ?><br><small class="texto-2"><?= e((string) $em['erro']) ?></small><?php endif; ?>
+                <?php elseif ($em['status'] === 'agendado'): ?><span class="selo selo-aviso">Reenvio agendado</span><br><small class="texto-2"><?= e((string) $em['erro']) ?></small>
                 <?php elseif ($em['status'] === 'teste'): ?><span class="selo selo-neutro">Ambiente de testes</span>
                 <?php else: ?><span class="selo selo-erro">Falhou</span><br><small class="texto-2"><?= e((string) $em['erro']) ?></small><?php endif; ?></td>
             </tr>

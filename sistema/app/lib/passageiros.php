@@ -25,6 +25,13 @@ const CAMPOS_PASSAGEIRO = [
 // Ordem das colunas da planilha padrão da 645 (a numeração da primeira coluna é a poltrona).
 const ORDEM_PLANILHA = ['poltrona', 'nome', 'tipo_documento', 'documento', 'nascimento', 'venda', 'embarque', 'observacao', 'telefone', 'tipo_pax'];
 
+// Cores de pulseira para identificar o passageiro durante a viagem: chave => [nome, cor da bolinha].
+const PULSEIRAS = [
+  'azul' => ['Azul', '#2f7bff'], 'verde' => ['Verde', '#22b55a'], 'preto' => ['Preto', '#111111'], 'rosa' => ['Rosa', '#ff6fb1'],
+  'amarelo' => ['Amarelo', '#f5c518'], 'vermelho' => ['Vermelho', '#e5383b'], 'laranja' => ['Laranja', '#ff8c1a'],
+  'roxo' => ['Roxo', '#8e5bd6'], 'branco' => ['Branco', '#f2f2f2'],
+];
+
 // Só a criança de colo pode dividir a poltrona com outro passageiro.
 // Staff: equipe da 645 na viagem (guia, coordenação); pode ocupar poltrona bloqueada e fica fora da contagem.
 const TIPOS_PAX = ['adulto' => 'Adulto', 'crianca' => 'Criança', 'colo' => 'Criança de colo', 'staff' => 'Staff'];
@@ -274,10 +281,12 @@ function passageiros_estado(array $viagem, array $diaria, bool $podeMarcar): arr
       'checkout' => $checkout,
       'noshow' => $noshow,
       'equipe' => $equipe,
+      'pulseira' => isset(PULSEIRAS[$l['pulseira'] ?? '']) ? $l['pulseira'] : null,
     ];
   }
   return [
-    'diaria' => ['id' => (int) $diaria['id'], 'data' => formatar_data($diaria['data'])],
+    'diaria' => ['id' => (int) $diaria['id'], 'data' => formatar_data($diaria['data']), 'iso' => substr((string) $diaria['data'], 0, 10)],
+    'pulseiras' => array_map(fn($k, $p) => ['chave' => $k, 'nome' => $p[0], 'cor' => $p[1]], array_keys(PULSEIRAS), array_values(PULSEIRAS)),
     'veiculo' => veiculo_layout($viagem),
     'origens' => viagem_origens((int) $viagem['id']),
     'passageiros' => $lista,
@@ -285,6 +294,18 @@ function passageiros_estado(array $viagem, array $diaria, bool $podeMarcar): arr
     'pode_marcar' => $podeMarcar,
     'atualizado' => date('H:i:s'),
   ];
+}
+
+/** Define (ou limpa, com cor vazia) a pulseira do passageiro. Retorna mensagem de erro ou null. */
+function passageiro_definir_pulseira(int $viagemId, int $passageiroId, string $cor): ?string {
+  if ($cor !== '' && !isset(PULSEIRAS[$cor])) {
+    return 'Cor de pulseira inválida.';
+  }
+  if (!um("SELECT 1 FROM passageiros WHERE id = ? AND viagem_id = ? AND status = 'ativo'", [$passageiroId, $viagemId])) {
+    return 'Passageiro não encontrado.';
+  }
+  q('UPDATE passageiros SET pulseira = ?, atualizado_em = ? WHERE id = ?', [$cor === '' ? null : $cor, agora(), $passageiroId]);
+  return null;
 }
 
 /** Nomes curtos de quem fez cada marcação ("Ana", "Bruno (equipe)"). */

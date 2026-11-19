@@ -240,6 +240,17 @@
 .lp-tabela tr.com-noshow td.col-nome { color: var(--erro); text-decoration: line-through; }
 .tag-pax { display: inline-block; margin-top: 4px; padding: 1px 8px; border: 1px solid var(--amarelo); border-radius: 999px; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; color: var(--amarelo); text-decoration: none; }
 .lp-tabela td.col-nome .tag-pax { display: table; }
+.tag-aniversario { border-color: var(--menta); color: var(--menta); }
+.toast-aniversario { max-width: min(92vw, 460px); border-color: var(--amarelo); font-weight: 600; text-align: center; }
+/* Pulseira: bolinha ao lado do nome; toque abre a lista de cores */
+.pulseira-box { position: relative; display: inline-block; margin-right: 8px; vertical-align: middle; }
+.pulseira-botao { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; background: transparent; border: 0; cursor: pointer; }
+.pulseira-ponto { display: block; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--linha-forte); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15); }
+.pulseira-ponto.vazia { background: transparent; border-style: dashed; }
+.pulseira-menu { position: absolute; z-index: 30; top: 100%; left: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; width: 244px; padding: 12px; background: var(--painel); border: 1px solid var(--menta); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+.pulseira-opcao { width: 34px; height: 34px; padding: 0; border-radius: 50%; border: 2px solid var(--linha-forte); cursor: pointer; }
+.pulseira-opcao.atual { border-color: var(--menta); box-shadow: 0 0 0 2px var(--menta); }
+.pulseira-limpar { flex-basis: 100%; padding: 6px 0 0; background: transparent; border: 0; color: var(--texto-2, #aaa); font-size: 13px; text-decoration: underline; cursor: pointer; text-align: left; }
 .marca-por { font-size: 9.5px; font-weight: 600; letter-spacing: 0.02em; text-transform: none; opacity: 0.75; }
 
 /* Mapa do carro */

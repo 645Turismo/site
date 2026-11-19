@@ -22,7 +22,9 @@
   var CAMPOS_FORM = ['nome'].concat(CAMPOS, ['poltrona', 'tipo_pax']);
   var NOMES_MARCA = { checkin: 'Check-in', checkout: 'Check-out', noshow: 'No-show' };
 
+  var CHAVE_ORDEM = 'ordem-passageiros';
   var dados = null;
+  var pulseiraAberta = null; // passageiro com a lista de cores aberta (sobrevive à atualização automática)
   var fila = lerFila();
   var enviando = false;
   var selecionada = null;
@@ -65,10 +67,36 @@
     s.appendChild(el('span', 'ponto'));
     s.appendChild(document.createTextNode(' ' + texto));
   }
-  function avisar(texto) {
-    var t = el('div', 'toast', texto);
+  function avisar(texto, ms, classe) {
+    var t = el('div', 'toast' + (classe ? ' ' + classe : ''), texto);
     document.body.appendChild(t);
-    setTimeout(function () { t.remove(); }, 4000);
+    setTimeout(function () { t.remove(); }, ms || 4000);
+  }
+
+  // Aniversário: hoje ou nos últimos 7 dias, em relação ao dia de trabalho da lista.
+  function lerData(s) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s || '') || null;
+    if (m) return { a: +m[1], m: +m[2], d: +m[3] };
+    m = /^(\d{2})\/(\d{2})\/(\d{4})/.exec(s || '');
+    return m ? { a: +m[3], m: +m[2], d: +m[1] } : null;
+  }
+  function aniversario(p) {
+    var n = lerData(p.campos.nascimento.bruto);
+    var ref = lerData(dados && dados.diaria && dados.diaria.iso);
+    if (!n || !ref) return null;
+    var hoje = Date.UTC(ref.a, ref.m - 1, ref.d);
+    for (var ano = ref.a; ano >= ref.a - 1; ano--) {
+      var dias = Math.round((hoje - Date.UTC(ano, n.m - 1, n.d)) / 86400000);
+      if (dias >= 0 && dias <= 7) {
+        return { dias: dias, data: ('0' + n.d).slice(-2) + '/' + ('0' + n.m).slice(-2) };
+      }
+    }
+    return null;
+  }
+  function textoAniversario(p, a) {
+    var primeiro = String(p.campos.nome.v || '').trim().split(/\s+/)[0] || 'O passageiro';
+    if (a.dias === 0) return 'Aniversário do PAX: ' + primeiro + ' faz aniversário hoje! Dê os parabéns.';
+    return 'Aniversário do PAX: ' + primeiro + ' fez aniversário em ' + a.data + ' (' + (a.dias === 1 ? 'ontem' : 'há ' + a.dias + ' dias') + '). Dê os parabéns.';
   }
   function post(url, campos) {
     var fd = new FormData();
@@ -150,6 +178,10 @@
       return;
     }
     fila.push({ id: p.id, tipo: tipo, desfazer: desfazer ? 1 : 0, hora: horaAgora() });
+    if (tipo === 'checkin' && !desfazer) {
+      var aniv = aniversario(p);
+      if (aniv) avisar('🎂 ' + textoAniversario(p, aniv), 9000, 'toast-aniversario');
+    }
     salvarFila();
     aplicarFilaLocal();
     renderizar();
@@ -241,6 +273,11 @@
     var corpo = $('[data-corpo]');
     corpo.textContent = '';
     var visiveis = dados.passageiros.filter(passaFiltro);
+    if ($('[data-ordem]').value === 'nome') {
+      visiveis.sort(function (a, b) {
+        return String(a.campos.nome.v).localeCompare(String(b.campos.nome.v), 'pt-BR', { sensitivity: 'base' });
+      });
+    }
     if (!visiveis.length) {
       var tr = el('tr');
       var td = el('td', 'vazio-linha', dados.passageiros.length ? 'Nenhum passageiro neste filtro.' : 'A lista ainda está vazia.');
@@ -260,6 +297,9 @@
       if (!p.campos.poltrona.v) tdPoltrona.textContent = '—';
       tr.appendChild(tdPoltrona);
       var tdNome = celula(p, 'nome');
+      tdNome.insertBefore(seletorPulseira(p), tdNome.firstChild);
+      var tagAnivAdm = etiquetaAniversario(p);
+      if (tagAnivAdm) tdNome.appendChild(tagAnivAdm);
       if (p.campos.tipo_pax.bruto === 'crianca' || p.campos.tipo_pax.bruto === 'colo') {
         tdNome.appendChild(el('span', 'tag-pax' + (p.campos.tipo_pax.g ? ' ed-guia' : ''), p.campos.tipo_pax.v));
       }
@@ -299,8 +339,71 @@
   // Poltrona, nome, check-in/check-out num botão só, documento, nascimento e embarque; o resto em "Mais".
   var abertos = {}; // detalhes abertos continuam abertos quando a lista se atualiza sozinha
 
+  function definirPulseira(p, cor) {
+    if (!admin && !dados.pode_marcar) {
+      avisar('A pulseira só pode ser definida no dia do trabalho.');
+      return;
+    }
+    pulseiraAberta = null;
+    post(base + '/' + p.id + '/pulseira', { diaria: diaria, cor: cor })
+      .then(function (j) { dados = j; aplicarFilaLocal(); renderizar(); })
+      .catch(function (e) { avisar(e.message); });
+    p.pulseira = cor || null;
+    renderizar();
+  }
+  function bolinha(cor, nome) {
+    var s = el('span', 'pulseira-ponto' + (cor ? '' : ' vazia'));
+    if (cor) {
+      var c = (dados.pulseiras || []).filter(function (x) { return x.chave === cor; })[0];
+      s.style.background = c ? c.cor : '#888';
+      s.title = 'Pulseira ' + (c ? c.nome : cor);
+    }
+    return s;
+  }
+  function seletorPulseira(p) {
+    var box = el('span', 'pulseira-box');
+    var b = el('button', 'pulseira-botao');
+    b.type = 'button';
+    b.appendChild(bolinha(p.pulseira));
+    var atual = p.pulseira ? ((dados.pulseiras || []).filter(function (x) { return x.chave === p.pulseira; })[0] || {}).nome : '';
+    b.setAttribute('aria-label', 'Pulseira de ' + p.campos.nome.v + ': ' + (atual || 'não definida') + '. Toque para escolher.');
+    b.title = atual ? 'Pulseira ' + atual : 'Escolher cor da pulseira';
+    b.addEventListener('click', function () { pulseiraAberta = pulseiraAberta === p.id ? null : p.id; renderizar(); });
+    box.appendChild(b);
+    if (pulseiraAberta === p.id) {
+      var menu = el('span', 'pulseira-menu');
+      menu.setAttribute('role', 'group');
+      menu.setAttribute('aria-label', 'Cor da pulseira');
+      (dados.pulseiras || []).forEach(function (c) {
+        var o = el('button', 'pulseira-opcao' + (p.pulseira === c.chave ? ' atual' : ''));
+        o.type = 'button';
+        o.style.background = c.cor;
+        o.title = c.nome;
+        o.setAttribute('aria-label', c.nome);
+        o.addEventListener('click', function () { definirPulseira(p, c.chave); });
+        menu.appendChild(o);
+      });
+      var limpar = el('button', 'pulseira-limpar', 'Sem pulseira');
+      limpar.type = 'button';
+      limpar.addEventListener('click', function () { definirPulseira(p, ''); });
+      menu.appendChild(limpar);
+      box.appendChild(menu);
+    }
+    return box;
+  }
+  function etiquetaAniversario(p) {
+    var a = aniversario(p);
+    if (!a) return null;
+    var t = el('span', 'tag-pax tag-aniversario', a.dias === 0 ? '🎂 Aniversário hoje' : '🎂 Aniversário ' + a.data);
+    t.title = textoAniversario(p, a);
+    return t;
+  }
+
   function nomeComTags(p) {
     var td = celula(p, 'nome');
+    td.insertBefore(seletorPulseira(p), td.firstChild);
+    var tagAniv = etiquetaAniversario(p);
+    if (tagAniv) td.appendChild(tagAniv);
     if (p.campos.tipo_pax.bruto === 'crianca' || p.campos.tipo_pax.bruto === 'colo') {
       td.appendChild(el('span', 'tag-pax' + (p.campos.tipo_pax.g ? ' ed-guia' : ''), p.campos.tipo_pax.v));
     }
@@ -708,6 +811,12 @@
   });
   $('[data-busca]').addEventListener('input', function () { if (dados) renderizarLista(); });
   $('[data-filtro]').addEventListener('change', function () { if (dados) renderizarLista(); });
+  var seletorOrdem = $('[data-ordem]');
+  try { if (localStorage.getItem(CHAVE_ORDEM) === 'nome') seletorOrdem.value = 'nome'; } catch (e) { /* sem armazenamento */ }
+  seletorOrdem.addEventListener('change', function () {
+    try { localStorage.setItem(CHAVE_ORDEM, seletorOrdem.value); } catch (e) { /* sem armazenamento */ }
+    if (dados) renderizarLista();
+  });
 
   carregar();
   enviarFila();

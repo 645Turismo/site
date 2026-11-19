@@ -69,6 +69,18 @@ function adm_passageiro_marcar(int $id, int $passageiroId): void {
   resposta_json(passageiros_estado($v, $dia, true));
 }
 
+function adm_passageiro_pulseira(int $id, int $passageiroId): void {
+  exigir_admin(PAPEIS_VIAGENS);
+  $v = adm_viagem_com_lista($id);
+  $dia = um('SELECT * FROM diarias WHERE id = ? AND viagem_id = ?', [(int) entrada('diaria'), $id])
+    ?? resposta_json(['erro' => 'Dia de trabalho inválido.'], 404);
+  $erro = passageiro_definir_pulseira($id, $passageiroId, entrada('cor'));
+  if ($erro) {
+    resposta_json(['erro' => $erro], 422);
+  }
+  resposta_json(passageiros_estado($v, $dia, true));
+}
+
 function adm_passageiro_criar(int $id): void {
   $a = exigir_admin(PAPEIS_VIAGENS);
   $v = adm_viagem_com_lista($id);

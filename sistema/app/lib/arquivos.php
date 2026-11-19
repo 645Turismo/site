@@ -15,6 +15,30 @@ function upload_enviado(string $campo): bool {
   return isset($_FILES[$campo]) && ($_FILES[$campo]['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
 }
 
+/** Converte valores do php.ini ("8M", "2048K") em bytes. */
+function ini_para_bytes(string $v): int {
+  $v = trim($v);
+  $n = (int) $v;
+  return match (strtolower(substr($v, -1))) { 'g' => $n * 1073741824, 'm' => $n * 1048576, 'k' => $n * 1024, default => $n };
+}
+
+/** Maior arquivo que o servidor realmente aceita: o menor entre o nosso limite e os do PHP (0 = sem limite). */
+function upload_limite_bytes(): int {
+  $limites = [UPLOAD_MAX_BYTES];
+  foreach (['upload_max_filesize', 'post_max_size'] as $chave) {
+    $b = ini_para_bytes((string) ini_get($chave));
+    if ($b > 0) {
+      $limites[] = $b;
+    }
+  }
+  return (int) min($limites);
+}
+
+function upload_limite_texto(): string {
+  $mb = upload_limite_bytes() / 1048576;
+  return $mb >= 1 ? number_format($mb, $mb == floor($mb) ? 0 : 1, ',', '') . ' MB' : round($mb * 1024) . ' KB';
+}
+
 /**
  * Valida e guarda o arquivo enviado em $campo. Retorna [caminho relativo, nome original, mime, tamanho].
  * $apenasImagem: aceita só fotos (ex.: foto de rosto). Lança RuntimeException com mensagem para o usuário.
@@ -26,7 +50,7 @@ function salvar_upload(string $campo, string $pasta, bool $apenasImagem = false)
     throw new RuntimeException('Escolha o arquivo.');
   }
   if ($erro === UPLOAD_ERR_INI_SIZE || $erro === UPLOAD_ERR_FORM_SIZE || ($f['size'] ?? 0) > UPLOAD_MAX_BYTES) {
-    throw new RuntimeException('O arquivo passa de 20 MB.');
+    throw new RuntimeException('O arquivo é grande demais (o limite é ' . upload_limite_texto() . '). Reduza a foto ou envie o PDF.');
   }
   if ($erro !== UPLOAD_ERR_OK || !is_uploaded_file($f['tmp_name'])) {
     throw new RuntimeException('Não foi possível receber o arquivo. Tente de novo.');

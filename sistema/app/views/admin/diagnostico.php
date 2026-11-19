@@ -15,6 +15,7 @@
     <dd><?= $pendentes ? '<span class="vermelho">Pendentes: ' . e(implode(', ', $pendentes)) . '</span>' : 'Em dia (' . e((string) end($aplicadas)) . ')' ?></dd>
     <dt>Pastas</dt>
     <dd><?php foreach ($pastas as [$p, $ok]): ?><?= e($p) ?>: <?= $ok ? 'grava' : '<span class="vermelho">sem permissão de escrita</span>' ?><br><?php endforeach; ?></dd>
+    <dt>Envio de arquivos</dt><dd>Aceita até <?= e(upload_limite_texto()) ?> por arquivo <small class="texto-2">(PHP: upload_max_filesize <?= e((string) ini_get('upload_max_filesize')) ?>, post_max_size <?= e((string) ini_get('post_max_size')) ?>)</small></dd>
     <dt>E-mail</dt><dd><?= e($smtp) ?></dd>
   </dl>
 </section>

@@ -102,7 +102,7 @@ function limpar_antigo(): void {
 
 function abortar(int $codigo, string $mensagem = ''): never {
   http_response_code($codigo);
-  $titulos = [403 => 'Acesso negado', 404 => 'Página não encontrada', 419 => 'Sessão expirada', 500 => 'Erro interno'];
+  $titulos = [403 => 'Acesso negado', 404 => 'Página não encontrada', 413 => 'Arquivo grande demais', 419 => 'Sessão expirada', 500 => 'Erro interno'];
   echo render('erro', [
     'titulo' => $titulos[$codigo] ?? 'Erro',
     'codigo' => $codigo,

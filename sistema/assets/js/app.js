@@ -158,7 +158,17 @@
   // quando o original (WhatsApp, Drive, câmera) muda ou some entre a escolha e o envio.
   document.querySelectorAll('input[type="file"]').forEach(function (campo) {
     campo.addEventListener('change', function () {
-      if (!campo.files || !campo.files.length || !window.DataTransfer || !window.File) return;
+      if (!campo.files || !campo.files.length) return;
+      var meta = document.querySelector('meta[name="upload-limite"]');
+      var limite = meta ? parseInt(meta.content, 10) : 0;
+      for (var i = 0; limite > 0 && i < campo.files.length; i++) {
+        if (campo.files[i].size > limite) {
+          campo.value = '';
+          window.alert('O arquivo é grande demais (o limite é ' + meta.getAttribute('data-texto') + '). Reduza a foto ou envie o PDF.');
+          return;
+        }
+      }
+      if (!window.DataTransfer || !window.File) return;
       var originais = Array.prototype.slice.call(campo.files);
       Promise.all(originais.map(function (f) {
         return f.arrayBuffer().then(function (buf) { return new File([buf], f.name, { type: f.type, lastModified: f.lastModified }); });

@@ -332,6 +332,21 @@ function guia_passageiro_marcar(int $id, int $passageiroId): void {
   resposta_json(passageiros_estado($v, ['id' => $dia['diaria_id'], 'data' => $dia['data']], true));
 }
 
+/** Cor da pulseira do passageiro (identificação durante a viagem). */
+function guia_passageiro_pulseira(int $id, int $passageiroId): void {
+  $g = exigir_guia();
+  [$v, $dias] = guia_dias_da_lista($g, $id);
+  $dia = $dias[(int) entrada('diaria')] ?? resposta_json(['erro' => 'Dia de trabalho inválido.'], 404);
+  if (!guia_pode_marcar($dia)) {
+    resposta_json(['erro' => 'A pulseira só pode ser definida no dia do trabalho.'], 403);
+  }
+  $erro = passageiro_definir_pulseira($id, $passageiroId, entrada('cor'));
+  if ($erro) {
+    resposta_json(['erro' => $erro], 422);
+  }
+  resposta_json(passageiros_estado($v, ['id' => $dia['diaria_id'], 'data' => $dia['data']], true));
+}
+
 /**
  * Ajuste do guia num passageiro. O dado do ADM é preservado; o ajuste aparece destacado
  * e a coordenação recebe e-mail com o antes e o depois.

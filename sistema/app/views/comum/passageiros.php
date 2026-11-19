@@ -53,6 +53,10 @@ $urlIncluir = $admin ? $base : $base . '/incluir';
   <section data-painel="lista">
     <div class="lp-ferramentas">
       <input type="search" data-busca placeholder="Buscar nome, documento, venda ou poltrona" aria-label="Buscar passageiro">
+      <select data-ordem aria-label="Ordenar">
+        <option value="lista">Ordem da lista</option>
+        <option value="nome">Nome (A–Z)</option>
+      </select>
       <select data-filtro aria-label="Filtrar">
         <option value="todos">Todos</option>
         <option value="sem-checkin">Faltam check-in</option>

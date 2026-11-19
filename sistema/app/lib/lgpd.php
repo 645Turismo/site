@@ -97,7 +97,7 @@ function lgpd_anonimizar_passageiros(): int {
   foreach (array_chunk($ids, 200) as $lote) {
     $marcas = implode(',', array_fill(0, count($lote), '?'));
     q("UPDATE passageiros SET nome = 'Passageiro anonimizado', tipo_documento = NULL, documento = NULL, nascimento = NULL, venda = NULL,
-         observacao = NULL, telefone = NULL, ajustes_guia = NULL, anonimizado_em = ? WHERE id IN ($marcas)", array_merge([agora()], $lote));
+         observacao = NULL, telefone = NULL, ajustes_guia = NULL, pulseira = NULL, anonimizado_em = ? WHERE id IN ($marcas)", array_merge([agora()], $lote));
   }
   // Listas de passageiros anexadas às viagens (planilha/PDF) também saem do servidor.
   foreach (todos('SELECT a.id, a.titulo, a.arquivo_path FROM viagem_anexos a JOIN viagens v ON v.id = a.viagem_id WHERE v.data_fim < ?', [$limite]) as $a) {

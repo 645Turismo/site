@@ -2,6 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow, noarchive">
 <meta name="theme-color" content="#000000">
+<meta name="upload-limite" content="<?= (int) upload_limite_bytes() ?>" data-texto="<?= e(upload_limite_texto()) ?>">
 <title><?= e($titulo ?? 'Área do Prestador') ?> · 645 Turismo</title>
 <link rel="icon" type="image/png" href="<?= e(asset('img/logo-branco.png')) ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">

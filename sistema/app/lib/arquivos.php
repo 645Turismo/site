@@ -93,7 +93,7 @@ function somar_dias_uteis(string $data, int $dias): string {
 
 /** E-mail para avisos internos (cadastro novo, lista alterada, chamado urgente). */
 function email_equipe(): string {
-  return (string) configuracao('email_alertas_lista', 'contato@645turismo.com.br');
+  return (string) configuracao('email_alertas_lista', 'operacional@645turismo.com.br');
 }
 
 // Tabela e coluna da chave de cada tipo de arquivo servido em /arquivos/{tipo}/{chave}.

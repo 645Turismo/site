@@ -422,9 +422,9 @@ function passageiro_incorporar_ajustes(array $p): void {
 
 /** Avisa a coordenação por e-mail (e no painel) que um guia alterou a lista. */
 function notificar_alteracao_lista(array $viagem, array $guia, string $passageiro, array $alteracoes, bool $inclusao): void {
-  // E-mail vai para o endereço configurado (por enquanto contato@645turismo.com.br);
+  // E-mail vai para o endereço configurado (por enquanto operacional@645turismo.com.br);
   // o aviso no painel vai para administradores e coordenadores ativos.
-  $emailAlerta = configuracao('email_alertas_lista', 'contato@645turismo.com.br');
+  $emailAlerta = configuracao('email_alertas_lista', 'operacional@645turismo.com.br');
   $destinatarios = todos("SELECT id FROM admins WHERE ativo = 1 AND papel IN ('admin','coordenador')");
   $link = url_absoluta('/admin/viagens/' . (int) $viagem['id'] . '/passageiros');
   $guiaNome = $guia['nome_social'] ?: $guia['nome'];
